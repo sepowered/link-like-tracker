@@ -1,0 +1,297 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1775294525683,
+  "projectRoot": "/Users/stile/.superset/projects/oh-my-hasu",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "16.2.2",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "19.2.4",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.4",
+        "category": "frontend"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "eslint"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public",
+      "scripts",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "data": {
+      "path": "data",
+      "purpose": "Data files",
+      "fileCount": 2,
+      "lastAccessed": 1775294525673,
+      "keyFiles": [
+        "playlist.initial.json",
+        "playlist.json"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 5,
+      "lastAccessed": 1775294525673,
+      "keyFiles": [
+        "file.svg",
+        "globe.svg",
+        "next.svg",
+        "vercel.svg",
+        "window.svg"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1775294525677,
+      "keyFiles": [
+        "convert-playlist.ts"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 0,
+      "lastAccessed": 1775294525678,
+      "keyFiles": []
+    },
+    "src/app": {
+      "path": "src/app",
+      "purpose": "Application code",
+      "fileCount": 5,
+      "lastAccessed": 1775294525679,
+      "keyFiles": [
+        "favicon.ico",
+        "global-error.tsx",
+        "globals.css"
+      ]
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 4,
+      "lastAccessed": 1775294525680,
+      "keyFiles": [
+        "FilterBar.tsx",
+        "PlaylistView.tsx",
+        "SeasonGroup.tsx"
+      ]
+    },
+    "src/lib": {
+      "path": "src/lib",
+      "purpose": "Library code",
+      "fileCount": 4,
+      "lastAccessed": 1775294525680,
+      "keyFiles": [
+        "playlist.json.ts",
+        "playlist.ts",
+        "storage.ts"
+      ]
+    },
+    "src/types": {
+      "path": "src/types",
+      "purpose": "Type definitions",
+      "fileCount": 1,
+      "lastAccessed": 1775294525680,
+      "keyFiles": [
+        "index.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src/app/globals.css",
+      "accessCount": 16,
+      "lastAccessed": 1775310962201,
+      "type": "file"
+    },
+    {
+      "path": "src/components/VideoItem.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1775309812220,
+      "type": "file"
+    },
+    {
+      "path": "src/components/FilterBar.tsx",
+      "accessCount": 8,
+      "lastAccessed": 1775308765430,
+      "type": "file"
+    },
+    {
+      "path": "src/components/PlaylistView.tsx",
+      "accessCount": 8,
+      "lastAccessed": 1775309232357,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 7,
+      "lastAccessed": 1775296559995,
+      "type": "directory"
+    },
+    {
+      "path": "src/components/SeasonGroup.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1775309215676,
+      "type": "file"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1775308229986,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/video-category.ts",
+      "accessCount": 5,
+      "lastAccessed": 1775308759322,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/playlist.json.ts",
+      "accessCount": 5,
+      "lastAccessed": 1775309160847,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 4,
+      "lastAccessed": 1775296367559,
+      "type": "file"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1775308271464,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 3,
+      "lastAccessed": 1775295672590,
+      "type": "directory"
+    },
+    {
+      "path": "src/types/index.ts",
+      "accessCount": 3,
+      "lastAccessed": 1775309127147,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/playlist/[videoId]/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1775309170493,
+      "type": "file"
+    },
+    {
+      "path": "src/components/ThemeToggle.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1775310796399,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 2,
+      "lastAccessed": 1775294813453,
+      "type": "file"
+    },
+    {
+      "path": "next.config.ts",
+      "accessCount": 2,
+      "lastAccessed": 1775296950046,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/storage.ts",
+      "accessCount": 2,
+      "lastAccessed": 1775309129190,
+      "type": "file"
+    },
+    {
+      "path": "data",
+      "accessCount": 1,
+      "lastAccessed": 1775294737034,
+      "type": "directory"
+    },
+    {
+      "path": "src/lib/playlist.ts",
+      "accessCount": 1,
+      "lastAccessed": 1775294740966,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/playlist/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1775294741873,
+      "type": "file"
+    },
+    {
+      "path": "src/components",
+      "accessCount": 1,
+      "lastAccessed": 1775295672948,
+      "type": "directory"
+    },
+    {
+      "path": "tsconfig.json",
+      "accessCount": 1,
+      "lastAccessed": 1775296370453,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
