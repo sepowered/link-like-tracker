@@ -1,0 +1,6 @@
+{
+  "rsc": false,
+  "tsx": true,
+  "path": "src",
+  "telemetry": false
+}

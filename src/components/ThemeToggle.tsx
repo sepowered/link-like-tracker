@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SegmentedControl } from "@seed-design/react";
-import { SunIcon, MoonIcon } from "@radix-ui/react-icons";
+import { Icon, SegmentedControl } from "@seed-design/react";
+import { IconSunLine, IconMoonLine } from "@karrotmarket/react-monochrome-icon";
 
 type ColorScheme = "light" | "dark";
 
@@ -44,11 +44,11 @@ export default function ThemeToggle() {
       <SegmentedControl.Indicator />
       <SegmentedControl.Item value="light" style={{ minWidth: "40px", padding: "0 8px" }}>
         <SegmentedControl.ItemHiddenInput />
-        <SunIcon />
+        <Icon svg={<IconSunLine />} size="20px" />
       </SegmentedControl.Item>
       <SegmentedControl.Item value="dark" style={{ minWidth: "40px", padding: "0 8px" }}>
         <SegmentedControl.ItemHiddenInput />
-        <MoonIcon />
+        <Icon svg={<IconMoonLine />} size="20px" />
       </SegmentedControl.Item>
     </SegmentedControl.Root>
   );

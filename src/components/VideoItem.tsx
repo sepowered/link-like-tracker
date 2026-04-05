@@ -3,8 +3,21 @@
 import { useState } from "react";
 import { Video } from "@/types";
 import { VideoCategory, getVideoCategoryLabel } from "@/lib/video-category";
-import { Checkbox, MenuSheet, Chip, ActionButton, Divider } from "@seed-design/react";
-import { CheckIcon, ExternalLinkIcon, Share1Icon, Link2Icon } from "@radix-ui/react-icons";
+import { Checkbox, Icon, MenuSheet, ActionButton, HStack, Portal } from "@seed-design/react";
+import { Chip } from "@/ui/chip";
+import {
+  BottomSheetRoot,
+  BottomSheetTrigger,
+  BottomSheetContent,
+  BottomSheetBody,
+  BottomSheetFooter,
+} from "@/ui/bottom-sheet";
+import {
+  IconCheckmarkLine,
+  IconArrowUpRightLine,
+  IconAndroidshareLine,
+  IconPaperclipLine,
+} from "@karrotmarket/react-monochrome-icon";
 
 type CategoryOverrideArg = "story" | "music" | "fesxlive" | "withxmeets" | null | "auto";
 
@@ -26,11 +39,19 @@ const CATEGORY_OPTIONS: { value: string; label: string }[] = [
 
 export default function VideoItem({ video, category, onToggle, onUpdateCategory }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
 
   const effectiveCategory =
     video.categoryOverride !== undefined ? video.categoryOverride : category;
   const categoryLabel = getVideoCategoryLabel(effectiveCategory);
   const isOverridden = video.categoryOverride !== undefined;
+
+  const currentCategoryValue =
+    video.categoryOverride === undefined
+      ? "auto"
+      : video.categoryOverride === null
+        ? "none"
+        : video.categoryOverride;
 
   const handleToggleWatch = () => {
     onToggle(video.id);
@@ -45,10 +66,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: video.title,
-          url: video.url,
-        });
+        await navigator.share({ title: video.title, url: video.url });
       } catch (err) {
         console.error("공유 실패:", err);
       }
@@ -68,7 +86,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
     setSheetOpen(false);
   };
 
-  function handleCategoryChange(value: string) {
+  const handleCategoryConfirm = (value: string) => {
     if (value === "auto") {
       onUpdateCategory(video.id, "auto");
     } else if (value === "none") {
@@ -76,8 +94,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
     } else {
       onUpdateCategory(video.id, value as Exclude<VideoCategory, "all">);
     }
-    setSheetOpen(false);
-  }
+  };
 
   return (
     <div className={`video-item${video.watched ? " watched" : ""}`}>
@@ -89,54 +106,52 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
       >
         <Checkbox.HiddenInput aria-label={`${video.title} 시청 완료`} />
         <Checkbox.Control>
-          <Checkbox.Indicator checked={<CheckIcon />} />
+          <Checkbox.Indicator checked={<IconCheckmarkLine />} />
         </Checkbox.Control>
       </Checkbox.Root>
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
-        {/* 1. 태그 수정 메뉴 (Chip 클릭 시) */}
-        <MenuSheet.Root>
-          <MenuSheet.Trigger asChild>
-            <Chip.Root
+        {/* 1. 분류 상세 설정 (Chip 클릭 시) */}
+        <BottomSheetRoot
+          closeOnEscape
+          closeOnInteractOutside
+          open={categorySheetOpen}
+          onOpenChange={setCategorySheetOpen}
+        >
+          <BottomSheetTrigger asChild>
+            <Chip.Button
               variant={isOverridden ? "solid" : "outlineWeak"}
               size="small"
-              style={{ flexShrink: 0, cursor: "pointer" }}
+              style={{ flexShrink: 0 }}
             >
               <Chip.Label>{categoryLabel}</Chip.Label>
-            </Chip.Root>
-          </MenuSheet.Trigger>
-          <MenuSheet.Backdrop />
-          <MenuSheet.Positioner>
-            <MenuSheet.Content labelAlign="center">
-              <MenuSheet.Header>
-                <MenuSheet.Title>분류 상세 설정</MenuSheet.Title>
-              </MenuSheet.Header>
-              <MenuSheet.List>
-                <MenuSheet.Group>
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <MenuSheet.Item key={opt.value} onClick={() => handleCategoryChange(opt.value)}>
-                      <MenuSheet.ItemLabel>{opt.label}</MenuSheet.ItemLabel>
-                    </MenuSheet.Item>
-                  ))}
-                </MenuSheet.Group>
-              </MenuSheet.List>
-              <MenuSheet.Footer>
-                <MenuSheet.CloseButton asChild>
-                  <ActionButton variant="neutralSolid" size="medium" style={{ width: "100%" }}>
-                    닫기
-                  </ActionButton>
-                </MenuSheet.CloseButton>
-              </MenuSheet.Footer>
-            </MenuSheet.Content>
-          </MenuSheet.Positioner>
-        </MenuSheet.Root>
+            </Chip.Button>
+          </BottomSheetTrigger>
+          <Portal>
+            <CategorySheet
+              currentValue={currentCategoryValue}
+              onClose={() => setCategorySheetOpen(false)}
+              onConfirm={(value) => {
+                handleCategoryConfirm(value);
+                setCategorySheetOpen(false);
+              }}
+            />
+          </Portal>
+        </BottomSheetRoot>
 
         {/* 2. 영상 옵션 메뉴 (제목 클릭 시) */}
         <MenuSheet.Root open={sheetOpen} onOpenChange={setSheetOpen}>
           <MenuSheet.Trigger asChild>
             <span
               className="video-title"
-              style={{ cursor: "pointer", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+              style={{
+                cursor: "pointer",
+                flex: 1,
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
             >
               {video.title}
             </span>
@@ -150,7 +165,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
               <MenuSheet.List>
                 <MenuSheet.Group>
                   <MenuSheet.Item onClick={handleToggleWatch}>
-                    <CheckIcon />
+                    <Icon svg={<IconCheckmarkLine />} size="20px" />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>
                         {video.watched ? "시청 완료 취소" : "시청 완료 표시"}
@@ -158,22 +173,21 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
                     </MenuSheet.ItemContent>
                   </MenuSheet.Item>
                 </MenuSheet.Group>
-
                 <MenuSheet.Group>
                   <MenuSheet.Item onClick={handleGoToYouTube}>
-                    <ExternalLinkIcon />
+                    <Icon svg={<IconArrowUpRightLine />} size="20px" />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>유튜브로 이동</MenuSheet.ItemLabel>
                     </MenuSheet.ItemContent>
                   </MenuSheet.Item>
                   <MenuSheet.Item onClick={handleShare}>
-                    <Share1Icon />
+                    <Icon svg={<IconAndroidshareLine />} size="20px" />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>공유하기</MenuSheet.ItemLabel>
                     </MenuSheet.ItemContent>
                   </MenuSheet.Item>
                   <MenuSheet.Item onClick={handleCopyLink}>
-                    <Link2Icon />
+                    <Icon svg={<IconPaperclipLine />} size="20px" />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>링크 복사</MenuSheet.ItemLabel>
                     </MenuSheet.ItemContent>
@@ -192,5 +206,51 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
         </MenuSheet.Root>
       </div>
     </div>
+  );
+}
+
+function CategorySheet({
+  currentValue,
+  onClose,
+  onConfirm,
+}: {
+  currentValue: string;
+  onClose: () => void;
+  onConfirm: (value: string) => void;
+}) {
+  const [selected, setSelected] = useState(currentValue);
+
+  return (
+    <BottomSheetContent title="분류 상세 설정">
+      <BottomSheetBody>
+        <HStack gap="x2" wrap>
+          {CATEGORY_OPTIONS.map((opt) => (
+            <Chip.Toggle
+              key={opt.value}
+              variant="outlineStrong"
+              size="medium"
+              checked={selected === opt.value}
+              onCheckedChange={(checked) => {
+                if (checked) setSelected(opt.value);
+              }}
+            >
+              <Chip.Label>{opt.label}</Chip.Label>
+            </Chip.Toggle>
+          ))}
+        </HStack>
+      </BottomSheetBody>
+      <BottomSheetFooter>
+        <HStack pt="x3">
+          <ActionButton
+            flexGrow
+            size="large"
+            variant="neutralSolid"
+            onClick={() => onConfirm(selected)}
+          >
+            완료
+          </ActionButton>
+        </HStack>
+      </BottomSheetFooter>
+    </BottomSheetContent>
   );
 }
