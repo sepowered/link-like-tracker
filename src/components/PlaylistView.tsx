@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PlaylistData } from "@/types";
 import { VideoCategory, classifyVideoCategory } from "@/lib/video-category";
 import SeasonGroup from "./SeasonGroup";
@@ -8,6 +8,9 @@ import FilterBar from "./FilterBar";
 import * as Progress from "@radix-ui/react-progress";
 
 type FilterType = "all" | "watched" | "unwatched";
+
+const STORAGE_KEY_WATCHED = "oh-my-hasu-watched";
+const STORAGE_KEY_OVERRIDES = "oh-my-hasu-overrides";
 
 function isUnavailableVideoTitle(title: string) {
   return title === "[Private video]" || title === "[Deleted video]";
@@ -24,6 +27,57 @@ export default function PlaylistView({ initialData }: Props) {
   const [query, setQuery] = useState("");
   const [hidePrivateVideos, setHidePrivateVideos] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const watchedIdsRaw = localStorage.getItem(STORAGE_KEY_WATCHED);
+      const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
+
+      const watchedIds: string[] = watchedIdsRaw ? JSON.parse(watchedIdsRaw) : [];
+      const overrides: Record<string, string | null> = overridesRaw ? JSON.parse(overridesRaw) : {};
+
+      setData((prev) => ({
+        seasons: prev.seasons.map((season) => ({
+          ...season,
+          videos: season.videos.map((v) => {
+            const hasWatchedLocal = watchedIds.includes(v.id);
+            const overrideLocal = overrides[v.id];
+            
+            return {
+              ...v,
+              watched: hasWatchedLocal || v.watched,
+              ...(overrideLocal !== undefined ? { categoryOverride: overrideLocal as any } : {}),
+            };
+          }),
+        })),
+      }));
+    } catch (e) {
+      console.error("Failed to load local storage", e);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, []);
+
+  // Save changes to localStorage
+  const saveToLocalStorage = (nextData: PlaylistData) => {
+    const allVideos = nextData.seasons.flatMap((s) => s.videos);
+    
+    // 1. Watched IDs (only those that are different from original or all watched)
+    // For simplicity, we save all currently watched IDs
+    const watchedIds = allVideos.filter((v) => v.watched).map((v) => v.id);
+    localStorage.setItem(STORAGE_KEY_WATCHED, JSON.stringify(watchedIds));
+
+    // 2. Overrides
+    const overrides: Record<string, any> = {};
+    allVideos.forEach((v) => {
+      if (v.categoryOverride !== undefined) {
+        overrides[v.id] = v.categoryOverride;
+      }
+    });
+    localStorage.setItem(STORAGE_KEY_OVERRIDES, JSON.stringify(overrides));
+  };
 
   const stats = useMemo(() => {
     const total = data.seasons.reduce((s, season) => s + season.videos.length, 0);
@@ -45,8 +99,11 @@ export default function PlaylistView({ initialData }: Props) {
         const matchesQuery =
           !query || v.title.toLowerCase().includes(query.toLowerCase());
         const matchesAvailability = !hidePrivateVideos || !isUnavailableVideoTitle(v.title);
+        
+        const effectiveCategory = v.categoryOverride !== undefined ? v.categoryOverride : classifyVideoCategory(v.title);
         const matchesCategory =
-          category === "all" || classifyVideoCategory(v.title) === category;
+          category === "all" || effectiveCategory === category;
+
         return matchesFilter && matchesQuery && matchesAvailability && matchesCategory;
       }).length;
       return total + count;
@@ -56,100 +113,46 @@ export default function PlaylistView({ initialData }: Props) {
   const isFiltered = filter !== "all" || category !== "all" || query !== "" || hidePrivateVideos;
 
   async function handleToggle(videoId: string) {
-    setErrorMessage(null);
-
-    // Optimistic update
-    setData((prev) => ({
-      seasons: prev.seasons.map((season) => ({
-        ...season,
-        videos: season.videos.map((v) =>
-          v.id === videoId ? { ...v, watched: !v.watched } : v
-        ),
-      })),
-    }));
-
-    try {
-      const res = await fetch(`/api/playlist/${videoId}`, { method: "PATCH" });
-
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { error?: string } | null;
-
-        // Rollback on error
-        setData((prev) => ({
-          seasons: prev.seasons.map((season) => ({
-            ...season,
-            videos: season.videos.map((v) =>
-              v.id === videoId ? { ...v, watched: !v.watched } : v
-            ),
-          })),
-        }));
-
-        setErrorMessage(body?.error ?? "시청 상태를 저장하지 못했습니다.");
-      }
-    } catch (error) {
-      // Rollback on network error
-      setData((prev) => ({
+    setData((prev) => {
+      const next = {
         seasons: prev.seasons.map((season) => ({
           ...season,
           videos: season.videos.map((v) =>
             v.id === videoId ? { ...v, watched: !v.watched } : v
           ),
         })),
-      }));
-
-      const message =
-        error instanceof Error ? error.message : "시청 상태를 저장하지 못했습니다.";
-      setErrorMessage(message);
-    }
+      };
+      saveToLocalStorage(next);
+      return next;
+    });
   }
 
   async function handleUpdateCategory(
     videoId: string,
     categoryOverride: "story" | "music" | "fesxlive" | "withxmeets" | null | "auto"
   ) {
-    setErrorMessage(null);
-
-    // Optimistic update
-    setData((prev) => ({
-      seasons: prev.seasons.map((season) => ({
-        ...season,
-        videos: season.videos.map((v) => {
-          if (v.id !== videoId) return v;
-          if (categoryOverride === "auto") {
-            const { categoryOverride: _, ...rest } = v;
-            return rest;
-          }
-          return { ...v, categoryOverride };
-        }),
-      })),
-    }));
-
-    try {
-      const res = await fetch(`/api/playlist/${videoId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoryOverride }),
-      });
-
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { error?: string } | null;
-        // Rollback
-        setData((prev) => ({
-          seasons: prev.seasons.map((season) => ({
-            ...season,
-            videos: season.videos.map((v) =>
-              v.id === videoId ? data.seasons.flatMap((s) => s.videos).find((vi) => vi.id === videoId) ?? v : v
-            ),
-          })),
-        }));
-        setErrorMessage(body?.error ?? "태그를 저장하지 못했습니다.");
-      }
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "태그를 저장하지 못했습니다.");
-    }
+    setData((prev) => {
+      const next = {
+        seasons: prev.seasons.map((season) => ({
+          ...season,
+          videos: season.videos.map((v) => {
+            if (v.id !== videoId) return v;
+            if (categoryOverride === "auto") {
+              const { categoryOverride: _, ...rest } = v;
+              return rest;
+            }
+            return { ...v, categoryOverride };
+          }),
+        })),
+      };
+      saveToLocalStorage(next);
+      return next;
+    });
   }
 
   const percent = stats.total > 0 ? Math.round((stats.watched / stats.total) * 100) : 0;
+
+  if (!isInitialized) return null; // Prevent flash of original data before local storage load
 
   return (
     <div>
