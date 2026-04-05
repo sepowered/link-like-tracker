@@ -196,7 +196,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
               </MenuSheet.List>
               <MenuSheet.Footer>
                 <MenuSheet.CloseButton asChild>
-                  <ActionButton variant="neutralSolid" size="medium" style={{ width: "100%" }}>
+                  <ActionButton variant="neutralSolid" size="large" style={{ width: "100%" }}>
                     닫기
                   </ActionButton>
                 </MenuSheet.CloseButton>
