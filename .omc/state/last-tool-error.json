@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__seed-docs__get_doc",
+  "tool_input_preview": "{\"section\":\"docs\",\"path\":\"foundation/iconography\"}",
+  "error": "Error fetching document 'foundation/iconography' from section 'docs': Failed to fetch https://seed-design.io/llms/docs/foundation/iconography.txt: 404 Not Found\n\nUse list_docs to see available documents.",
+  "timestamp": "2026-04-05T01:22:38.836Z",
+  "retry_count": 1
+}

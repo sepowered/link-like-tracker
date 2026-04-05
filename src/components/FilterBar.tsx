@@ -1,17 +1,39 @@
 "use client";
 
+import { useState } from "react";
 import { VideoCategory } from "@/lib/video-category";
 import {
   ActionButton,
-  TextFieldRoot,
+  Flex,
+  HStack,
+  Icon,
+  Portal,
   TextFieldInput,
   TextFieldPrefixIcon,
-  Checkbox,
-  Chip,
+  TextFieldRoot,
 } from "@seed-design/react";
-import { Cross2Icon, MagnifyingGlassIcon, CheckIcon } from "@radix-ui/react-icons";
+import {
+  BottomSheetRoot,
+  BottomSheetTrigger,
+  BottomSheetContent,
+  BottomSheetBody,
+  BottomSheetFooter,
+} from "@/ui/bottom-sheet";
+import { Chip } from "@/ui/chip";
+import {
+  IconChevronDownFill,
+  IconMagnifyingglassLine,
+  IconXmarkLine,
+} from "@karrotmarket/react-monochrome-icon";
 
 type FilterType = "all" | "watched" | "unwatched";
+type SheetType = "watch" | "category";
+
+const FILTERS: { value: FilterType; label: string }[] = [
+  { value: "all", label: "전체" },
+  { value: "unwatched", label: "미시청" },
+  { value: "watched", label: "시청 완료" },
+];
 
 const CATEGORY_FILTERS: { value: VideoCategory; label: string }[] = [
   { value: "all", label: "전체 분류" },
@@ -32,12 +54,6 @@ interface Props {
   onHidePrivateVideosChange: (next: boolean) => void;
 }
 
-const FILTERS: { value: FilterType; label: string }[] = [
-  { value: "all", label: "전체" },
-  { value: "unwatched", label: "미시청" },
-  { value: "watched", label: "시청 완료" },
-];
-
 export default function FilterBar({
   filter,
   category,
@@ -48,77 +64,82 @@ export default function FilterBar({
   onQueryChange,
   onHidePrivateVideosChange,
 }: Props) {
+  const [openSheet, setOpenSheet] = useState<SheetType | null>(null);
+
+  const currentFilterLabel = FILTERS.find((f) => f.value === filter)?.label ?? "전체";
+  const currentCategoryLabel = CATEGORY_FILTERS.find((c) => c.value === category)?.label ?? "전체 분류";
+
   return (
     <div className="filter-section">
-      {/* Filter Panel */}
-      <div className="filter-panel">
-        <div className="filter-rows">
-          <div className="filter-row">
-            <span className="filter-row-label">시청 상태</span>
-            <div className="filter-btn-group" role="group" aria-label="시청 상태 필터">
-              {FILTERS.map((f) => (
-                <Chip.Root
-                  key={f.value}
-                  variant={filter === f.value ? "solid" : "outlineWeak"}
-                  size="small"
-                  onClick={() => onFilterChange(f.value)}
-                >
-                  <Chip.Label>{f.label}</Chip.Label>
-                </Chip.Root>
-              ))}
-            </div>
-          </div>
+      <Flex gap="spacingX.betweenChips" overflowX="auto" className="filter-bar">
+        {/* 시청 상태 */}
+        <BottomSheetRoot
+          closeOnEscape
+          closeOnInteractOutside
+          open={openSheet === "watch"}
+          onOpenChange={(open) => setOpenSheet(open ? "watch" : null)}
+        >
+          <BottomSheetTrigger asChild>
+            <Chip.Button variant={filter !== "all" ? "solid" : "outlineWeak"} size="small">
+              <Chip.Label>{currentFilterLabel}</Chip.Label>
+              <Chip.SuffixIcon>
+                <Icon svg={<IconChevronDownFill />} size="14px" />
+              </Chip.SuffixIcon>
+            </Chip.Button>
+          </BottomSheetTrigger>
+          <Portal>
+            <WatchFilterSheet
+              currentFilter={filter}
+              onClose={() => setOpenSheet(null)}
+              onConfirm={onFilterChange}
+            />
+          </Portal>
+        </BottomSheetRoot>
 
-          <div className="filter-row">
-            <span className="filter-row-label">분류</span>
-            <div className="filter-btn-group" role="group" aria-label="카테고리 필터">
-              {CATEGORY_FILTERS.map((item) => (
-                <Chip.Root
-                  key={item.value}
-                  variant={category === item.value ? "solid" : "outlineWeak"}
-                  size="small"
-                  onClick={() => onCategoryChange(item.value)}
-                >
-                  <Chip.Label>{item.label}</Chip.Label>
-                </Chip.Root>
-              ))}
-            </div>
-          </div>
-          <div className="filter-row">
-            <span className="filter-row-label">옵션</span>
-            <div className="filter-option">
-              <Checkbox.Root
-                checked={hidePrivateVideos}
-                onCheckedChange={(checked) => onHidePrivateVideosChange(!!checked)}
-                size="medium"
-              >
-                <Checkbox.HiddenInput />
-                <Checkbox.Control>
-                  <Checkbox.Indicator checked={<CheckIcon />} />
-                </Checkbox.Control>
-                <Checkbox.Label
-                  style={{ fontSize: "12px", color: "var(--seed-color-fg-neutral-subtle)", cursor: "pointer" }}
-                >
-                  Private 숨기기
-                </Checkbox.Label>
-              </Checkbox.Root>
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* 분류 */}
+        <BottomSheetRoot
+          closeOnEscape
+          closeOnInteractOutside
+          open={openSheet === "category"}
+          onOpenChange={(open) => setOpenSheet(open ? "category" : null)}
+        >
+          <BottomSheetTrigger asChild>
+            <Chip.Button variant={category !== "all" ? "solid" : "outlineWeak"} size="small">
+              <Chip.Label>{currentCategoryLabel}</Chip.Label>
+              <Chip.SuffixIcon>
+                <Icon svg={<IconChevronDownFill />} size="14px" />
+              </Chip.SuffixIcon>
+            </Chip.Button>
+          </BottomSheetTrigger>
+          <Portal>
+            <CategoryFilterSheet
+              currentCategory={category}
+              onClose={() => setOpenSheet(null)}
+              onConfirm={onCategoryChange}
+            />
+          </Portal>
+        </BottomSheetRoot>
 
-      {/* Search Bar (Corrected to Seed Design Pattern) */}
+        {/* Private 숨기기 */}
+        <Chip.Toggle
+          variant="outlineStrong"
+          size="small"
+          checked={hidePrivateVideos}
+          onCheckedChange={onHidePrivateVideosChange}
+        >
+          <Chip.Label>비공개 영상 숨기기</Chip.Label>
+        </Chip.Toggle>
+      </Flex>
+
+      {/* 검색 */}
       <TextFieldRoot
         value={query}
         onValueChange={onQueryChange}
         size="medium"
         className="search-field"
       >
-        <TextFieldPrefixIcon svg={<MagnifyingGlassIcon />} />
-        <TextFieldInput
-          placeholder="제목 검색..."
-          aria-label="영상 제목 검색"
-        />
+        <TextFieldPrefixIcon svg={<IconMagnifyingglassLine />} />
+        <TextFieldInput placeholder="제목 검색..." aria-label="영상 제목 검색" />
         {query && (
           <div className="search-clear-wrapper">
             <ActionButton
@@ -127,11 +148,109 @@ export default function FilterBar({
               onClick={() => onQueryChange("")}
               aria-label="검색어 지우기"
             >
-              <Cross2Icon />
+              <Icon svg={<IconXmarkLine />} size="16px" />
             </ActionButton>
           </div>
         )}
       </TextFieldRoot>
     </div>
+  );
+}
+
+function WatchFilterSheet({
+  currentFilter,
+  onClose,
+  onConfirm,
+}: {
+  currentFilter: FilterType;
+  onClose: () => void;
+  onConfirm: (value: FilterType) => void;
+}) {
+  const [selected, setSelected] = useState<FilterType>(currentFilter);
+
+  return (
+    <BottomSheetContent title="시청 상태">
+      <BottomSheetBody>
+        <HStack gap="x2" wrap>
+          {FILTERS.map((f) => (
+            <Chip.Toggle
+              key={f.value}
+              variant="outlineStrong"
+              size="medium"
+              checked={selected === f.value}
+              onCheckedChange={(checked) => {
+                if (checked) setSelected(f.value);
+              }}
+            >
+              <Chip.Label>{f.label}</Chip.Label>
+            </Chip.Toggle>
+          ))}
+        </HStack>
+      </BottomSheetBody>
+      <BottomSheetFooter>
+        <HStack pt="x3">
+          <ActionButton
+            flexGrow
+            size="large"
+            variant="neutralSolid"
+            onClick={() => {
+              onConfirm(selected);
+              onClose();
+            }}
+          >
+            완료
+          </ActionButton>
+        </HStack>
+      </BottomSheetFooter>
+    </BottomSheetContent>
+  );
+}
+
+function CategoryFilterSheet({
+  currentCategory,
+  onClose,
+  onConfirm,
+}: {
+  currentCategory: VideoCategory;
+  onClose: () => void;
+  onConfirm: (value: VideoCategory) => void;
+}) {
+  const [selected, setSelected] = useState<VideoCategory>(currentCategory);
+
+  return (
+    <BottomSheetContent title="분류">
+      <BottomSheetBody>
+        <HStack gap="x2" wrap>
+          {CATEGORY_FILTERS.map((item) => (
+            <Chip.Toggle
+              key={item.value}
+              variant="outlineStrong"
+              size="medium"
+              checked={selected === item.value}
+              onCheckedChange={(checked) => {
+                if (checked) setSelected(item.value);
+              }}
+            >
+              <Chip.Label>{item.label}</Chip.Label>
+            </Chip.Toggle>
+          ))}
+        </HStack>
+      </BottomSheetBody>
+      <BottomSheetFooter>
+        <HStack pt="x3">
+          <ActionButton
+            flexGrow
+            size="large"
+            variant="neutralSolid"
+            onClick={() => {
+              onConfirm(selected);
+              onClose();
+            }}
+          >
+            완료
+          </ActionButton>
+        </HStack>
+      </BottomSheetFooter>
+    </BottomSheetContent>
   );
 }

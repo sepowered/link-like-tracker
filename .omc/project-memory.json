@@ -156,26 +156,38 @@
   "hotPaths": [
     {
       "path": "src/app/globals.css",
-      "accessCount": 16,
-      "lastAccessed": 1775310962201,
+      "accessCount": 28,
+      "lastAccessed": 1775355376604,
       "type": "file"
     },
     {
       "path": "src/components/VideoItem.tsx",
-      "accessCount": 10,
-      "lastAccessed": 1775309812220,
+      "accessCount": 25,
+      "lastAccessed": 1775354649653,
       "type": "file"
     },
     {
       "path": "src/components/FilterBar.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1775308765430,
+      "accessCount": 24,
+      "lastAccessed": 1775355149343,
       "type": "file"
     },
     {
       "path": "src/components/PlaylistView.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1775351805049,
+      "type": "file"
+    },
+    {
+      "path": "src/components/ThemeToggle.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1775352428192,
+      "type": "file"
+    },
+    {
+      "path": "src/app/page.tsx",
       "accessCount": 8,
-      "lastAccessed": 1775309232357,
+      "lastAccessed": 1775355377816,
       "type": "file"
     },
     {
@@ -186,20 +198,20 @@
     },
     {
       "path": "src/components/SeasonGroup.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1775351815549,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/video-category.ts",
       "accessCount": 6,
-      "lastAccessed": 1775309215676,
+      "lastAccessed": 1775351815204,
       "type": "file"
     },
     {
       "path": "src/app/layout.tsx",
       "accessCount": 5,
       "lastAccessed": 1775308229986,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/video-category.ts",
-      "accessCount": 5,
-      "lastAccessed": 1775308759322,
       "type": "file"
     },
     {
@@ -210,44 +222,38 @@
     },
     {
       "path": "package.json",
-      "accessCount": 4,
-      "lastAccessed": 1775296367559,
+      "accessCount": 5,
+      "lastAccessed": 1775351796745,
       "type": "file"
-    },
-    {
-      "path": "src/app/page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1775308271464,
-      "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 3,
-      "lastAccessed": 1775295672590,
-      "type": "directory"
     },
     {
       "path": "src/types/index.ts",
-      "accessCount": 3,
-      "lastAccessed": 1775309127147,
+      "accessCount": 4,
+      "lastAccessed": 1775351806116,
       "type": "file"
     },
     {
       "path": "src/app/api/playlist/[videoId]/route.ts",
-      "accessCount": 3,
-      "lastAccessed": 1775309170493,
+      "accessCount": 4,
+      "lastAccessed": 1775351816254,
       "type": "file"
     },
     {
-      "path": "src/components/ThemeToggle.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1775310796399,
+      "path": "src",
+      "accessCount": 4,
+      "lastAccessed": 1775351989224,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/global-error.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1775355389596,
       "type": "file"
     },
     {
       "path": "README.md",
-      "accessCount": 2,
-      "lastAccessed": 1775294813453,
+      "accessCount": 3,
+      "lastAccessed": 1775351800065,
       "type": "file"
     },
     {
@@ -263,6 +269,12 @@
       "type": "file"
     },
     {
+      "path": "src/app/api/playlist/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1775351815864,
+      "type": "file"
+    },
+    {
       "path": "data",
       "accessCount": 1,
       "lastAccessed": 1775294737034,
@@ -275,12 +287,6 @@
       "type": "file"
     },
     {
-      "path": "src/app/api/playlist/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775294741873,
-      "type": "file"
-    },
-    {
       "path": "src/components",
       "accessCount": 1,
       "lastAccessed": 1775295672948,
@@ -290,6 +296,12 @@
       "path": "tsconfig.json",
       "accessCount": 1,
       "lastAccessed": 1775296370453,
+      "type": "file"
+    },
+    {
+      "path": "seed-design.json",
+      "accessCount": 1,
+      "lastAccessed": 1775354372001,
       "type": "file"
     }
   ],

@@ -29,16 +29,16 @@ export default function GlobalError({
           }}
         >
           <h1 style={{ margin: 0, fontSize: '20px' }}>문제가 발생했습니다.</h1>
-          <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+          <p style={{ margin: 0, color: 'var(--seed-color-fg-neutral-muted)', fontSize: '14px' }}>
             페이지를 다시 불러오거나 잠시 후 다시 시도해 주세요.
           </p>
           <button
             type="button"
             onClick={() => unstable_retry()}
             style={{
-              border: '1px solid #ddd',
+              border: '1px solid var(--seed-color-stroke-neutral-weak)',
               borderRadius: '8px',
-              background: '#fff',
+              background: 'var(--seed-color-bg-layer-default)',
               padding: '10px 14px',
               cursor: 'pointer',
             }}

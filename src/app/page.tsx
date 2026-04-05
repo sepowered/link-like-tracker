@@ -12,7 +12,7 @@ export default async function Home() {
           <h1 style={{ 
             fontSize: "24px", 
             fontWeight: "800", 
-            color: "#FFFFFF",
+            color: "var(--seed-color-fg-neutral)",
             margin: "0 0 2px 0",
             letterSpacing: "-0.02em"
           }}>
