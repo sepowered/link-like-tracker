@@ -1,4 +1,4 @@
-# oh-my-hasu
+# link-like-tracker
 
 하스노소라(蓮ノ空女学院スクールアイドルクラブ) 관련 영상 시청 기록 관리 앱.
 
@@ -40,8 +40,7 @@
 
 ## 프로젝트 구조
 
-```
-oh-my-hasu/
+link-like-tracker/
 ├── data/
 │   ├── playlist.initial.json   # 초기 플레이리스트 데이터 (read-only 원본)
 │   └── playlist.json           # 런타임 데이터 (시청 상태 포함, 없으면 initial에서 복사)
