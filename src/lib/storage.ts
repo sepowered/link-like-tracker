@@ -1,6 +1,6 @@
 import { PlaylistData } from "@/types";
 
-export type CategoryOverrideValue = "story" | "music" | "fesxlive" | "withxmeets" | null;
+export type CategoryOverrideValue = "story" | "music" | "fesxlive" | "withxmeets" | "fesxrec" | null;
 
 export interface IPlaylistStorage {
   getPlaylist(): Promise<PlaylistData>;

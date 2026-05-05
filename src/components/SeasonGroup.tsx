@@ -12,7 +12,7 @@ type CategoryOverrideArg = "story" | "music" | "fesxlive" | "withxmeets" | null 
 interface Props {
   season: Season;
   filter: FilterType;
-  category: VideoCategory;
+  categories: VideoCategory[];
   query: string;
   hidePrivateVideos: boolean;
   isUnavailableVideoTitle: (title: string) => boolean;
@@ -33,7 +33,7 @@ function getEffectiveCategory(
 export default function SeasonGroup({
   season,
   filter,
-  category,
+  categories,
   query,
   hidePrivateVideos,
   isUnavailableVideoTitle,
@@ -52,11 +52,12 @@ export default function SeasonGroup({
       const matchesQuery =
         !query || v.title.toLowerCase().includes(query.toLowerCase());
       const matchesAvailability = !hidePrivateVideos || !isUnavailableVideoTitle(v.title);
+      const effectiveCategory = getEffectiveCategory(v, classifyVideoCategory);
       const matchesCategory =
-        category === "all" || getEffectiveCategory(v, classifyVideoCategory) === category;
+        categories.includes("all") || categories.includes(effectiveCategory as VideoCategory);
       return matchesFilter && matchesQuery && matchesAvailability && matchesCategory;
     });
-  }, [season.videos, filter, category, query, hidePrivateVideos, isUnavailableVideoTitle, classifyVideoCategory]);
+  }, [season.videos, filter, categories, query, hidePrivateVideos, isUnavailableVideoTitle, classifyVideoCategory]);
 
   if (filteredVideos.length === 0) return null;
 

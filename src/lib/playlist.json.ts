@@ -52,7 +52,7 @@ function isPlaylistData(value: unknown): value is PlaylistData {
             categoryOverride?: unknown;
           };
 
-          const validCategoryValues = ["story", "music", "fesxlive", "withxmeets"];
+          const validCategoryValues = ["story", "music", "fesxlive", "withxmeets", "fesxrec"];
           const validCategoryOverride =
             !("categoryOverride" in videoRecord) ||
             videoRecord.categoryOverride === null ||
