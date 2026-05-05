@@ -23,7 +23,7 @@ interface Props {
 export default function PlaylistView({ initialData }: Props) {
   const [data, setData] = useState<PlaylistData>(initialData);
   const [filter, setFilter] = useState<FilterType>("all");
-  const [category, setCategory] = useState<VideoCategory>("all");
+  const [categories, setCategories] = useState<VideoCategory[]>(["all"]);
   const [query, setQuery] = useState("");
   const [hidePrivateVideos, setHidePrivateVideos] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -102,15 +102,15 @@ export default function PlaylistView({ initialData }: Props) {
         
         const effectiveCategory = v.categoryOverride !== undefined ? v.categoryOverride : classifyVideoCategory(v.title);
         const matchesCategory =
-          category === "all" || effectiveCategory === category;
+          categories.includes("all") || categories.includes(effectiveCategory as VideoCategory);
 
         return matchesFilter && matchesQuery && matchesAvailability && matchesCategory;
       }).length;
       return total + count;
     }, 0);
-  }, [data, filter, category, query, hidePrivateVideos]);
+  }, [data, filter, categories, query, hidePrivateVideos]);
 
-  const isFiltered = filter !== "all" || category !== "all" || query !== "" || hidePrivateVideos;
+  const isFiltered = filter !== "all" || !categories.includes("all") || query !== "" || hidePrivateVideos;
 
   async function handleToggle(videoId: string) {
     setData((prev) => {
@@ -178,11 +178,11 @@ export default function PlaylistView({ initialData }: Props) {
       {/* 필터 + 검색 */}
       <FilterBar
         filter={filter}
-        category={category}
+        categories={categories}
         query={query}
         hidePrivateVideos={hidePrivateVideos}
         onFilterChange={setFilter}
-        onCategoryChange={setCategory}
+        onCategoriesChange={setCategories}
         onQueryChange={setQuery}
         onHidePrivateVideosChange={setHidePrivateVideos}
       />
@@ -207,7 +207,7 @@ export default function PlaylistView({ initialData }: Props) {
           key={season.id}
           season={season}
           filter={filter}
-          category={category}
+          categories={categories}
           query={query}
           hidePrivateVideos={hidePrivateVideos}
           isUnavailableVideoTitle={isUnavailableVideoTitle}

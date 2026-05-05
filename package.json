@@ -13,7 +13,7 @@
     "@radix-ui/react-progress": "^1.1.8",
     "@seed-design/css": "^1.2.7",
     "@seed-design/react": "^1.2.8",
-    "next": "16.2.2",
+    "next": "^16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

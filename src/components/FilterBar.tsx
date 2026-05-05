@@ -40,34 +40,40 @@ const CATEGORY_FILTERS: { value: VideoCategory; label: string }[] = [
   { value: "story", label: "스토리" },
   { value: "music", label: "음악" },
   { value: "fesxlive", label: "FesxLIVE" },
+  { value: "fesxrec", label: "FesxReC" },
   { value: "withxmeets", label: "With×MEETS" },
 ];
 
 interface Props {
   filter: FilterType;
-  category: VideoCategory;
+  categories: VideoCategory[];
   query: string;
   hidePrivateVideos: boolean;
   onFilterChange: (f: FilterType) => void;
-  onCategoryChange: (category: VideoCategory) => void;
+  onCategoriesChange: (categories: VideoCategory[]) => void;
   onQueryChange: (q: string) => void;
   onHidePrivateVideosChange: (next: boolean) => void;
 }
 
 export default function FilterBar({
   filter,
-  category,
+  categories,
   query,
   hidePrivateVideos,
   onFilterChange,
-  onCategoryChange,
+  onCategoriesChange,
   onQueryChange,
   onHidePrivateVideosChange,
 }: Props) {
   const [openSheet, setOpenSheet] = useState<SheetType | null>(null);
 
-  const currentFilterLabel = FILTERS.find((f) => f.value === filter)?.label ?? "전체";
-  const currentCategoryLabel = CATEGORY_FILTERS.find((c) => c.value === category)?.label ?? "전체 분류";
+  const currentFilterLabel = filter === "all" ? "시청 상태" : FILTERS.find((f) => f.value === filter)?.label ?? "시청 상태";
+  
+  let currentCategoryLabel = "전체 분류";
+  if (!categories.includes("all") && categories.length > 0) {
+    const firstLabel = CATEGORY_FILTERS.find((c) => c.value === categories[0])?.label ?? "";
+    currentCategoryLabel = categories.length > 1 ? `${firstLabel} 외 ${categories.length - 1}개` : firstLabel;
+  }
 
   return (
     <div className="filter-section">
@@ -104,7 +110,7 @@ export default function FilterBar({
           onOpenChange={(open) => setOpenSheet(open ? "category" : null)}
         >
           <BottomSheetTrigger asChild>
-            <Chip.Button variant={category !== "all" ? "solid" : "outlineWeak"} size="small">
+            <Chip.Button variant={categories.includes("all") ? "outlineWeak" : "solid"} size="small">
               <Chip.Label>{currentCategoryLabel}</Chip.Label>
               <Chip.SuffixIcon>
                 <Icon svg={<IconChevronDownFill />} size="14px" />
@@ -113,9 +119,9 @@ export default function FilterBar({
           </BottomSheetTrigger>
           <Portal>
             <CategoryFilterSheet
-              currentCategory={category}
+              currentCategories={categories}
               onClose={() => setOpenSheet(null)}
-              onConfirm={onCategoryChange}
+              onConfirm={onCategoriesChange}
             />
           </Portal>
         </BottomSheetRoot>
@@ -207,15 +213,32 @@ function WatchFilterSheet({
 }
 
 function CategoryFilterSheet({
-  currentCategory,
+  currentCategories,
   onClose,
   onConfirm,
 }: {
-  currentCategory: VideoCategory;
+  currentCategories: VideoCategory[];
   onClose: () => void;
-  onConfirm: (value: VideoCategory) => void;
+  onConfirm: (values: VideoCategory[]) => void;
 }) {
-  const [selected, setSelected] = useState<VideoCategory>(currentCategory);
+  const [selected, setSelected] = useState<VideoCategory[]>(currentCategories);
+
+  const handleToggle = (value: VideoCategory, checked: boolean) => {
+    if (value === "all") {
+      if (checked) setSelected(["all"]);
+    } else {
+      setSelected((prev) => {
+        let next = prev.filter((v) => v !== "all");
+        if (checked) {
+          if (!next.includes(value)) next.push(value);
+        } else {
+          next = next.filter((v) => v !== value);
+        }
+        if (next.length === 0) return ["all"];
+        return next;
+      });
+    }
+  };
 
   return (
     <BottomSheetContent title="분류">
@@ -226,10 +249,8 @@ function CategoryFilterSheet({
               key={item.value}
               variant="outlineStrong"
               size="medium"
-              checked={selected === item.value}
-              onCheckedChange={(checked) => {
-                if (checked) setSelected(item.value);
-              }}
+              checked={selected.includes(item.value)}
+              onCheckedChange={(checked) => handleToggle(item.value, checked)}
             >
               <Chip.Label>{item.label}</Chip.Label>
             </Chip.Toggle>

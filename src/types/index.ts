@@ -3,7 +3,7 @@ export interface Video {
   title: string;
   url: string;
   watched: boolean;
-  categoryOverride?: "story" | "music" | "fesxlive" | "withxmeets" | null;
+  categoryOverride?: "story" | "music" | "fesxlive" | "withxmeets" | "fesxrec" | null;
 }
 
 export interface Season {
