@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { PlaylistData } from "@/types";
 import { VideoCategory, classifyVideoCategory } from "@/lib/video-category";
+import { useSettings } from "./SettingsProvider";
 import SeasonGroup from "./SeasonGroup";
 import FilterBar from "./FilterBar";
 import * as Progress from "@radix-ui/react-progress";
@@ -25,9 +26,10 @@ export default function PlaylistView({ initialData }: Props) {
   const [filter, setFilter] = useState<FilterType>("all");
   const [categories, setCategories] = useState<VideoCategory[]>(["all"]);
   const [query, setQuery] = useState("");
-  const [hidePrivateVideos, setHidePrivateVideos] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  const { progressCategories, hidePrivateVideos } = useSettings();
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -80,13 +82,21 @@ export default function PlaylistView({ initialData }: Props) {
   };
 
   const stats = useMemo(() => {
-    const total = data.seasons.reduce((s, season) => s + season.videos.length, 0);
-    const watched = data.seasons.reduce(
-      (s, season) => s + season.videos.filter((v) => v.watched).length,
-      0
-    );
+    const allVideos = data.seasons.flatMap((s) => s.videos);
+    const targetVideos =
+      progressCategories.length === 0
+        ? allVideos
+        : allVideos.filter((v) => {
+            const effectiveCategory =
+              v.categoryOverride !== undefined
+                ? v.categoryOverride
+                : classifyVideoCategory(v.title);
+            return progressCategories.includes(effectiveCategory as VideoCategory);
+          });
+    const total = targetVideos.length;
+    const watched = targetVideos.filter((v) => v.watched).length;
     return { total, watched };
-  }, [data]);
+  }, [data, progressCategories]);
 
   // 현재 필터 조건에 맞는 영상 수 계산
   const filteredCount = useMemo(() => {
@@ -110,7 +120,7 @@ export default function PlaylistView({ initialData }: Props) {
     }, 0);
   }, [data, filter, categories, query, hidePrivateVideos]);
 
-  const isFiltered = filter !== "all" || !categories.includes("all") || query !== "" || hidePrivateVideos;
+  const isFiltered = filter !== "all" || !categories.includes("all") || query !== "";
 
   async function handleToggle(videoId: string) {
     setData((prev) => {
@@ -129,7 +139,7 @@ export default function PlaylistView({ initialData }: Props) {
 
   async function handleUpdateCategory(
     videoId: string,
-    categoryOverride: "story" | "music" | "fesxlive" | "withxmeets" | null | "auto"
+    categoryOverride: "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto"
   ) {
     setData((prev) => {
       const next = {
@@ -180,11 +190,9 @@ export default function PlaylistView({ initialData }: Props) {
         filter={filter}
         categories={categories}
         query={query}
-        hidePrivateVideos={hidePrivateVideos}
         onFilterChange={setFilter}
         onCategoriesChange={setCategories}
         onQueryChange={setQuery}
-        onHidePrivateVideosChange={setHidePrivateVideos}
       />
 
       {/* 필터 결과 피드백 */}
