@@ -1,0 +1,6 @@
+[mcp_servers.seed-docs]
+args = [
+    "-y",
+    "@seed-design/docs-mcp",
+]
+command = "npx"

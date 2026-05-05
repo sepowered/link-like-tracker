@@ -7,7 +7,7 @@ import VideoItem from "./VideoItem";
 import * as Progress from "@radix-ui/react-progress";
 
 type FilterType = "all" | "watched" | "unwatched";
-type CategoryOverrideArg = "story" | "music" | "fesxlive" | "withxmeets" | null | "auto";
+type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
 
 interface Props {
   season: Season;

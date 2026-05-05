@@ -48,22 +48,18 @@ interface Props {
   filter: FilterType;
   categories: VideoCategory[];
   query: string;
-  hidePrivateVideos: boolean;
   onFilterChange: (f: FilterType) => void;
   onCategoriesChange: (categories: VideoCategory[]) => void;
   onQueryChange: (q: string) => void;
-  onHidePrivateVideosChange: (next: boolean) => void;
 }
 
 export default function FilterBar({
   filter,
   categories,
   query,
-  hidePrivateVideos,
   onFilterChange,
   onCategoriesChange,
   onQueryChange,
-  onHidePrivateVideosChange,
 }: Props) {
   const [openSheet, setOpenSheet] = useState<SheetType | null>(null);
 
@@ -126,15 +122,6 @@ export default function FilterBar({
           </Portal>
         </BottomSheetRoot>
 
-        {/* Private 숨기기 */}
-        <Chip.Toggle
-          variant="outlineStrong"
-          size="small"
-          checked={hidePrivateVideos}
-          onCheckedChange={onHidePrivateVideosChange}
-        >
-          <Chip.Label>비공개 영상 숨기기</Chip.Label>
-        </Chip.Toggle>
       </Flex>
 
       {/* 검색 */}

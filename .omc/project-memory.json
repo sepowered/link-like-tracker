@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1775294525683,
-  "projectRoot": "/Users/stile/.superset/projects/oh-my-hasu",
+  "lastScanned": 1777972335976,
+  "projectRoot": "/Users/stile/WebstormProjects/link-like-tracker",
   "techStack": {
     "languages": [
       {
@@ -24,7 +24,7 @@
     "frameworks": [
       {
         "name": "next",
-        "version": "16.2.2",
+        "version": "16.2.4",
         "category": "fullstack"
       },
       {
@@ -67,7 +67,10 @@
       "scripts",
       "src"
     ],
-    "gitBranches": null
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
   },
   "customNotes": [],
   "directoryMap": {
@@ -75,7 +78,7 @@
       "path": "data",
       "purpose": "Data files",
       "fileCount": 2,
-      "lastAccessed": 1775294525673,
+      "lastAccessed": 1777972335965,
       "keyFiles": [
         "playlist.initial.json",
         "playlist.json"
@@ -84,21 +87,21 @@
     "public": {
       "path": "public",
       "purpose": "Public files",
-      "fileCount": 5,
-      "lastAccessed": 1775294525673,
+      "fileCount": 6,
+      "lastAccessed": 1777972335965,
       "keyFiles": [
         "file.svg",
         "globe.svg",
+        "manifest.json",
         "next.svg",
-        "vercel.svg",
-        "window.svg"
+        "vercel.svg"
       ]
     },
     "scripts": {
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 1,
-      "lastAccessed": 1775294525677,
+      "lastAccessed": 1777972335970,
       "keyFiles": [
         "convert-playlist.ts"
       ]
@@ -107,14 +110,14 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 0,
-      "lastAccessed": 1775294525678,
+      "lastAccessed": 1777972335970,
       "keyFiles": []
     },
     "src/app": {
       "path": "src/app",
       "purpose": "Application code",
       "fileCount": 5,
-      "lastAccessed": 1775294525679,
+      "lastAccessed": 1777972335971,
       "keyFiles": [
         "favicon.ico",
         "global-error.tsx",
@@ -124,19 +127,19 @@
     "src/components": {
       "path": "src/components",
       "purpose": "UI components",
-      "fileCount": 4,
-      "lastAccessed": 1775294525680,
+      "fileCount": 10,
+      "lastAccessed": 1777972335971,
       "keyFiles": [
         "FilterBar.tsx",
-        "PlaylistView.tsx",
-        "SeasonGroup.tsx"
+        "HasuLogo.tsx",
+        "PlaylistView.tsx"
       ]
     },
     "src/lib": {
       "path": "src/lib",
       "purpose": "Library code",
       "fileCount": 4,
-      "lastAccessed": 1775294525680,
+      "lastAccessed": 1777972335971,
       "keyFiles": [
         "playlist.json.ts",
         "playlist.ts",
@@ -147,7 +150,7 @@
       "path": "src/types",
       "purpose": "Type definitions",
       "fileCount": 1,
-      "lastAccessed": 1775294525680,
+      "lastAccessed": 1777972335972,
       "keyFiles": [
         "index.ts"
       ]
@@ -155,153 +158,123 @@
   },
   "hotPaths": [
     {
-      "path": "src/app/globals.css",
-      "accessCount": 28,
-      "lastAccessed": 1775355376604,
-      "type": "file"
-    },
-    {
-      "path": "src/components/VideoItem.tsx",
-      "accessCount": 25,
-      "lastAccessed": 1775354649653,
-      "type": "file"
-    },
-    {
-      "path": "src/components/FilterBar.tsx",
-      "accessCount": 24,
-      "lastAccessed": 1775355149343,
+      "path": "src/components/SettingsPageContent.tsx",
+      "accessCount": 11,
+      "lastAccessed": 1777974058584,
       "type": "file"
     },
     {
       "path": "src/components/PlaylistView.tsx",
-      "accessCount": 9,
-      "lastAccessed": 1775351805049,
-      "type": "file"
-    },
-    {
-      "path": "src/components/ThemeToggle.tsx",
-      "accessCount": 9,
-      "lastAccessed": 1775352428192,
+      "accessCount": 4,
+      "lastAccessed": 1777974591206,
       "type": "file"
     },
     {
       "path": "src/app/page.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1775355377816,
+      "accessCount": 4,
+      "lastAccessed": 1777974591857,
       "type": "file"
     },
     {
-      "path": "",
-      "accessCount": 7,
-      "lastAccessed": 1775296559995,
-      "type": "directory"
-    },
-    {
-      "path": "src/components/SeasonGroup.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1775351815549,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/video-category.ts",
-      "accessCount": 6,
-      "lastAccessed": 1775351815204,
+      "path": "src/app/globals.css",
+      "accessCount": 4,
+      "lastAccessed": 1777974603376,
       "type": "file"
     },
     {
       "path": "src/app/layout.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1775308229986,
+      "accessCount": 3,
+      "lastAccessed": 1777974037676,
       "type": "file"
     },
     {
-      "path": "src/lib/playlist.json.ts",
-      "accessCount": 5,
-      "lastAccessed": 1775309160847,
+      "path": "src/components/SettingsProvider.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1777974580282,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/bottom-sheet.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1777974492363,
+      "type": "file"
+    },
+    {
+      "path": "src/components/SettingsSheet.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1777974565541,
       "type": "file"
     },
     {
       "path": "package.json",
-      "accessCount": 5,
-      "lastAccessed": 1775351796745,
+      "accessCount": 1,
+      "lastAccessed": 1777972365293,
       "type": "file"
     },
     {
       "path": "src/types/index.ts",
-      "accessCount": 4,
-      "lastAccessed": 1775351806116,
+      "accessCount": 1,
+      "lastAccessed": 1777972371182,
       "type": "file"
     },
     {
-      "path": "src/app/api/playlist/[videoId]/route.ts",
-      "accessCount": 4,
-      "lastAccessed": 1775351816254,
+      "path": "src/lib/video-category.ts",
+      "accessCount": 1,
+      "lastAccessed": 1777972371467,
       "type": "file"
     },
     {
-      "path": "src",
-      "accessCount": 4,
-      "lastAccessed": 1775351989224,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/global-error.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1775355389596,
+      "path": "src/components/VideoItem.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777972372404,
       "type": "file"
     },
     {
-      "path": "README.md",
-      "accessCount": 3,
-      "lastAccessed": 1775351800065,
-      "type": "file"
-    },
-    {
-      "path": "next.config.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775296950046,
+      "path": "src/components/FilterBar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777972373312,
       "type": "file"
     },
     {
       "path": "src/lib/storage.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775309129190,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/playlist/route.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775351815864,
-      "type": "file"
-    },
-    {
-      "path": "data",
       "accessCount": 1,
-      "lastAccessed": 1775294737034,
-      "type": "directory"
+      "lastAccessed": 1777972373929,
+      "type": "file"
+    },
+    {
+      "path": "src/components/SeasonGroup.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777972378176,
+      "type": "file"
     },
     {
       "path": "src/lib/playlist.ts",
       "accessCount": 1,
-      "lastAccessed": 1775294740966,
+      "lastAccessed": 1777972378596,
       "type": "file"
     },
     {
-      "path": "src/components",
+      "path": "src/components/SettingsLink.tsx",
       "accessCount": 1,
-      "lastAccessed": 1775295672948,
-      "type": "directory"
-    },
-    {
-      "path": "tsconfig.json",
-      "accessCount": 1,
-      "lastAccessed": 1775296370453,
+      "lastAccessed": 1777972379976,
       "type": "file"
     },
     {
-      "path": "seed-design.json",
+      "path": "src/app/settings/page.tsx",
       "accessCount": 1,
-      "lastAccessed": 1775354372001,
+      "lastAccessed": 1777972584027,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/select-box.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777973198837,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/radio-group.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777973198851,
       "type": "file"
     }
   ],

@@ -1,4 +1,4 @@
-export type VideoCategory = "all" | "story" | "music" | "fesxlive" | "withxmeets";
+export type VideoCategory = "all" | "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets";
 
 const STORY_PATTERNS = [
   /링크라 활동기록/u,
@@ -53,6 +53,10 @@ export function classifyVideoCategory(title: string): Exclude<VideoCategory, "al
     return "music";
   }
 
+  if (FESXREC_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return "fesxrec";
+  }
+
   return null;
 }
 
@@ -64,6 +68,8 @@ export function getVideoCategoryLabel(category: Exclude<VideoCategory, "all"> | 
       return "음악";
     case "fesxlive":
       return "FesxLIVE";
+    case "fesxrec":
+      return "FesxReC";
     case "withxmeets":
       return "With×MEETS";
     default:

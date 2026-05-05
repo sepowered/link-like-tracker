@@ -1,7 +1,7 @@
 {
-  "tool_name": "mcp__seed-docs__get_doc",
-  "tool_input_preview": "{\"section\":\"docs\",\"path\":\"foundation/iconography\"}",
-  "error": "Error fetching document 'foundation/iconography' from section 'docs': Failed to fetch https://seed-design.io/llms/docs/foundation/iconography.txt: 404 Not Found\n\nUse list_docs to see available documents.",
-  "timestamp": "2026-04-05T01:22:38.836Z",
-  "retry_count": 1
+  "tool_name": "WebFetch",
+  "tool_input_preview": "{\"url\":\"https://raw.githubusercontent.com/daangn/stackflow-example-nextjs/main/pages/index.tsx\",\"prompt\":\"Return the complete raw file content verbatim.\"}",
+  "error": "Request failed with status code 404",
+  "timestamp": "2026-05-05T09:35:44.353Z",
+  "retry_count": 5
 }

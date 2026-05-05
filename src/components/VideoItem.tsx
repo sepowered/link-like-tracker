@@ -19,7 +19,7 @@ import {
   IconPaperclipLine,
 } from "@karrotmarket/react-monochrome-icon";
 
-type CategoryOverrideArg = "story" | "music" | "fesxlive" | "withxmeets" | null | "auto";
+type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
 
 interface Props {
   video: Video;
