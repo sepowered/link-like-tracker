@@ -153,7 +153,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
         >
           <BottomSheetTrigger asChild>
             <Chip.Button
-              variant={isOverridden ? "solid" : "outlineWeak"}
+              variant="outlineWeak"
               size="small"
               style={{ flexShrink: 0 }}
             >

@@ -6,7 +6,18 @@ import { VideoCategory, classifyVideoCategory } from "@/lib/video-category";
 import { useSettings } from "./SettingsProvider";
 import SeasonGroup from "./SeasonGroup";
 import FilterBar from "./FilterBar";
+import SettingsLink from "./SettingsLink";
 import * as Progress from "@radix-ui/react-progress";
+import { ActionButton, Icon } from "@seed-design/react";
+import {
+  BottomSheetRoot,
+  BottomSheetTrigger,
+  BottomSheetContent,
+  BottomSheetBody,
+  BottomSheetFooter,
+} from "@/ui/bottom-sheet";
+import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
+import { IconChevronDownLine } from "@karrotmarket/react-monochrome-icon";
 
 type FilterType = "all" | "watched" | "unwatched";
 
@@ -27,6 +38,43 @@ export default function PlaylistView({ initialData }: Props) {
   const [categories, setCategories] = useState<VideoCategory[]>(["all"]);
   const [query, setQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+
+  const generations = useMemo(() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const season of data.seasons) {
+      const gen = season.id.split("-")[0];
+      if (!seen.has(gen)) { seen.add(gen); result.push(gen); }
+    }
+    return result;
+  }, [data.seasons]);
+
+  const [generationSheetOpen, setGenerationSheetOpen] = useState(false);
+  const [selectedGeneration, setSelectedGeneration] = useState<string>(
+    () => {
+      const seen = new Set<string>();
+      for (const s of initialData.seasons) seen.add(s.id.split("-")[0]);
+      const arr = [...seen];
+      return arr[arr.length - 1] ?? "";
+    }
+  );
+
+  const generationSeasons = useMemo(
+    () => selectedGeneration === "all" ? data.seasons : data.seasons.filter((s) => s.id.startsWith(selectedGeneration + "-")),
+    [data.seasons, selectedGeneration]
+  );
+
+  const [pendingGeneration, setPendingGeneration] = useState<string>(selectedGeneration);
+
+  function handleGenerationSheetOpenChange(open: boolean) {
+    if (open) setPendingGeneration(selectedGeneration);
+    setGenerationSheetOpen(open);
+  }
+
+  function handleGenerationSave() {
+    setSelectedGeneration(pendingGeneration);
+    setGenerationSheetOpen(false);
+  }
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -83,7 +131,7 @@ export default function PlaylistView({ initialData }: Props) {
   };
 
   const stats = useMemo(() => {
-    const allVideos = data.seasons.flatMap((s) => s.videos);
+    const allVideos = generationSeasons.flatMap((s) => s.videos);
     const targetVideos =
       progressCategories.length === 0
         ? allVideos
@@ -97,11 +145,11 @@ export default function PlaylistView({ initialData }: Props) {
     const total = targetVideos.length;
     const watched = targetVideos.filter((v) => v.watched).length;
     return { total, watched };
-  }, [data, progressCategories]);
+  }, [generationSeasons, progressCategories]);
 
   // 현재 필터 조건에 맞는 영상 수 계산
   const filteredCount = useMemo(() => {
-    return data.seasons.reduce((total, season) => {
+    return generationSeasons.reduce((total, season) => {
       const count = season.videos.filter((v) => {
         const matchesFilter =
           filter === "all" ||
@@ -119,7 +167,7 @@ export default function PlaylistView({ initialData }: Props) {
       }).length;
       return total + count;
     }, 0);
-  }, [data, filter, categories, query, hidePrivateVideos]);
+  }, [generationSeasons, filter, categories, query, hidePrivateVideos]);
 
   const isFiltered = filter !== "all" || !categories.includes("all") || query !== "";
 
@@ -167,6 +215,60 @@ export default function PlaylistView({ initialData }: Props) {
 
   return (
     <div>
+      {/* 헤더 */}
+      <div className="page-header">
+        <h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--seed-color-fg-neutral)", margin: 0, letterSpacing: "-0.02em" }}>
+          link-like-tracker
+        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          {generations.length > 1 && (
+            <BottomSheetRoot
+              open={generationSheetOpen}
+              onOpenChange={handleGenerationSheetOpenChange}
+              closeOnEscape
+              closeOnInteractOutside
+            >
+              <BottomSheetTrigger asChild>
+                <ActionButton variant="ghost" size="small">
+                  {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+                  <Icon svg={<IconChevronDownLine />} size="16px" />
+                </ActionButton>
+              </BottomSheetTrigger>
+              <BottomSheetContent
+                title="기수 선택"
+                showCloseButton
+                aria-describedby={undefined}
+                style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
+              >
+                <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x6)" }}>
+                  <RadioGroup
+                    aria-label="기수 선택"
+                    value={pendingGeneration}
+                    onValueChange={setPendingGeneration}
+                  >
+                    <RadioGroupItem value="all" label="전체" tone="neutral" size="large" />
+                    {generations.map((gen) => (
+                      <RadioGroupItem key={gen} value={gen} label={`${gen}기`} tone="neutral" size="large" />
+                    ))}
+                  </RadioGroup>
+                </BottomSheetBody>
+                <BottomSheetFooter>
+                  <ActionButton
+                    size="large"
+                    variant="neutralSolid"
+                    style={{ width: "100%" }}
+                    onClick={handleGenerationSave}
+                  >
+                    저장
+                  </ActionButton>
+                </BottomSheetFooter>
+              </BottomSheetContent>
+            </BottomSheetRoot>
+          )}
+          <SettingsLink />
+        </div>
+      </div>
+
       {/* 전체 진행률 */}
       <div className="progress-section">
         <div className="progress-stats">
@@ -213,7 +315,7 @@ export default function PlaylistView({ initialData }: Props) {
       ) : null}
 
       {/* 시즌별 그룹 */}
-      {(sortOrder === "newest" ? [...data.seasons].reverse() : data.seasons).map((season) => (
+      {(sortOrder === "newest" ? [...generationSeasons].reverse() : generationSeasons).map((season) => (
         <SeasonGroup
           key={season.id}
           season={season}

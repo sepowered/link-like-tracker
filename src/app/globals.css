@@ -38,7 +38,7 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 0 var(--seed-dimension-spacing-x-global-gutter) 16px;
+  padding: calc(var(--seed-safe-area-top) + var(--seed-dimension-spacing-x-global-gutter)) var(--seed-dimension-spacing-x-global-gutter) 16px;
   margin-bottom: 0;
 }
 
@@ -288,11 +288,6 @@ body {
   align-items: center;
   gap: 12px;
   padding: 9px var(--seed-dimension-spacing-x-global-gutter);
-  border-bottom: 1px solid var(--seed-color-bg-layer-basement);
-}
-
-.video-item:last-child {
-  border-bottom: none;
 }
 
 .video-title {
@@ -333,7 +328,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px var(--seed-dimension-spacing-x-global-gutter) 16px;
+  padding: calc(var(--seed-safe-area-top) + 8px) var(--seed-dimension-spacing-x-global-gutter) 16px;
 }
 
 .settings-title {

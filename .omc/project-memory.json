@@ -158,9 +158,15 @@
   },
   "hotPaths": [
     {
+      "path": "src/components/PlaylistView.tsx",
+      "accessCount": 28,
+      "lastAccessed": 1778076829772,
+      "type": "file"
+    },
+    {
       "path": "src/app/globals.css",
-      "accessCount": 21,
-      "lastAccessed": 1778074791717,
+      "accessCount": 27,
+      "lastAccessed": 1778076588030,
       "type": "file"
     },
     {
@@ -176,15 +182,15 @@
       "type": "file"
     },
     {
-      "path": "src/components/PlaylistView.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1778072801447,
+      "path": "src/components/VideoItem.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1778076929919,
       "type": "file"
     },
     {
-      "path": "src/components/VideoItem.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1778073228543,
+      "path": "src/app/page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1778076365687,
       "type": "file"
     },
     {
@@ -197,12 +203,6 @@
       "path": "src/ui/chip.tsx",
       "accessCount": 2,
       "lastAccessed": 1778072467266,
-      "type": "file"
-    },
-    {
-      "path": "src/app/page.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1778073286839,
       "type": "file"
     },
     {
@@ -245,6 +245,30 @@
       "path": "src/components/SeasonGroup.tsx",
       "accessCount": 1,
       "lastAccessed": 1778073296198,
+      "type": "file"
+    },
+    {
+      "path": "src/types/index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778075637011,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/playlist.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778075637492,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/playlist.json.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778075670205,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/menu.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778075924818,
       "type": "file"
     }
   ],
