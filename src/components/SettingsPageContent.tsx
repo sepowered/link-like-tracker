@@ -146,6 +146,7 @@ export default function SettingsPageContent() {
               </List.Suffix>
             </Switch.Root>
           </List.Item>
+          <Divider as="li" aria-hidden />
           <List.Item>
             <BottomSheetTrigger asChild>
               <List.Content asChild>
