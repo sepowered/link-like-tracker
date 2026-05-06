@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"npx @seed-design/cli@latest add ui:list ui:list-header --yes 2>&1\",\"timeout\":60000,\"description\":\"Install seed-design list and list-header snippets\",\"run_in_background\":false}",
+  "error": "Exit code 1\nnpm warn exec The following package was not found and will be installed: @seed-design/cli@1.3.4\nfile:///Users/stile/.npm/_npx/333affc14a52c1b0/node_modules/cac/dist/index.mjs:400\n          throw new CACError(`Unknown option \\`${name.length > 1 ? `--${name}` : `-${name}`}\\``);\n                ^\n\nCACError: Unknown option `--yes`\n    at Command.checkUnknownOptions (file:///Users/stile/.npm/_npx/333affc14a52c1b0/node_modules/cac/dist/index.mjs:400:17)\n    at CAC.runMatchedCommand (file:/...",
+  "timestamp": "2026-05-06T12:43:33.339Z",
+  "retry_count": 2
+}

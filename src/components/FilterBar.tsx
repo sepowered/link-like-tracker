@@ -20,6 +20,7 @@ import {
   BottomSheetFooter,
 } from "@/ui/bottom-sheet";
 import { Chip } from "@/ui/chip";
+import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
   IconChevronDownFill,
   IconMagnifyingglassLine,
@@ -48,20 +49,35 @@ interface Props {
   filter: FilterType;
   categories: VideoCategory[];
   query: string;
+  sortOrder: "newest" | "oldest";
   onFilterChange: (f: FilterType) => void;
   onCategoriesChange: (categories: VideoCategory[]) => void;
   onQueryChange: (q: string) => void;
+  onSortOrderChange: (order: "newest" | "oldest") => void;
 }
 
 export default function FilterBar({
   filter,
   categories,
   query,
+  sortOrder,
   onFilterChange,
   onCategoriesChange,
   onQueryChange,
+  onSortOrderChange,
 }: Props) {
   const [openSheet, setOpenSheet] = useState<SheetType | null>(null);
+  const adapter = useSnackbarAdapter();
+
+  function handleSortToggle() {
+    const next = sortOrder === "newest" ? "oldest" : "newest";
+    onSortOrderChange(next);
+    adapter.create({
+      render: () => (
+        <Snackbar message={next === "newest" ? "최신순으로 정렬했어요" : "과거순으로 정렬했어요"} />
+      ),
+    });
+  }
 
   const currentFilterLabel = filter === "all" ? "시청 상태" : FILTERS.find((f) => f.value === filter)?.label ?? "시청 상태";
   
@@ -73,7 +89,7 @@ export default function FilterBar({
 
   return (
     <div className="filter-section">
-      <Flex gap="spacingX.betweenChips" overflowX="auto" className="filter-bar">
+      <Flex gap="spacingX.betweenChips" overflowX="auto" align="center" className="filter-bar">
         {/* 시청 상태 */}
         <BottomSheetRoot
           closeOnEscape
@@ -82,7 +98,7 @@ export default function FilterBar({
           onOpenChange={(open) => setOpenSheet(open ? "watch" : null)}
         >
           <BottomSheetTrigger asChild>
-            <Chip.Button variant={filter !== "all" ? "solid" : "outlineWeak"} size="small">
+            <Chip.Button variant="solid" size="large">
               <Chip.Label>{currentFilterLabel}</Chip.Label>
               <Chip.SuffixIcon>
                 <Icon svg={<IconChevronDownFill />} size="14px" />
@@ -106,7 +122,7 @@ export default function FilterBar({
           onOpenChange={(open) => setOpenSheet(open ? "category" : null)}
         >
           <BottomSheetTrigger asChild>
-            <Chip.Button variant={categories.includes("all") ? "outlineWeak" : "solid"} size="small">
+            <Chip.Button variant="solid" size="large">
               <Chip.Label>{currentCategoryLabel}</Chip.Label>
               <Chip.SuffixIcon>
                 <Icon svg={<IconChevronDownFill />} size="14px" />
@@ -121,6 +137,14 @@ export default function FilterBar({
             />
           </Portal>
         </BottomSheetRoot>
+
+        <Chip.Button
+          size="large"
+          variant="solid"
+          onClick={handleSortToggle}
+        >
+          <Chip.Label>{sortOrder === "newest" ? "최신순" : "과거순"}</Chip.Label>
+        </Chip.Button>
 
       </Flex>
 

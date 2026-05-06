@@ -158,9 +158,87 @@
   },
   "hotPaths": [
     {
+      "path": "src/components/FilterBar.tsx",
+      "accessCount": 13,
+      "lastAccessed": 1778072977451,
+      "type": "file"
+    },
+    {
       "path": "src/components/SettingsPageContent.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1778064793844,
+      "accessCount": 9,
+      "lastAccessed": 1778071899200,
+      "type": "file"
+    },
+    {
+      "path": "src/components/PlaylistView.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1778072801447,
+      "type": "file"
+    },
+    {
+      "path": "src/components/VideoItem.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1778073228543,
+      "type": "file"
+    },
+    {
+      "path": "src/app/globals.css",
+      "accessCount": 6,
+      "lastAccessed": 1778073321941,
+      "type": "file"
+    },
+    {
+      "path": "src/app/settings/page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778070976578,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/chip.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778072467266,
+      "type": "file"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778073286839,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/radio-group.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778071472180,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/bottom-sheet.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778071650225,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/list.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778071747163,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/list-header.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778071747454,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/snackbar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778072683118,
+      "type": "file"
+    },
+    {
+      "path": "src/components/SeasonGroup.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778073296198,
       "type": "file"
     }
   ],

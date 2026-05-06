@@ -9,14 +9,14 @@ import {
   Checkbox,
   Divider,
   Icon,
-  List,
-  ListHeader,
   Switch,
+  VStack,
 } from "@seed-design/react";
+import { List, ListButtonItem, ListSwitchItem } from "@/ui/list";
+import { ListHeader } from "@/ui/list-header";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import {
   BottomSheetRoot,
-  BottomSheetTrigger,
   BottomSheetContent,
   BottomSheetBody,
   BottomSheetFooter,
@@ -47,12 +47,13 @@ export default function SettingsPageContent() {
     setHidePrivateVideos,
   } = useSettings();
   const adapter = useSnackbarAdapter();
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [themeSheetOpen, setThemeSheetOpen] = useState(false);
+  const [progressSheetOpen, setProgressSheetOpen] = useState(false);
   const [pendingCategories, setPendingCategories] = useState<VideoCategory[]>(progressCategories);
 
-  function handleSheetOpenChange(open: boolean) {
+  function handleProgressSheetOpenChange(open: boolean) {
     if (open) setPendingCategories(progressCategories);
-    setSheetOpen(open);
+    setProgressSheetOpen(open);
   }
 
   function handlePendingToggle(value: VideoCategory, checked: boolean) {
@@ -63,7 +64,7 @@ export default function SettingsPageContent() {
 
   function handleSave() {
     setProgressCategories(pendingCategories);
-    setSheetOpen(false);
+    setProgressSheetOpen(false);
     adapter.create({
       render: () => <Snackbar variant="positive" message="진행률 표시 기준이 저장되었어요" />,
     });
@@ -75,6 +76,9 @@ export default function SettingsPageContent() {
       : progressCategories
           .map((c) => CATEGORY_OPTIONS.find((o) => o.value === c)?.label ?? c)
           .join(", ");
+
+  const colorSchemeLabel =
+    colorScheme === "dark" ? "다크" : colorScheme === "light" ? "라이트" : "시스템";
 
   return (
     <div className="settings-page">
@@ -91,23 +95,58 @@ export default function SettingsPageContent() {
         <div style={{ width: "36px" }} />
       </div>
 
-      <BottomSheetRoot closeOnEscape closeOnInteractOutside>
-        <ListHeader as="h2">테마</ListHeader>
-        <List.Root style={{ margin: 0 }}>
-          <List.Item>
-            <BottomSheetTrigger asChild>
-              <List.Content asChild>
-                <button type="button">
-                  <List.Title>화면 스타일</List.Title>
-                </button>
-              </List.Content>
-            </BottomSheetTrigger>
-            <List.Suffix style={{ color: "var(--seed-color-fg-neutral-subtle)", fontSize: "14px", display: "flex", alignItems: "center", gap: "2px" }}>
-              {colorScheme === "dark" ? "다크" : colorScheme === "light" ? "라이트" : "시스템"}
-              <Icon svg={<IconChevronRightLine />} size="16px" />
-            </List.Suffix>
-          </List.Item>
-        </List.Root>
+      <VStack gap="x6">
+        <VStack>
+          <ListHeader as="h2">테마</ListHeader>
+          <List>
+            <ListButtonItem
+              title="화면 스타일"
+              onClick={() => setThemeSheetOpen(true)}
+              suffix={
+                <span style={{ display: "flex", alignItems: "center", gap: "2px", color: "var(--seed-color-fg-neutral-subtle)", fontSize: "14px" }}>
+                  {colorSchemeLabel}
+                  <Icon svg={<IconChevronRightLine />} size="16px" />
+                </span>
+              }
+            />
+          </List>
+        </VStack>
+
+        <Divider />
+
+        <VStack>
+          <ListHeader as="h2">보기 옵션</ListHeader>
+          <List>
+            <ListSwitchItem
+              title="비공개 영상 숨기기"
+              checked={hidePrivateVideos}
+              onCheckedChange={setHidePrivateVideos}
+              suffix={
+                <Switch.Control tone="neutral">
+                  <Switch.Thumb />
+                </Switch.Control>
+              }
+            />
+            <ListButtonItem
+              title="진행률 표시 기준"
+              onClick={() => setProgressSheetOpen(true)}
+              suffix={
+                <span style={{ display: "flex", alignItems: "center", gap: "2px", color: "var(--seed-color-fg-neutral-subtle)", fontSize: "14px" }}>
+                  {progressLabel}
+                  <Icon svg={<IconChevronRightLine />} size="16px" />
+                </span>
+              }
+            />
+          </List>
+        </VStack>
+      </VStack>
+
+      <BottomSheetRoot
+        open={themeSheetOpen}
+        onOpenChange={setThemeSheetOpen}
+        closeOnEscape
+        closeOnInteractOutside
+      >
         <BottomSheetContent
           title="화면 스타일"
           showCloseButton
@@ -128,38 +167,12 @@ export default function SettingsPageContent() {
         </BottomSheetContent>
       </BottomSheetRoot>
 
-      <Divider style={{ marginTop: "var(--seed-dimension-x6)", marginBottom: "var(--seed-dimension-x6)" }} />
-
-      <BottomSheetRoot open={sheetOpen} onOpenChange={handleSheetOpenChange} closeOnEscape closeOnInteractOutside>
-        <ListHeader as="h2">보기 옵션</ListHeader>
-        <List.Root style={{ margin: 0 }}>
-          <List.Item asChild>
-            <Switch.Root checked={hidePrivateVideos} onCheckedChange={setHidePrivateVideos} tone="neutral" style={{ alignItems: "center" }}>
-              <Switch.HiddenInput />
-              <List.Content>
-                <List.Title>비공개 영상 숨기기</List.Title>
-              </List.Content>
-              <List.Suffix>
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </List.Suffix>
-            </Switch.Root>
-          </List.Item>
-          <List.Item>
-            <BottomSheetTrigger asChild>
-              <List.Content asChild>
-                <button type="button">
-                  <List.Title>진행률 표시 기준</List.Title>
-                </button>
-              </List.Content>
-            </BottomSheetTrigger>
-            <List.Suffix style={{ color: "var(--seed-color-fg-neutral-subtle)", fontSize: "14px", display: "flex", alignItems: "center", gap: "2px" }}>
-              {progressLabel}
-              <Icon svg={<IconChevronRightLine />} size="16px" />
-            </List.Suffix>
-          </List.Item>
-        </List.Root>
+      <BottomSheetRoot
+        open={progressSheetOpen}
+        onOpenChange={handleProgressSheetOpenChange}
+        closeOnEscape
+        closeOnInteractOutside
+      >
         <BottomSheetContent
           title="진행률 표시 기준"
           showCloseButton
@@ -189,7 +202,12 @@ export default function SettingsPageContent() {
             </Checkbox.Group>
           </BottomSheetBody>
           <BottomSheetFooter>
-            <ActionButton variant="neutralSolid" size="large" style={{ width: "100%" }} onClick={handleSave}>
+            <ActionButton
+              variant="neutralSolid"
+              size="large"
+              style={{ width: "100%" }}
+              onClick={handleSave}
+            >
               설정 저장
             </ActionButton>
           </BottomSheetFooter>

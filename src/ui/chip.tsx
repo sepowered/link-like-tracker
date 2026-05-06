@@ -4,6 +4,8 @@
  * @requires @seed-design/css@~1.0.0
  **/
 
+"use client";
+
 import { Chip as SeedChip } from "@seed-design/react";
 import { Checkbox, RadioGroup } from "@seed-design/react/primitive";
 import { chip } from "@seed-design/css/recipes/chip";

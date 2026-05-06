@@ -5,6 +5,7 @@ import { Video } from "@/types";
 import { VideoCategory, getVideoCategoryLabel } from "@/lib/video-category";
 import { Checkbox, Icon, MenuSheet, ActionButton, HStack, Portal } from "@seed-design/react";
 import { Chip } from "@/ui/chip";
+import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
   BottomSheetRoot,
   BottomSheetTrigger,
@@ -33,13 +34,22 @@ const CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: "story", label: "스토리" },
   { value: "music", label: "음악" },
   { value: "fesxlive", label: "FesxLIVE" },
+  { value: "fesxrec", label: "FesxReC" },
   { value: "withxmeets", label: "With×MEETS" },
   { value: "none", label: "태그 없음" },
 ];
 
+function toRo(text: string): string {
+  const last = text[text.length - 1];
+  const code = last.charCodeAt(0);
+  if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 === 0 ? "로" : "으로";
+  return /[aeiouAEIOU]/.test(last) ? "로" : "으로";
+}
+
 export default function VideoItem({ video, category, onToggle, onUpdateCategory }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const adapter = useSnackbarAdapter();
 
   const effectiveCategory =
     video.categoryOverride !== undefined ? video.categoryOverride : category;
@@ -87,6 +97,11 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
   };
 
   const handleCategoryConfirm = (value: string) => {
+    if (value === currentCategoryValue) return;
+
+    const previousValue = currentCategoryValue;
+    const newLabel = CATEGORY_OPTIONS.find((o) => o.value === value)?.label ?? value;
+
     if (value === "auto") {
       onUpdateCategory(video.id, "auto");
     } else if (value === "none") {
@@ -94,6 +109,24 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
     } else {
       onUpdateCategory(video.id, value as Exclude<VideoCategory, "all">);
     }
+
+    adapter.create({
+      render: () => (
+        <Snackbar
+          message={`${newLabel}${toRo(newLabel)} 변경했어요`}
+          actionLabel="되돌리기"
+          onAction={() => {
+            if (previousValue === "auto") {
+              onUpdateCategory(video.id, "auto");
+            } else if (previousValue === "none") {
+              onUpdateCategory(video.id, null);
+            } else {
+              onUpdateCategory(video.id, previousValue as Exclude<VideoCategory, "all">);
+            }
+          }}
+        />
+      ),
+    });
   };
 
   return (

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T03:05:53.256Z",
+  "updatedAt": "2026-05-06T13:00:48.413Z",
   "missions": [
     {
       "id": "session:8e5eb19e-fea4-46fe-89f8-906e967b5001:none",
@@ -102,6 +102,54 @@
           "agent": "security-reviewer:a2c37ed",
           "detail": "completed",
           "sourceKey": "session-stop:a2c37ed57f587a3a3"
+        }
+      ]
+    },
+    {
+      "id": "session:31a7a2a5-54df-4541-a9b0-1418e087f8cc:none",
+      "source": "session",
+      "name": "none",
+      "objective": "Session mission",
+      "createdAt": "2026-05-06T13:00:24.331Z",
+      "updatedAt": "2026-05-06T13:00:48.413Z",
+      "status": "done",
+      "workerCount": 1,
+      "taskCounts": {
+        "total": 1,
+        "pending": 0,
+        "blocked": 0,
+        "inProgress": 0,
+        "completed": 1,
+        "failed": 0
+      },
+      "agents": [
+        {
+          "name": "document-specialist:af63fb9",
+          "role": "document-specialist",
+          "ownership": "af63fb93ae1509aa2",
+          "status": "done",
+          "currentStep": null,
+          "latestUpdate": "completed",
+          "completedSummary": null,
+          "updatedAt": "2026-05-06T13:00:48.413Z"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "session-start:af63fb93ae1509aa2:2026-05-06T13:00:24.331Z",
+          "at": "2026-05-06T13:00:24.331Z",
+          "kind": "update",
+          "agent": "document-specialist:af63fb9",
+          "detail": "started document-specialist:af63fb9",
+          "sourceKey": "session-start:af63fb93ae1509aa2"
+        },
+        {
+          "id": "session-stop:af63fb93ae1509aa2:2026-05-06T13:00:48.413Z",
+          "at": "2026-05-06T13:00:48.413Z",
+          "kind": "completion",
+          "agent": "document-specialist:af63fb9",
+          "detail": "completed",
+          "sourceKey": "session-stop:af63fb93ae1509aa2"
         }
       ]
     }
