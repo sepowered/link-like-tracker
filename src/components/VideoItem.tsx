@@ -194,13 +194,6 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
                   </MenuSheet.Item>
                 </MenuSheet.Group>
               </MenuSheet.List>
-              <MenuSheet.Footer>
-                <MenuSheet.CloseButton asChild>
-                  <ActionButton variant="neutralSolid" size="large" style={{ width: "100%" }}>
-                    닫기
-                  </ActionButton>
-                </MenuSheet.CloseButton>
-              </MenuSheet.Footer>
             </MenuSheet.Content>
           </MenuSheet.Positioner>
         </MenuSheet.Root>
@@ -221,7 +214,7 @@ function CategorySheet({
   const [selected, setSelected] = useState(currentValue);
 
   return (
-    <BottomSheetContent title="분류 상세 설정">
+    <BottomSheetContent title="분류 상세 설정" aria-describedby={undefined} style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}>
       <BottomSheetBody>
         <HStack gap="x2" wrap>
           {CATEGORY_OPTIONS.map((opt) => (
