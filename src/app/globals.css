@@ -30,7 +30,7 @@ body {
 .container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 16px;
+  padding: var(--seed-dimension-spacing-x-global-gutter);
 }
 
 /* ─── 페이지 헤더 ────────────────────────────────────────────── */
@@ -326,6 +326,8 @@ body {
 /* ─── 설정 페이지 ─────────────────────────────────────────────── */
 
 .settings-page {
+  max-width: 800px;
+  margin: 0 auto;
   padding-bottom: 32px;
 }
 
@@ -333,7 +335,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0 16px;
+  padding: 8px var(--seed-dimension-spacing-x-global-gutter) 16px;
 }
 
 .settings-title {
@@ -354,7 +356,7 @@ body {
 
 @media (max-width: 600px) {
   .container {
-    padding: 12px;
+    padding: var(--seed-dimension-x3);
   }
 
   .filter-search-row {
