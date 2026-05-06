@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { VideoCategory } from "@/lib/video-category";
 
-export type ColorScheme = "light" | "dark";
+export type ColorScheme = "light" | "dark" | "system";
 
 interface Settings {
   progressCategories: VideoCategory[]; // empty = all categories
@@ -70,7 +70,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setSettings(loadSettings());
     try {
       const stored = localStorage.getItem(THEME_KEY);
-      setColorSchemeState(stored === "dark" ? "dark" : "light");
+      setColorSchemeState(stored === "dark" ? "dark" : stored === "light" ? "light" : "system");
     } catch {}
     setIsInitialized(true);
   }, []);
@@ -84,7 +84,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   };
 
   const setColorScheme = (scheme: ColorScheme) => {
-    document.documentElement.dataset.seedColorMode = scheme === "dark" ? "dark-only" : "light-only";
+    document.documentElement.dataset.seedColorMode =
+      scheme === "dark" ? "dark-only" : scheme === "light" ? "light-only" : "system";
     try {
       localStorage.setItem(THEME_KEY, scheme);
     } catch {}
