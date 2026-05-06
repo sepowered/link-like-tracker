@@ -3,8 +3,19 @@ import path from "path";
 import { PlaylistData } from "@/types";
 import { IPlaylistStorage, CategoryOverrideValue } from "./storage";
 
-const DATA_PATH = path.join(process.cwd(), "data", "playlist.json");
-const INITIAL_DATA_PATH = path.join(process.cwd(), "data", "playlist.initial.json");
+const INITIAL_DATA_PATH = path.join(
+  /*turbopackIgnore: true*/ process.cwd(),
+  "data",
+  "playlist.initial.json"
+);
+const TMP_DATA_PATH = "/tmp/link-like-tracker-playlist.json";
+const LOCAL_DATA_PATH = path.join(
+  /*turbopackIgnore: true*/ process.cwd(),
+  "data",
+  "playlist.json"
+);
+
+let dataPath = process.env.VERCEL ? TMP_DATA_PATH : LOCAL_DATA_PATH;
 
 let ensurePlaylistFilePromise: Promise<void> | null = null;
 
@@ -76,7 +87,7 @@ async function ensurePlaylistFile(): Promise<void> {
   if (!ensurePlaylistFilePromise) {
     ensurePlaylistFilePromise = (async () => {
       try {
-        await fs.access(DATA_PATH);
+        await fs.access(dataPath);
       } catch (error) {
         const missingFile =
           error instanceof Error && "code" in error && error.code === "ENOENT";
@@ -86,8 +97,13 @@ async function ensurePlaylistFile(): Promise<void> {
         }
 
         const initialRaw = await fs.readFile(INITIAL_DATA_PATH, "utf-8");
-        await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
-        await fs.writeFile(DATA_PATH, initialRaw, "utf-8");
+        try {
+          await fs.mkdir(path.dirname(dataPath), { recursive: true });
+          await fs.writeFile(dataPath, initialRaw, "utf-8");
+        } catch {
+          dataPath = TMP_DATA_PATH;
+          await fs.writeFile(dataPath, initialRaw, "utf-8");
+        }
       }
     })();
   }
@@ -98,13 +114,13 @@ async function ensurePlaylistFile(): Promise<void> {
 async function readPlaylistData(): Promise<PlaylistData> {
   await ensurePlaylistFile();
 
-  const stats = await fs.stat(DATA_PATH);
+  const stats = await fs.stat(dataPath);
 
   if (playlistCache && playlistCache.modifiedAtMs === stats.mtimeMs) {
     return playlistCache.data;
   }
 
-  const raw = await fs.readFile(DATA_PATH, "utf-8");
+  const raw = await fs.readFile(dataPath, "utf-8");
   const parsed: unknown = JSON.parse(raw);
 
   if (!isPlaylistData(parsed)) {
@@ -146,9 +162,9 @@ export const jsonStorage: IPlaylistStorage = {
 
     if (!found) return null;
 
-    await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2), "utf-8");
+    await fs.writeFile(dataPath, JSON.stringify(data, null, 2), "utf-8");
 
-    const stats = await fs.stat(DATA_PATH);
+    const stats = await fs.stat(dataPath);
     playlistCache = { data, modifiedAtMs: stats.mtimeMs };
 
     return { categoryOverride: categoryOverride === "auto" ? null : categoryOverride };
@@ -171,9 +187,9 @@ export const jsonStorage: IPlaylistStorage = {
 
     if (!found) return null;
 
-    await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2), "utf-8");
+    await fs.writeFile(dataPath, JSON.stringify(data, null, 2), "utf-8");
 
-    const stats = await fs.stat(DATA_PATH);
+    const stats = await fs.stat(dataPath);
     playlistCache = {
       data,
       modifiedAtMs: stats.mtimeMs,
