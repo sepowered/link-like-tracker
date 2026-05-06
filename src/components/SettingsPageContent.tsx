@@ -127,7 +127,7 @@ export default function SettingsPageContent() {
             <BottomSheetTrigger asChild>
               <List.Content asChild>
                 <button type="button">
-                  <List.Title>표시 기준</List.Title>
+                  <List.Title>진행률 표시 기준</List.Title>
                 </button>
               </List.Content>
             </BottomSheetTrigger>
@@ -153,7 +153,7 @@ export default function SettingsPageContent() {
                   key={item.value}
                   checked={progressCategories.includes(item.value)}
                   onCheckedChange={(checked) => handleCategoryToggle(item.value, checked)}
-                  tone="brand"
+                  tone="neutral"
                   size="large"
                 >
                   <Checkbox.HiddenInput />
