@@ -12,8 +12,8 @@ import {
   BottomSheetContent,
   BottomSheetBody,
 } from "@/ui/bottom-sheet";
-import { IconArrowLeftLine } from "@karrotmarket/react-monochrome-icon";
 import { submitAddRequest } from "@/app/actions/requests";
+import PageHeader from "@/components/PageHeader";
 
 const CATEGORIES = [
   { value: "story", label: "스토리" },
@@ -79,35 +79,7 @@ export default function AddRequestForm({ generations }: { generations: string[] 
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* 헤더 */}
-      <HStack
-        align="center"
-        style={{
-          padding: "12px 4px 12px 4px",
-          borderBottom: "1px solid var(--seed-scale-color-gray-100)",
-          flexShrink: 0,
-        }}
-      >
-        <ActionButton
-          size="medium"
-          variant="ghost"
-          onClick={() => router.back()}
-          aria-label="뒤로가기"
-        >
-          <Icon svg={<IconArrowLeftLine />} size="24px" />
-        </ActionButton>
-        <span
-          style={{
-            flex: 1,
-            textAlign: "center",
-            fontWeight: 600,
-            fontSize: "17px",
-          }}
-        >
-          콘텐츠 추가 요청
-        </span>
-        <div style={{ width: "44px" }} />
-      </HStack>
+      <PageHeader title="콘텐츠 추가 요청" />
 
       {/* 콘텐츠 */}
       <div style={{ flex: 1, overflowY: "auto", padding: "24px 16px 0" }}>

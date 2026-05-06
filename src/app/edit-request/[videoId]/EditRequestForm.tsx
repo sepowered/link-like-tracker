@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ActionButton, HStack, VStack, Icon, Portal } from "@seed-design/react";
+import { ActionButton, VStack, Icon, Portal } from "@seed-design/react";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { TextField, TextFieldTextarea } from "@/ui/text-field";
 import { FieldButton, FieldButtonValue, FieldButtonPlaceholder } from "@/ui/field-button";
@@ -15,12 +15,10 @@ import {
   BottomSheetFooter,
 } from "@/ui/bottom-sheet";
 import Link from "next/link";
-import {
-  IconArrowLeftLine,
-  IconArrowUpRightLine,
-} from "@karrotmarket/react-monochrome-icon";
+import { IconArrowUpRightLine } from "@karrotmarket/react-monochrome-icon";
 import type { Video } from "@/types";
 import { submitEditRequest } from "@/app/actions/requests";
+import PageHeader from "@/components/PageHeader";
 
 const REQUEST_TYPES = [
   { value: "wrong-link", label: "링크가 달라요 (다른 영상으로 연결돼요)" },
@@ -103,35 +101,7 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* 헤더 */}
-      <HStack
-        align="center"
-        style={{
-          padding: "12px 4px 12px 4px",
-          borderBottom: "1px solid var(--seed-scale-color-gray-100)",
-          flexShrink: 0,
-        }}
-      >
-        <ActionButton
-          size="medium"
-          variant="ghost"
-          onClick={() => router.back()}
-          aria-label="뒤로가기"
-        >
-          <Icon svg={<IconArrowLeftLine />} size="24px" />
-        </ActionButton>
-        <span
-          style={{
-            flex: 1,
-            textAlign: "center",
-            fontWeight: 600,
-            fontSize: "17px",
-          }}
-        >
-          정보 수정 요청
-        </span>
-        <div style={{ width: "44px" }} />
-      </HStack>
+      <PageHeader title="정보 수정 요청" />
 
       {/* 추가 요청 배너 - 헤더 바로 아래 */}
       <PageBanner

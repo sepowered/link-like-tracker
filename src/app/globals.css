@@ -321,21 +321,8 @@ body {
 .settings-page {
   max-width: 800px;
   margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
   padding-bottom: 32px;
-}
-
-.settings-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: calc(var(--seed-safe-area-top) + 8px) var(--seed-dimension-spacing-x-global-gutter) 16px;
-}
-
-.settings-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--seed-color-fg-neutral);
-  margin: 0;
 }
 
 

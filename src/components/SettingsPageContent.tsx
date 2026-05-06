@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSettings } from "@/components/SettingsProvider";
+import PageHeader from "@/components/PageHeader";
 import type { VideoCategory } from "@/lib/video-category";
 import {
   ActionButton,
@@ -24,7 +24,6 @@ import {
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
   IconCheckmarkFatFill,
-  IconChevronLeftLine,
   IconChevronRightLine,
 } from "@karrotmarket/react-monochrome-icon";
 
@@ -37,7 +36,6 @@ const CATEGORY_OPTIONS: { value: VideoCategory; label: string }[] = [
 ];
 
 export default function SettingsPageContent() {
-  const router = useRouter();
   const {
     colorScheme,
     setColorScheme,
@@ -82,18 +80,7 @@ export default function SettingsPageContent() {
 
   return (
     <div className="settings-page">
-      <div className="settings-header">
-        <ActionButton
-          variant="ghost"
-          size="small"
-          onClick={() => router.back()}
-          aria-label="뒤로 가기"
-        >
-          <Icon svg={<IconChevronLeftLine />} size="22px" />
-        </ActionButton>
-        <h1 className="settings-title">설정</h1>
-        <div style={{ width: "36px" }} />
-      </div>
+      <PageHeader title="설정" borderBottom={false} />
 
       <VStack gap="x6">
         <VStack>
