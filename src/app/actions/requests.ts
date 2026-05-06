@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 export async function submitAddRequest(data: {
   link: string;
@@ -8,6 +8,7 @@ export async function submitAddRequest(data: {
   generation: string;
   description: string;
 }) {
+  const supabase = getSupabaseClient();
   const { error } = await supabase.from("requests").insert({
     type: "add",
     link: data.link,
@@ -19,7 +20,7 @@ export async function submitAddRequest(data: {
 
   if (error) {
     console.error("Failed to submit add request:", error);
-    throw new Error("요청을 제출하는 데 실패했습니다.");
+    throw new Error(`[Supabase Error] ${error.message} (${error.code})`);
   }
 }
 
@@ -30,6 +31,7 @@ export async function submitEditRequest(data: {
   generation: string;
   description: string;
 }) {
+  const supabase = getSupabaseClient();
   const { error } = await supabase.from("requests").insert({
     type: "edit",
     video_title: data.video_title,
@@ -42,6 +44,6 @@ export async function submitEditRequest(data: {
 
   if (error) {
     console.error("Failed to submit edit request:", error);
-    throw new Error("요청을 제출하는 데 실패했습니다.");
+    throw new Error(`[Supabase Error] ${error.message} (${error.code})`);
   }
 }
