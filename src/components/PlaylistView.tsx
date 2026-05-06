@@ -320,7 +320,7 @@ export default function PlaylistView({ initialData }: Props) {
       <PageBanner
         tone="positive"
         description="아직 추가되지 않은 스토리 및 콘텐츠가 있나요?"
-        suffix={<PageBannerButton asChild><Link href="/add-request">추가 요청하기</Link></PageBannerButton>}
+        suffix={<PageBannerButton asChild><Link href="/add-request" style={{ textDecoration: "none" }}>추가 요청하기</Link></PageBannerButton>}
       />
 
       {/* 시즌별 그룹 */}

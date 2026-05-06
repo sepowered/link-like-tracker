@@ -22,11 +22,11 @@ import {
 import type { Video } from "@/types";
 
 const REQUEST_TYPES = [
-  { value: "wrong-link", label: "링크가 잘못되었어요 (다른 영상으로 연결돼요)" },
-  { value: "wrong-category", label: "분류가 잘못되었어요" },
-  { value: "wrong-generation", label: "기수가 잘못되었어요" },
-  { value: "private", label: "영상이 비공개됐어요" },
-  { value: "unnecessary", label: "목록에 없어도 될 것 같아요" },
+  { value: "wrong-link", label: "링크가 달라요 (다른 영상으로 연결돼요)" },
+  { value: "wrong-category", label: "분류가 달라요" },
+  { value: "wrong-generation", label: "기수가 달라요" },
+  { value: "private", label: "영상이 비공개 처리됐어요" },
+  { value: "unnecessary", label: "이 콘텐츠는 필요 없어요" },
   { value: "other", label: "기타" },
 ] as const;
 
