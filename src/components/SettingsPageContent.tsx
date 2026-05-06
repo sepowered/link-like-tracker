@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSettings } from "@/components/SettingsProvider";
 import type { VideoCategory } from "@/lib/video-category";
@@ -18,7 +19,9 @@ import {
   BottomSheetTrigger,
   BottomSheetContent,
   BottomSheetBody,
+  BottomSheetFooter,
 } from "@/ui/bottom-sheet";
+import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
   IconCheckmarkFatFill,
   IconChevronLeftLine,
@@ -45,15 +48,27 @@ export default function SettingsPageContent() {
     setProgressCategories,
     setHidePrivateVideos,
   } = useSettings();
+  const adapter = useSnackbarAdapter();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [pendingCategories, setPendingCategories] = useState<VideoCategory[]>(progressCategories);
 
-  function handleCategoryToggle(value: VideoCategory, checked: boolean) {
-    let next: VideoCategory[];
-    if (checked) {
-      next = [...new Set([...progressCategories, value])];
-    } else {
-      next = progressCategories.filter((v) => v !== value);
-    }
-    setProgressCategories(next);
+  function handleSheetOpenChange(open: boolean) {
+    if (open) setPendingCategories(progressCategories);
+    setSheetOpen(open);
+  }
+
+  function handlePendingToggle(value: VideoCategory, checked: boolean) {
+    setPendingCategories((prev) =>
+      checked ? [...new Set([...prev, value])] : prev.filter((v) => v !== value),
+    );
+  }
+
+  function handleSave() {
+    setProgressCategories(pendingCategories);
+    setSheetOpen(false);
+    adapter.create({
+      render: () => <Snackbar variant="positive" message="진행률 표시 기준이 저장되었어요" />,
+    });
   }
 
   const progressLabel =
@@ -107,11 +122,11 @@ export default function SettingsPageContent() {
 
       <Divider />
 
-      <BottomSheetRoot closeOnEscape closeOnInteractOutside>
+      <BottomSheetRoot open={sheetOpen} onOpenChange={handleSheetOpenChange} closeOnEscape closeOnInteractOutside>
         <ListHeader as="h2">보기 옵션</ListHeader>
         <List.Root>
           <List.Item asChild>
-            <Switch.Root checked={hidePrivateVideos} onCheckedChange={setHidePrivateVideos} style={{ alignItems: "center" }}>
+            <Switch.Root checked={hidePrivateVideos} onCheckedChange={setHidePrivateVideos} tone="neutral" style={{ alignItems: "center" }}>
               <Switch.HiddenInput />
               <List.Content>
                 <List.Title>비공개 영상 숨기기</List.Title>
@@ -151,8 +166,8 @@ export default function SettingsPageContent() {
               {CATEGORY_OPTIONS.map((item) => (
                 <Checkbox.Root
                   key={item.value}
-                  checked={progressCategories.includes(item.value)}
-                  onCheckedChange={(checked) => handleCategoryToggle(item.value, checked)}
+                  checked={pendingCategories.includes(item.value)}
+                  onCheckedChange={(checked) => handlePendingToggle(item.value, checked)}
                   tone="neutral"
                   size="large"
                 >
@@ -165,6 +180,11 @@ export default function SettingsPageContent() {
               ))}
             </Checkbox.Group>
           </BottomSheetBody>
+          <BottomSheetFooter>
+            <ActionButton variant="neutralSolid" size="large" style={{ width: "100%" }} onClick={handleSave}>
+              설정 저장
+            </ActionButton>
+          </BottomSheetFooter>
         </BottomSheetContent>
       </BottomSheetRoot>
     </div>
