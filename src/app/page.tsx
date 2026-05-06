@@ -1,6 +1,6 @@
 import { storage } from "@/lib/playlist";
 import PlaylistView from "@/components/PlaylistView";
-import ThemeToggle from "@/components/ThemeToggle";
+import SettingsLink from "@/components/SettingsLink";
 import HasuLogo from "@/components/HasuLogo";
 
 export default async function Home() {
@@ -9,9 +9,9 @@ export default async function Home() {
     <main className="container">
       <div className="page-header">
         <div>
-          <h1 style={{ 
-            fontSize: "24px", 
-            fontWeight: "800", 
+          <h1 style={{
+            fontSize: "24px",
+            fontWeight: "800",
             color: "var(--seed-color-fg-neutral)",
             margin: "0 0 2px 0",
             letterSpacing: "-0.02em"
@@ -22,7 +22,7 @@ export default async function Home() {
             하스노소라 여학원 스쿨 아이돌 클럽 Link! Like! 러브 라이브! 활동기록 모아보기
           </p>
         </div>
-        <ThemeToggle />
+        <SettingsLink />
       </div>
       <PlaylistView initialData={data} />
     </main>

@@ -7,7 +7,8 @@ html:root, html[data-seed] {
 }
 
 /* 다크모드에서도 브랜드 컬러가 유지되거나 적절히 조정되도록 보강 */
-html[data-seed-color-mode="dark-only"] {
+html[data-seed-color-mode="dark-only"],
+html[data-seed-color-mode="system"][data-seed-user-color-scheme="dark"] {
   --seed-color-fg-brand: #ff4d3d !important;
   --seed-color-bg-brand-solid: #ff4d3d !important;
   --seed-color-bg-brand-solid-hover: #ff6b5c !important;
@@ -320,6 +321,33 @@ body {
 
 .video-item:hover .video-category-add {
   opacity: 1;
+}
+
+/* ─── 설정 페이지 ─────────────────────────────────────────────── */
+
+.settings-page {
+  padding-bottom: 32px;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 16px;
+}
+
+.settings-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--seed-color-fg-neutral);
+  margin: 0;
+}
+
+
+.settings-sheet-hint {
+  font-size: 13px;
+  color: var(--seed-color-fg-neutral-subtle);
+  margin: 0 0 12px 0;
 }
 
 /* ─── 반응형 ──────────────────────────────────────────────────── */
