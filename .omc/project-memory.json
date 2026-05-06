@@ -158,6 +158,12 @@
   },
   "hotPaths": [
     {
+      "path": "src/app/globals.css",
+      "accessCount": 21,
+      "lastAccessed": 1778074791717,
+      "type": "file"
+    },
+    {
       "path": "src/components/FilterBar.tsx",
       "accessCount": 13,
       "lastAccessed": 1778072977451,
@@ -179,12 +185,6 @@
       "path": "src/components/VideoItem.tsx",
       "accessCount": 6,
       "lastAccessed": 1778073228543,
-      "type": "file"
-    },
-    {
-      "path": "src/app/globals.css",
-      "accessCount": 6,
-      "lastAccessed": 1778073321941,
       "type": "file"
     },
     {
