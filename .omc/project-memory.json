@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1777972335976,
+  "lastScanned": 1778063952921,
   "projectRoot": "/Users/stile/WebstormProjects/link-like-tracker",
   "techStack": {
     "languages": [
@@ -78,7 +78,7 @@
       "path": "data",
       "purpose": "Data files",
       "fileCount": 2,
-      "lastAccessed": 1777972335965,
+      "lastAccessed": 1778063952903,
       "keyFiles": [
         "playlist.initial.json",
         "playlist.json"
@@ -88,7 +88,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 6,
-      "lastAccessed": 1777972335965,
+      "lastAccessed": 1778063952904,
       "keyFiles": [
         "file.svg",
         "globe.svg",
@@ -101,7 +101,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 1,
-      "lastAccessed": 1777972335970,
+      "lastAccessed": 1778063952914,
       "keyFiles": [
         "convert-playlist.ts"
       ]
@@ -110,14 +110,14 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 0,
-      "lastAccessed": 1777972335970,
+      "lastAccessed": 1778063952915,
       "keyFiles": []
     },
     "src/app": {
       "path": "src/app",
       "purpose": "Application code",
       "fileCount": 5,
-      "lastAccessed": 1777972335971,
+      "lastAccessed": 1778063952918,
       "keyFiles": [
         "favicon.ico",
         "global-error.tsx",
@@ -127,8 +127,8 @@
     "src/components": {
       "path": "src/components",
       "purpose": "UI components",
-      "fileCount": 10,
-      "lastAccessed": 1777972335971,
+      "fileCount": 9,
+      "lastAccessed": 1778063952918,
       "keyFiles": [
         "FilterBar.tsx",
         "HasuLogo.tsx",
@@ -139,7 +139,7 @@
       "path": "src/lib",
       "purpose": "Library code",
       "fileCount": 4,
-      "lastAccessed": 1777972335971,
+      "lastAccessed": 1778063952918,
       "keyFiles": [
         "playlist.json.ts",
         "playlist.ts",
@@ -150,7 +150,7 @@
       "path": "src/types",
       "purpose": "Type definitions",
       "fileCount": 1,
-      "lastAccessed": 1777972335972,
+      "lastAccessed": 1778063952919,
       "keyFiles": [
         "index.ts"
       ]
@@ -159,128 +159,8 @@
   "hotPaths": [
     {
       "path": "src/components/SettingsPageContent.tsx",
-      "accessCount": 58,
-      "lastAccessed": 1778048364863,
-      "type": "file"
-    },
-    {
-      "path": "src/components/SettingsProvider.tsx",
-      "accessCount": 11,
-      "lastAccessed": 1778048354957,
-      "type": "file"
-    },
-    {
-      "path": "src/app/layout.tsx",
-      "accessCount": 10,
-      "lastAccessed": 1778045679270,
-      "type": "file"
-    },
-    {
-      "path": "src/app/globals.css",
-      "accessCount": 10,
-      "lastAccessed": 1778047906579,
-      "type": "file"
-    },
-    {
-      "path": "src/app/page.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1778043546922,
-      "type": "file"
-    },
-    {
-      "path": "src/components/FilterBar.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1778031424505,
-      "type": "file"
-    },
-    {
-      "path": "src/components/PlaylistView.tsx",
       "accessCount": 5,
-      "lastAccessed": 1778030506774,
-      "type": "file"
-    },
-    {
-      "path": "src/components/VideoItem.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1778031425773,
-      "type": "file"
-    },
-    {
-      "path": "src/ui/bottom-sheet.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1778048009899,
-      "type": "file"
-    },
-    {
-      "path": "src/app/settings/page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1778043548746,
-      "type": "file"
-    },
-    {
-      "path": "src/components/SettingsLink.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1778043364362,
-      "type": "file"
-    },
-    {
-      "path": "src/ui/snackbar.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1778045428528,
-      "type": "file"
-    },
-    {
-      "path": "src/components/SettingsSheet.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1777974565541,
-      "type": "file"
-    },
-    {
-      "path": "src/ui/select-box.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1778030488870,
-      "type": "file"
-    },
-    {
-      "path": "src/ui/radio-group.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1778047559881,
-      "type": "file"
-    },
-    {
-      "path": "package.json",
-      "accessCount": 1,
-      "lastAccessed": 1777972365293,
-      "type": "file"
-    },
-    {
-      "path": "src/types/index.ts",
-      "accessCount": 1,
-      "lastAccessed": 1777972371182,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/video-category.ts",
-      "accessCount": 1,
-      "lastAccessed": 1777972371467,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/storage.ts",
-      "accessCount": 1,
-      "lastAccessed": 1777972373929,
-      "type": "file"
-    },
-    {
-      "path": "src/components/SeasonGroup.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1777972378176,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/playlist.ts",
-      "accessCount": 1,
-      "lastAccessed": 1777972378596,
+      "lastAccessed": 1778064793844,
       "type": "file"
     }
   ],
