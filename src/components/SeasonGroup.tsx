@@ -14,6 +14,7 @@ interface Props {
   filter: FilterType;
   categories: VideoCategory[];
   query: string;
+  sortOrder: "newest" | "oldest";
   hidePrivateVideos: boolean;
   isUnavailableVideoTitle: (title: string) => boolean;
   classifyVideoCategory: (title: string) => Exclude<VideoCategory, "all"> | null;
@@ -35,6 +36,7 @@ export default function SeasonGroup({
   filter,
   categories,
   query,
+  sortOrder,
   hidePrivateVideos,
   isUnavailableVideoTitle,
   classifyVideoCategory,
@@ -44,7 +46,7 @@ export default function SeasonGroup({
   const [open, setOpen] = useState(true);
 
   const filteredVideos = useMemo(() => {
-    return season.videos.filter((v) => {
+    const vids = season.videos.filter((v) => {
       const matchesFilter =
         filter === "all" ||
         (filter === "watched" && v.watched) ||
@@ -57,7 +59,9 @@ export default function SeasonGroup({
         categories.includes("all") || categories.includes(effectiveCategory as VideoCategory);
       return matchesFilter && matchesQuery && matchesAvailability && matchesCategory;
     });
-  }, [season.videos, filter, categories, query, hidePrivateVideos, isUnavailableVideoTitle, classifyVideoCategory]);
+    
+    return sortOrder === "newest" ? vids.reverse() : vids;
+  }, [season.videos, filter, categories, query, sortOrder, hidePrivateVideos, isUnavailableVideoTitle, classifyVideoCategory]);
 
   if (filteredVideos.length === 0) return null;
 

@@ -322,6 +322,7 @@ export default function PlaylistView({ initialData }: Props) {
           filter={filter}
           categories={categories}
           query={query}
+          sortOrder={sortOrder}
           hidePrivateVideos={hidePrivateVideos}
           isUnavailableVideoTitle={isUnavailableVideoTitle}
           classifyVideoCategory={classifyVideoCategory}
