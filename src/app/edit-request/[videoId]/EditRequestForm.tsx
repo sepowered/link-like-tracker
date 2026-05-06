@@ -83,9 +83,10 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
         render: () => <Snackbar message="수정 요청을 보냈어요." />,
       });
       router.back();
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || "요청 제출에 실패했어요. 다시 시도해 주세요.";
       adapter.create({
-        render: () => <Snackbar message="요청 제출에 실패했어요. 다시 시도해 주세요." />,
+        render: () => <Snackbar message={errorMessage} />,
       });
     } finally {
       setIsSubmitting(false);

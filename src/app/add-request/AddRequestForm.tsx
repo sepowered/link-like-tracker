@@ -59,9 +59,10 @@ export default function AddRequestForm({ generations }: { generations: string[] 
         render: () => <Snackbar message="콘텐츠 추가 요청을 보냈어요." />,
       });
       router.back();
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || "요청 제출에 실패했어요. 다시 시도해 주세요.";
       adapter.create({
-        render: () => <Snackbar message="요청 제출에 실패했어요. 다시 시도해 주세요." />,
+        render: () => <Snackbar message={errorMessage} />,
       });
     } finally {
       setIsSubmitting(false);
