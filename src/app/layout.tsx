@@ -37,7 +37,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themingScript }} />
         <script dangerouslySetInnerHTML={{ __html: themePreferenceScript }} />
       </head>
-      <body><SnackbarProvider><SettingsProvider>{children}</SettingsProvider></SnackbarProvider></body>
+      <body><SnackbarProvider pauseOnInteraction={false}><SettingsProvider>{children}</SettingsProvider></SnackbarProvider></body>
     </html>
   );
 }
