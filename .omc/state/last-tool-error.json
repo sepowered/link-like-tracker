@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"npx tsc --noEmit 2>&1\",\"description\":\"TypeScript type check\"}",
+  "error": "Exit code 2\nsrc/app/edit-request/[videoId]/EditRequestForm.tsx(123,17): error TS2322: Type '{ svg: Element; size: \"18px\"; style: { flexShrink: number; color: string; }; }' is not assignable to type 'IntrinsicAttributes & IconProps & RefAttributes<SVGSVGElement>'.\n  Property 'style' does not exist on type 'IntrinsicAttributes & IconProps & RefAttributes<SVGSVGElement>'.",
+  "timestamp": "2026-05-06T15:24:13.905Z",
+  "retry_count": 1
+}

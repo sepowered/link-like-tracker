@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Video } from "@/types";
 import { VideoCategory, getVideoCategoryLabel } from "@/lib/video-category";
 import { Checkbox, Icon, MenuSheet, ActionButton, HStack, Portal } from "@seed-design/react";
@@ -18,6 +19,7 @@ import {
   IconArrowUpRightLine,
   IconAndroidshareLine,
   IconPaperclipLine,
+  IconPencilLine,
 } from "@karrotmarket/react-monochrome-icon";
 
 type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
@@ -47,6 +49,7 @@ function toRo(text: string): string {
 }
 
 export default function VideoItem({ video, category, onToggle, onUpdateCategory }: Props) {
+  const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const adapter = useSnackbarAdapter();
@@ -94,6 +97,11 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
       console.error("복사 실패:", err);
     }
     setSheetOpen(false);
+  };
+
+  const handleEditRequest = () => {
+    setSheetOpen(false);
+    router.push(`/edit-request/${video.id}`);
   };
 
   const handleCategoryConfirm = (value: string) => {
@@ -223,6 +231,14 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
                     <Icon svg={<IconPaperclipLine />} size="20px" />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>링크 복사</MenuSheet.ItemLabel>
+                    </MenuSheet.ItemContent>
+                  </MenuSheet.Item>
+                </MenuSheet.Group>
+                <MenuSheet.Group>
+                  <MenuSheet.Item onClick={handleEditRequest}>
+                    <Icon svg={<IconPencilLine />} size="20px" />
+                    <MenuSheet.ItemContent>
+                      <MenuSheet.ItemLabel>정보 수정 요청</MenuSheet.ItemLabel>
                     </MenuSheet.ItemContent>
                   </MenuSheet.Item>
                 </MenuSheet.Group>
