@@ -3,18 +3,23 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { VideoCategory } from "@/lib/video-category";
 
+export type ColorScheme = "light" | "dark";
+
 interface Settings {
   progressCategories: VideoCategory[]; // empty = all categories
   hidePrivateVideos: boolean;
 }
 
 interface SettingsContextValue extends Settings {
+  colorScheme: ColorScheme;
+  setColorScheme: (scheme: ColorScheme) => void;
   setProgressCategories: (categories: VideoCategory[]) => void;
   setHidePrivateVideos: (hide: boolean) => void;
   isInitialized: boolean;
 }
 
 const STORAGE_KEY = "llt-settings";
+const THEME_KEY = "seed-color-scheme";
 
 const DEFAULT_SETTINGS: Settings = {
   progressCategories: [],
@@ -58,10 +63,15 @@ function saveSettings(settings: Settings) {
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>("light");
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     setSettings(loadSettings());
+    try {
+      const stored = localStorage.getItem(THEME_KEY);
+      setColorSchemeState(stored === "dark" ? "dark" : "light");
+    } catch {}
     setIsInitialized(true);
   }, []);
 
@@ -73,10 +83,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const setColorScheme = (scheme: ColorScheme) => {
+    document.documentElement.dataset.seedColorMode = scheme === "dark" ? "dark-only" : "light-only";
+    try {
+      localStorage.setItem(THEME_KEY, scheme);
+    } catch {}
+    setColorSchemeState(scheme);
+  };
+
   return (
     <SettingsContext.Provider
       value={{
         ...settings,
+        colorScheme,
+        setColorScheme,
         isInitialized,
         setProgressCategories: (categories) => update({ progressCategories: categories }),
         setHidePrivateVideos: (hide) => update({ hidePrivateVideos: hide }),

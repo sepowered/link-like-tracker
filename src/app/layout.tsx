@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { generateThemingScript } from "@seed-design/css/theming";
+import { SettingsProvider } from "@/components/SettingsProvider";
 import "@seed-design/css/all.css";
 import "./globals.css";
 
@@ -34,7 +35,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themingScript }} />
         <script dangerouslySetInnerHTML={{ __html: themePreferenceScript }} />
       </head>
-      <body>{children}</body>
+      <body><SettingsProvider>{children}</SettingsProvider></body>
     </html>
   );
 }
