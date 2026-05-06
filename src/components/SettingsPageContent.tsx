@@ -107,41 +107,35 @@ export default function SettingsPageContent() {
 
       <Divider />
 
-      <ListHeader as="h2">뷰</ListHeader>
-      <List.Root>
-        <List.Item asChild>
-          <Switch.Root checked={hidePrivateVideos} onCheckedChange={setHidePrivateVideos} style={{ alignItems: "center" }}>
-            <Switch.HiddenInput />
-            <List.Content>
-              <List.Title>비공개 영상 숨기기</List.Title>
-            </List.Content>
-            <List.Suffix>
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </List.Suffix>
-          </Switch.Root>
-        </List.Item>
-      </List.Root>
-
-      <Divider />
-
       <BottomSheetRoot closeOnEscape closeOnInteractOutside>
-        <ListHeader as="h2">진행률</ListHeader>
+        <ListHeader as="h2">보기 옵션</ListHeader>
         <List.Root>
-          <BottomSheetTrigger asChild>
-            <List.Item asChild>
-              <button type="button">
-                <List.Content>
+          <List.Item asChild>
+            <Switch.Root checked={hidePrivateVideos} onCheckedChange={setHidePrivateVideos} style={{ alignItems: "center" }}>
+              <Switch.HiddenInput />
+              <List.Content>
+                <List.Title>비공개 영상 숨기기</List.Title>
+              </List.Content>
+              <List.Suffix>
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+              </List.Suffix>
+            </Switch.Root>
+          </List.Item>
+          <List.Item>
+            <BottomSheetTrigger asChild>
+              <List.Content asChild>
+                <button type="button">
                   <List.Title>표시 기준</List.Title>
-                </List.Content>
-                <List.Suffix style={{ color: "var(--seed-color-fg-neutral-subtle)", fontSize: "14px", display: "flex", alignItems: "center", gap: "2px" }}>
-                  {progressLabel}
-                  <Icon svg={<IconChevronRightLine />} size="16px" />
-                </List.Suffix>
-              </button>
-            </List.Item>
-          </BottomSheetTrigger>
+                </button>
+              </List.Content>
+            </BottomSheetTrigger>
+            <List.Suffix style={{ color: "var(--seed-color-fg-neutral-subtle)", fontSize: "14px", display: "flex", alignItems: "center", gap: "2px" }}>
+              {progressLabel}
+              <Icon svg={<IconChevronRightLine />} size="16px" />
+            </List.Suffix>
+          </List.Item>
         </List.Root>
         <BottomSheetContent
           title="진행률 표시 기준"
