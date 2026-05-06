@@ -159,8 +159,8 @@
   "hotPaths": [
     {
       "path": "src/components/SettingsPageContent.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1778064402873,
+      "accessCount": 5,
+      "lastAccessed": 1778064793844,
       "type": "file"
     }
   ],
