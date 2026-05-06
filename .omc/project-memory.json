@@ -206,6 +206,12 @@
       "type": "file"
     },
     {
+      "path": "src/app/layout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778074112031,
+      "type": "file"
+    },
+    {
       "path": "src/ui/radio-group.tsx",
       "accessCount": 1,
       "lastAccessed": 1778071472180,
