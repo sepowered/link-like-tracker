@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSettings } from "@/components/SettingsProvider";
 import type { VideoCategory } from "@/lib/video-category";
@@ -28,8 +27,6 @@ import {
   IconMoonLine,
 } from "@karrotmarket/react-monochrome-icon";
 
-type ColorScheme = "light" | "dark";
-
 const CATEGORY_OPTIONS: { value: VideoCategory; label: string }[] = [
   { value: "story", label: "스토리" },
   { value: "music", label: "음악" },
@@ -38,27 +35,16 @@ const CATEGORY_OPTIONS: { value: VideoCategory; label: string }[] = [
   { value: "withxmeets", label: "With×MEETS" },
 ];
 
-function getCurrentScheme(): ColorScheme {
-  if (typeof window === "undefined") return "light";
-  return document.documentElement.dataset.seedColorMode === "dark-only" ? "dark" : "light";
-}
-
 export default function SettingsPageContent() {
   const router = useRouter();
-  const { progressCategories, hidePrivateVideos, setProgressCategories, setHidePrivateVideos } =
-    useSettings();
-  const [scheme, setScheme] = useState<ColorScheme>(getCurrentScheme);
-
-  function handleThemeChange(value: string) {
-    const next = value as ColorScheme;
-    document.documentElement.dataset.seedColorMode = next === "dark" ? "dark-only" : "light-only";
-    setScheme(next);
-    try {
-      localStorage.setItem("seed-color-scheme", next);
-    } catch (e) {
-      console.error("Failed to save theme to localStorage", e);
-    }
-  }
+  const {
+    colorScheme,
+    setColorScheme,
+    progressCategories,
+    hidePrivateVideos,
+    setProgressCategories,
+    setHidePrivateVideos,
+  } = useSettings();
 
   function handleCategoryToggle(value: VideoCategory, checked: boolean) {
     let next: VideoCategory[];
@@ -100,8 +86,8 @@ export default function SettingsPageContent() {
           </List.Content>
           <List.Suffix>
             <SegmentedControl.Root
-              value={scheme}
-              onValueChange={handleThemeChange}
+              value={colorScheme}
+              onValueChange={(v) => setColorScheme(v as "light" | "dark")}
               aria-label="다크 모드"
               style={{ width: "fit-content", minWidth: "auto" }}
             >
