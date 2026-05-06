@@ -26,6 +26,7 @@ export default function PlaylistView({ initialData }: Props) {
   const [filter, setFilter] = useState<FilterType>("all");
   const [categories, setCategories] = useState<VideoCategory[]>(["all"]);
   const [query, setQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -190,9 +191,11 @@ export default function PlaylistView({ initialData }: Props) {
         filter={filter}
         categories={categories}
         query={query}
+        sortOrder={sortOrder}
         onFilterChange={setFilter}
         onCategoriesChange={setCategories}
         onQueryChange={setQuery}
+        onSortOrderChange={setSortOrder}
       />
 
       {/* 필터 결과 피드백 */}
@@ -210,7 +213,7 @@ export default function PlaylistView({ initialData }: Props) {
       ) : null}
 
       {/* 시즌별 그룹 */}
-      {data.seasons.map((season) => (
+      {(sortOrder === "newest" ? [...data.seasons].reverse() : data.seasons).map((season) => (
         <SeasonGroup
           key={season.id}
           season={season}
