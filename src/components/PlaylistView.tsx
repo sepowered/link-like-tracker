@@ -10,8 +10,8 @@ import * as Progress from "@radix-ui/react-progress";
 
 type FilterType = "all" | "watched" | "unwatched";
 
-const STORAGE_KEY_WATCHED = "oh-my-hasu-watched";
-const STORAGE_KEY_OVERRIDES = "oh-my-hasu-overrides";
+const STORAGE_KEY_WATCHED = "llt-watched";
+const STORAGE_KEY_OVERRIDES = "llt-overrides";
 
 function isUnavailableVideoTitle(title: string) {
   return title === "[Private video]" || title === "[Deleted video]";

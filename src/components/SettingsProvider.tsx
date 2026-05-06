@@ -14,7 +14,7 @@ interface SettingsContextValue extends Settings {
   isInitialized: boolean;
 }
 
-const STORAGE_KEY = "link-like-tracker-settings";
+const STORAGE_KEY = "llt-settings";
 
 const DEFAULT_SETTINGS: Settings = {
   progressCategories: [],
