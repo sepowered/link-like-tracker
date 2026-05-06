@@ -13,6 +13,7 @@ import {
   BottomSheetBody,
 } from "@/ui/bottom-sheet";
 import { IconArrowLeftLine } from "@karrotmarket/react-monochrome-icon";
+import { submitAddRequest } from "@/app/actions/requests";
 
 const CATEGORIES = [
   { value: "story", label: "스토리" },
@@ -33,6 +34,7 @@ export default function AddRequestForm({ generations }: { generations: string[] 
   const [generationSheetOpen, setGenerationSheetOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const needsDescription = category === "not-listed";
   const isLinkInvalid = submitted && !link.trim();
@@ -41,14 +43,29 @@ export default function AddRequestForm({ generations }: { generations: string[] 
   const isDescriptionInvalid = submitted && needsDescription && !description.trim();
   const categoryLabel = CATEGORIES.find((c) => c.value === category)?.label;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitted(true);
     if (!link.trim() || !category || !generation || (needsDescription && !description.trim())) return;
-    // TODO: 제출 로직 연결
-    adapter.create({
-      render: () => <Snackbar message="콘텐츠 추가 요청을 보냈어요." />,
-    });
-    router.back();
+    
+    setIsSubmitting(true);
+    try {
+      await submitAddRequest({
+        link,
+        category,
+        generation,
+        description,
+      });
+      adapter.create({
+        render: () => <Snackbar message="콘텐츠 추가 요청을 보냈어요." />,
+      });
+      router.back();
+    } catch (error) {
+      adapter.create({
+        render: () => <Snackbar message="요청 제출에 실패했어요. 다시 시도해 주세요." />,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -263,8 +280,9 @@ export default function AddRequestForm({ generations }: { generations: string[] 
           variant="neutralSolid"
           style={{ width: "100%" }}
           onClick={handleSubmit}
+          disabled={isSubmitting}
         >
-          추가 요청 보내기
+          {isSubmitting ? "제출 중..." : "추가 요청 보내기"}
         </ActionButton>
       </div>
     </div>
