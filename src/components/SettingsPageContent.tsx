@@ -128,7 +128,7 @@ export default function SettingsPageContent() {
         </BottomSheetContent>
       </BottomSheetRoot>
 
-      <Divider />
+      <Divider style={{ marginTop: "var(--seed-dimension-x6)", marginBottom: "var(--seed-dimension-x6)" }} />
 
       <BottomSheetRoot open={sheetOpen} onOpenChange={handleSheetOpenChange} closeOnEscape closeOnInteractOutside>
         <ListHeader as="h2">보기 옵션</ListHeader>
@@ -146,7 +146,6 @@ export default function SettingsPageContent() {
               </List.Suffix>
             </Switch.Root>
           </List.Item>
-          <Divider as="li" aria-hidden />
           <List.Item>
             <BottomSheetTrigger asChild>
               <List.Content asChild>
