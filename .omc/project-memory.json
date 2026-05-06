@@ -159,26 +159,44 @@
   "hotPaths": [
     {
       "path": "src/components/SettingsPageContent.tsx",
-      "accessCount": 11,
-      "lastAccessed": 1777974058584,
-      "type": "file"
-    },
-    {
-      "path": "src/components/PlaylistView.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1777974591206,
-      "type": "file"
-    },
-    {
-      "path": "src/app/page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1777974591857,
+      "accessCount": 30,
+      "lastAccessed": 1778035053180,
       "type": "file"
     },
     {
       "path": "src/app/globals.css",
+      "accessCount": 8,
+      "lastAccessed": 1778034688470,
+      "type": "file"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1778021517901,
+      "type": "file"
+    },
+    {
+      "path": "src/components/FilterBar.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1778031424505,
+      "type": "file"
+    },
+    {
+      "path": "src/components/PlaylistView.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1778030506774,
+      "type": "file"
+    },
+    {
+      "path": "src/components/VideoItem.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1778031425773,
+      "type": "file"
+    },
+    {
+      "path": "src/components/SettingsProvider.tsx",
       "accessCount": 4,
-      "lastAccessed": 1777974603376,
+      "lastAccessed": 1778030585191,
       "type": "file"
     },
     {
@@ -188,21 +206,33 @@
       "type": "file"
     },
     {
-      "path": "src/components/SettingsProvider.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1777974580282,
-      "type": "file"
-    },
-    {
       "path": "src/ui/bottom-sheet.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1777974492363,
+      "accessCount": 3,
+      "lastAccessed": 1778030915501,
       "type": "file"
     },
     {
       "path": "src/components/SettingsSheet.tsx",
       "accessCount": 2,
       "lastAccessed": 1777974565541,
+      "type": "file"
+    },
+    {
+      "path": "src/components/SettingsLink.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778021498708,
+      "type": "file"
+    },
+    {
+      "path": "src/app/settings/page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778021512336,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/select-box.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778030488870,
       "type": "file"
     },
     {
@@ -224,18 +254,6 @@
       "type": "file"
     },
     {
-      "path": "src/components/VideoItem.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1777972372404,
-      "type": "file"
-    },
-    {
-      "path": "src/components/FilterBar.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1777972373312,
-      "type": "file"
-    },
-    {
       "path": "src/lib/storage.ts",
       "accessCount": 1,
       "lastAccessed": 1777972373929,
@@ -251,24 +269,6 @@
       "path": "src/lib/playlist.ts",
       "accessCount": 1,
       "lastAccessed": 1777972378596,
-      "type": "file"
-    },
-    {
-      "path": "src/components/SettingsLink.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1777972379976,
-      "type": "file"
-    },
-    {
-      "path": "src/app/settings/page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1777972584027,
-      "type": "file"
-    },
-    {
-      "path": "src/ui/select-box.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1777973198837,
       "type": "file"
     },
     {

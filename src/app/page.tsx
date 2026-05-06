@@ -1,6 +1,6 @@
 import { storage } from "@/lib/playlist";
 import PlaylistView from "@/components/PlaylistView";
-import SettingsSheet from "@/components/SettingsSheet";
+import SettingsLink from "@/components/SettingsLink";
 import HasuLogo from "@/components/HasuLogo";
 import { SettingsProvider } from "@/components/SettingsProvider";
 
@@ -24,7 +24,7 @@ export default async function Home() {
               하스노소라 여학원 스쿨 아이돌 클럽 Link! Like! 러브 라이브! 활동기록 모아보기
             </p>
           </div>
-          <SettingsSheet />
+          <SettingsLink />
         </div>
         <PlaylistView initialData={data} />
       </main>

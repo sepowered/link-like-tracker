@@ -162,7 +162,7 @@ function WatchFilterSheet({
   const [selected, setSelected] = useState<FilterType>(currentFilter);
 
   return (
-    <BottomSheetContent title="시청 상태">
+    <BottomSheetContent title="시청 상태" aria-describedby={undefined} style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}>
       <BottomSheetBody>
         <HStack gap="x2" wrap>
           {FILTERS.map((f) => (
@@ -228,7 +228,7 @@ function CategoryFilterSheet({
   };
 
   return (
-    <BottomSheetContent title="분류">
+    <BottomSheetContent title="분류" aria-describedby={undefined} style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}>
       <BottomSheetBody>
         <HStack gap="x2" wrap>
           {CATEGORY_FILTERS.map((item) => (

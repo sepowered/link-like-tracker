@@ -323,32 +323,31 @@ body {
   opacity: 1;
 }
 
-/* ─── 설정 시트 ───────────────────────────────────────────────── */
+/* ─── 설정 페이지 ─────────────────────────────────────────────── */
 
-.settings-section-block {
-  padding: 16px 0;
+.settings-page {
+  padding-bottom: 32px;
 }
 
-.settings-section-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--seed-color-fg-neutral-subtle);
-  margin: 0 0 12px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.settings-row {
+.settings-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
-  padding: 4px 0;
+  padding: 8px 0 16px;
 }
 
-.settings-row-label {
-  font-size: 15px;
+.settings-title {
+  font-size: 18px;
+  font-weight: 700;
   color: var(--seed-color-fg-neutral);
+  margin: 0;
+}
+
+
+.settings-sheet-hint {
+  font-size: 13px;
+  color: var(--seed-color-fg-neutral-subtle);
+  margin: 0 0 12px 0;
 }
 
 /* ─── 반응형 ──────────────────────────────────────────────────── */
