@@ -21,5 +21,11 @@ export default async function EditRequestPage({
 
   if (!video) notFound();
 
-  return <EditRequestForm video={video} />;
+  const seen = new Set<string>();
+  for (const season of data.seasons) {
+    seen.add(season.id.split("-")[0]);
+  }
+  const generations = [...seen];
+
+  return <EditRequestForm video={video} generations={generations} />;
 }

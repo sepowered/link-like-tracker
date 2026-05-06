@@ -158,9 +158,15 @@
   },
   "hotPaths": [
     {
+      "path": "src/app/edit-request/[videoId]/EditRequestForm.tsx",
+      "accessCount": 38,
+      "lastAccessed": 1778083773794,
+      "type": "file"
+    },
+    {
       "path": "src/components/PlaylistView.tsx",
-      "accessCount": 28,
-      "lastAccessed": 1778076829772,
+      "accessCount": 35,
+      "lastAccessed": 1778082143235,
       "type": "file"
     },
     {
@@ -176,9 +182,9 @@
       "type": "file"
     },
     {
-      "path": "src/app/edit-request/[videoId]/EditRequestForm.tsx",
-      "accessCount": 18,
-      "lastAccessed": 1778081691620,
+      "path": "src/app/add-request/AddRequestForm.tsx",
+      "accessCount": 16,
+      "lastAccessed": 1778083394247,
       "type": "file"
     },
     {
@@ -194,21 +200,27 @@
       "type": "file"
     },
     {
+      "path": "src/app/edit-request/[videoId]/page.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1778083585408,
+      "type": "file"
+    },
+    {
       "path": "src/app/page.tsx",
       "accessCount": 5,
       "lastAccessed": 1778080654217,
       "type": "file"
     },
     {
-      "path": "src/app/edit-request/[videoId]/page.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1778081024659,
-      "type": "file"
-    },
-    {
       "path": "src/app/layout.tsx",
       "accessCount": 3,
       "lastAccessed": 1778080657822,
+      "type": "file"
+    },
+    {
+      "path": "src/app/add-request/page.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1778083311590,
       "type": "file"
     },
     {
@@ -281,6 +293,18 @@
       "path": "src/ui/menu.tsx",
       "accessCount": 1,
       "lastAccessed": 1778075924818,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/page-banner.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778082069464,
+      "type": "file"
+    },
+    {
+      "path": "src/ui/select-box.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778082362788,
       "type": "file"
     }
   ],
