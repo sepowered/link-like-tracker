@@ -17,6 +17,8 @@ import {
   BottomSheetFooter,
 } from "@/ui/bottom-sheet";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
+import { PageBanner, PageBannerButton } from "@/ui/page-banner";
+import Link from "next/link";
 import { IconChevronDownLine } from "@karrotmarket/react-monochrome-icon";
 
 type FilterType = "all" | "watched" | "unwatched";
@@ -313,6 +315,13 @@ export default function PlaylistView({ initialData }: Props) {
           {errorMessage}
         </p>
       ) : null}
+
+      {/* 추가 요청 배너 */}
+      <PageBanner
+        tone="positive"
+        description="아직 추가되지 않은 스토리 및 콘텐츠가 있나요?"
+        suffix={<PageBannerButton asChild><Link href="/add-request">추가 요청하기</Link></PageBannerButton>}
+      />
 
       {/* 시즌별 그룹 */}
       {(sortOrder === "newest" ? [...generationSeasons].reverse() : generationSeasons).map((season) => (
