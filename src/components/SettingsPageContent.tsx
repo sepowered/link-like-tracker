@@ -11,9 +11,9 @@ import {
   Icon,
   List,
   ListHeader,
-  SegmentedControl,
   Switch,
 } from "@seed-design/react";
+import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import {
   BottomSheetRoot,
   BottomSheetTrigger,
@@ -26,8 +26,6 @@ import {
   IconCheckmarkFatFill,
   IconChevronLeftLine,
   IconChevronRightLine,
-  IconSunLine,
-  IconMoonLine,
 } from "@karrotmarket/react-monochrome-icon";
 
 const CATEGORY_OPTIONS: { value: VideoCategory; label: string }[] = [
@@ -93,38 +91,48 @@ export default function SettingsPageContent() {
         <div style={{ width: "36px" }} />
       </div>
 
-      <ListHeader as="h2">테마</ListHeader>
-      <List.Root>
-        <List.Item>
-          <List.Content>
-            <List.Title>다크 모드</List.Title>
-          </List.Content>
-          <List.Suffix>
-            <SegmentedControl.Root
+      <BottomSheetRoot closeOnEscape closeOnInteractOutside>
+        <ListHeader as="h2">테마</ListHeader>
+        <List.Root style={{ margin: 0 }}>
+          <List.Item>
+            <BottomSheetTrigger asChild>
+              <List.Content asChild>
+                <button type="button">
+                  <List.Title>화면 스타일</List.Title>
+                </button>
+              </List.Content>
+            </BottomSheetTrigger>
+            <List.Suffix style={{ color: "var(--seed-color-fg-neutral-subtle)", fontSize: "14px", display: "flex", alignItems: "center", gap: "2px" }}>
+              {colorScheme === "dark" ? "다크" : colorScheme === "light" ? "라이트" : "시스템"}
+              <Icon svg={<IconChevronRightLine />} size="16px" />
+            </List.Suffix>
+          </List.Item>
+        </List.Root>
+        <BottomSheetContent
+          title="화면 스타일"
+          showCloseButton
+          aria-describedby={undefined}
+          style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
+        >
+          <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x6)" }}>
+            <RadioGroup
+              aria-label="화면 스타일"
               value={colorScheme}
-              onValueChange={(v) => setColorScheme(v as "light" | "dark")}
-              aria-label="다크 모드"
-              style={{ width: "fit-content", minWidth: "auto" }}
+              onValueChange={(v) => setColorScheme(v as "light" | "dark" | "system")}
             >
-              <SegmentedControl.Indicator />
-              <SegmentedControl.Item value="light" style={{ minWidth: "40px", padding: "0 8px" }}>
-                <SegmentedControl.ItemHiddenInput aria-label="라이트 모드" />
-                <Icon svg={<IconSunLine />} size="20px" />
-              </SegmentedControl.Item>
-              <SegmentedControl.Item value="dark" style={{ minWidth: "40px", padding: "0 8px" }}>
-                <SegmentedControl.ItemHiddenInput aria-label="다크 모드" />
-                <Icon svg={<IconMoonLine />} size="20px" />
-              </SegmentedControl.Item>
-            </SegmentedControl.Root>
-          </List.Suffix>
-        </List.Item>
-      </List.Root>
+              <RadioGroupItem value="system" label="시스템 설정 사용" tone="neutral" size="large" />
+              <RadioGroupItem value="light" label="라이트" tone="neutral" size="large" />
+              <RadioGroupItem value="dark" label="다크" tone="neutral" size="large" />
+            </RadioGroup>
+          </BottomSheetBody>
+        </BottomSheetContent>
+      </BottomSheetRoot>
 
       <Divider />
 
       <BottomSheetRoot open={sheetOpen} onOpenChange={handleSheetOpenChange} closeOnEscape closeOnInteractOutside>
         <ListHeader as="h2">보기 옵션</ListHeader>
-        <List.Root>
+        <List.Root style={{ margin: 0 }}>
           <List.Item asChild>
             <Switch.Root checked={hidePrivateVideos} onCheckedChange={setHidePrivateVideos} tone="neutral" style={{ alignItems: "center" }}>
               <Switch.HiddenInput />
