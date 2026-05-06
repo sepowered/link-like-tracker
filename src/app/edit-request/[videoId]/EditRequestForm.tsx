@@ -20,6 +20,7 @@ import {
   IconArrowUpRightLine,
 } from "@karrotmarket/react-monochrome-icon";
 import type { Video } from "@/types";
+import { submitEditRequest } from "@/app/actions/requests";
 
 const REQUEST_TYPES = [
   { value: "wrong-link", label: "링크가 달라요 (다른 영상으로 연결돼요)" },
@@ -49,6 +50,7 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
   const [generationSheetOpen, setGenerationSheetOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const needsDescription = requestType === "wrong-category" && category === "not-listed";
 
@@ -64,13 +66,30 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
 
   const categoryLabel = CATEGORIES.find((c) => c.value === category)?.label;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitted(true);
     if (isFormInvalid) return;
-    adapter.create({
-      render: () => <Snackbar message="수정 요청을 보냈어요." />,
-    });
-    router.back();
+    
+    setIsSubmitting(true);
+    try {
+      await submitEditRequest({
+        video_title: video.title,
+        request_type: requestType,
+        category,
+        generation,
+        description,
+      });
+      adapter.create({
+        render: () => <Snackbar message="수정 요청을 보냈어요." />,
+      });
+      router.back();
+    } catch (error) {
+      adapter.create({
+        render: () => <Snackbar message="요청 제출에 실패했어요. 다시 시도해 주세요." />,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -346,8 +365,9 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
           variant="neutralSolid"
           style={{ width: "100%" }}
           onClick={handleSubmit}
+          disabled={isSubmitting}
         >
-          수정 요청 보내기
+          {isSubmitting ? "제출 중..." : "수정 요청 보내기"}
         </ActionButton>
       </div>
     </div>
