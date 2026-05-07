@@ -42,3 +42,7 @@ next-env.d.ts
 
 # playlist watch state (changes frequently, not tracked)
 /data/playlist.json
+
+# tool state directories
+.omc/
+.codex/
