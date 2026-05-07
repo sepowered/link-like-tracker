@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Video } from "@/types";
 import { VideoCategory, getVideoCategoryLabel } from "@/lib/video-category";
-import { Checkbox, Icon, MenuSheet, ActionButton, HStack, Portal } from "@seed-design/react";
+import { Checkbox, PrefixIcon, MenuSheet, ActionButton, HStack, Portal } from "@seed-design/react";
 import { Chip } from "@/ui/chip";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
@@ -206,7 +206,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
               <MenuSheet.List>
                 <MenuSheet.Group>
                   <MenuSheet.Item onClick={handleToggleWatch}>
-                    <Icon svg={<IconCheckmarkLine />} size="20px" />
+                    <PrefixIcon svg={<IconCheckmarkLine />} />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>
                         {video.watched ? "시청 완료 취소" : "시청 완료 표시"}
@@ -216,19 +216,19 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
                 </MenuSheet.Group>
                 <MenuSheet.Group>
                   <MenuSheet.Item onClick={handleGoToYouTube}>
-                    <Icon svg={<IconArrowUpRightLine />} size="20px" />
+                    <PrefixIcon svg={<IconArrowUpRightLine />} />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>유튜브로 이동</MenuSheet.ItemLabel>
                     </MenuSheet.ItemContent>
                   </MenuSheet.Item>
                   <MenuSheet.Item onClick={handleShare}>
-                    <Icon svg={<IconAndroidshareLine />} size="20px" />
+                    <PrefixIcon svg={<IconAndroidshareLine />} />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>공유하기</MenuSheet.ItemLabel>
                     </MenuSheet.ItemContent>
                   </MenuSheet.Item>
                   <MenuSheet.Item onClick={handleCopyLink}>
-                    <Icon svg={<IconPaperclipLine />} size="20px" />
+                    <PrefixIcon svg={<IconPaperclipLine />} />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>링크 복사</MenuSheet.ItemLabel>
                     </MenuSheet.ItemContent>
@@ -236,7 +236,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
                 </MenuSheet.Group>
                 <MenuSheet.Group>
                   <MenuSheet.Item onClick={handleEditRequest}>
-                    <Icon svg={<IconPencilLine />} size="20px" />
+                    <PrefixIcon svg={<IconPencilLine />} />
                     <MenuSheet.ItemContent>
                       <MenuSheet.ItemLabel>정보 수정 요청</MenuSheet.ItemLabel>
                     </MenuSheet.ItemContent>

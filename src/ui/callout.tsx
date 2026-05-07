@@ -10,6 +10,7 @@ import {
   CalloutTitle,
   CalloutDescription,
   CalloutLink,
+  PrefixIcon,
   type CalloutRootProps,
   type CalloutLinkProps,
 } from "@seed-design/react";
@@ -20,6 +21,7 @@ export interface CalloutProps
   title?: React.ReactNode;
   description: React.ReactNode;
   linkProps?: CalloutLinkProps;
+  prefixIcon?: React.ReactNode;
 }
 
 /**
@@ -28,9 +30,10 @@ export interface CalloutProps
 export const Callout = React.forwardRef<
   React.ElementRef<typeof CalloutRoot>,
   CalloutProps
->(({ title, description, linkProps, ...otherProps }, ref) => {
+>(({ title, description, linkProps, prefixIcon, ...otherProps }, ref) => {
   return (
     <CalloutRoot ref={ref} {...otherProps}>
+      {prefixIcon && <PrefixIcon svg={prefixIcon} />}
       <CalloutContent>
         {title && <CalloutTitle>{title}</CalloutTitle>}
         <CalloutDescription>{description}</CalloutDescription>

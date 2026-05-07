@@ -105,7 +105,7 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
 
       {/* 추가 요청 배너 - 헤더 바로 아래 */}
       <PageBanner
-        tone="positive"
+        tone="informative"
         description="아직 추가되지 않은 스토리 및 콘텐츠가 있나요?"
         suffix={
           <PageBannerButton asChild>
