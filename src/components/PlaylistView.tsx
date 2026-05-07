@@ -17,7 +17,7 @@ import {
   BottomSheetFooter,
 } from "@/ui/bottom-sheet";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
-import { PageBanner, PageBannerButton } from "@/ui/page-banner";
+import { Callout } from "@/ui/callout";
 import Link from "next/link";
 import { IconChevronDownLine } from "@karrotmarket/react-monochrome-icon";
 
@@ -317,11 +317,16 @@ export default function PlaylistView({ initialData }: Props) {
       ) : null}
 
       {/* 추가 요청 배너 */}
-      <PageBanner
-        tone="positive"
-        description="아직 추가되지 않은 스토리 및 콘텐츠가 있나요?"
-        suffix={<PageBannerButton asChild><Link href="/add-request" style={{ textDecoration: "none" }}>추가 요청하기</Link></PageBannerButton>}
-      />
+      <div style={{ padding: "0 var(--seed-dimension-spacing-x-global-gutter)", marginBottom: "8px" }}>
+        <Callout
+          tone="informative"
+          description="아직 추가되지 않은 스토리 및 콘텐츠가 있나요?"
+          linkProps={{
+            asChild: true,
+            children: <Link href="/add-request">추가 요청하기</Link>,
+          }}
+        />
+      </div>
 
       {/* 시즌별 그룹 */}
       {(sortOrder === "newest" ? [...generationSeasons].reverse() : generationSeasons).map((season) => (

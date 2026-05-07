@@ -143,7 +143,7 @@ export default function FilterBar({
           variant="solid"
           onClick={handleSortToggle}
         >
-          <Chip.Label>{sortOrder === "newest" ? "최신순" : "과거순"}</Chip.Label>
+          <Chip.Label>{sortOrder === "newest" ? "과거순" : "최신순"}</Chip.Label>
         </Chip.Button>
 
       </Flex>
