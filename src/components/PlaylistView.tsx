@@ -25,6 +25,7 @@ type FilterType = "all" | "watched" | "unwatched";
 
 const STORAGE_KEY_WATCHED = "llt-watched";
 const STORAGE_KEY_OVERRIDES = "llt-overrides";
+const STORAGE_KEY_FILTERS = "llt-filters";
 
 function isUnavailableVideoTitle(title: string) {
   return title === "[Private video]" || title === "[Deleted video]";
@@ -40,6 +41,7 @@ export default function PlaylistView({ initialData }: Props) {
   const [categories, setCategories] = useState<VideoCategory[]>(["all"]);
   const [query, setQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
 
   const generations = useMemo(() => {
     const seen = new Set<string>();
@@ -87,6 +89,7 @@ export default function PlaylistView({ initialData }: Props) {
     try {
       const watchedIdsRaw = localStorage.getItem(STORAGE_KEY_WATCHED);
       const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
+      const filtersRaw = localStorage.getItem(STORAGE_KEY_FILTERS);
 
       const watchedIds: string[] = watchedIdsRaw ? JSON.parse(watchedIdsRaw) : [];
       const overrides: Record<string, string | null> = overridesRaw ? JSON.parse(overridesRaw) : {};
@@ -97,7 +100,7 @@ export default function PlaylistView({ initialData }: Props) {
           videos: season.videos.map((v) => {
             const hasWatchedLocal = watchedIds.includes(v.id);
             const overrideLocal = overrides[v.id];
-            
+
             return {
               ...v,
               watched: hasWatchedLocal || v.watched,
@@ -106,12 +109,30 @@ export default function PlaylistView({ initialData }: Props) {
           }),
         })),
       }));
+
+      if (filtersRaw) {
+        const saved = JSON.parse(filtersRaw);
+        if (saved.filter) setFilter(saved.filter);
+        if (saved.categories) setCategories(saved.categories);
+        if (saved.sortOrder) setSortOrder(saved.sortOrder);
+      }
     } catch (e) {
       console.error("Failed to load local storage", e);
     } finally {
       setIsInitialized(true);
+      setFiltersInitialized(true);
     }
   }, []);
+
+  // Save filter state to localStorage
+  useEffect(() => {
+    if (!filtersInitialized) return;
+    try {
+      localStorage.setItem(STORAGE_KEY_FILTERS, JSON.stringify({ filter, categories, sortOrder }));
+    } catch (e) {
+      console.error("Failed to save filters to localStorage", e);
+    }
+  }, [filter, categories, sortOrder, filtersInitialized]);
 
   // Save changes to localStorage
   const saveToLocalStorage = (nextData: PlaylistData) => {
