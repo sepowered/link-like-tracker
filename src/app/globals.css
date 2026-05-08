@@ -42,28 +42,51 @@ body {
   margin-bottom: 0;
 }
 
-.compact-header {
+.compact-bar-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: calc(env(safe-area-inset-top) + 12px) 8px 12px;
-  background-color: var(--seed-color-bg-layer-default);
-  border-bottom: 1px solid var(--seed-color-stroke-neutral-weak);
   z-index: 100;
+  background-color: var(--seed-color-bg-layer-default);
   opacity: 0;
   transform: translateY(-100%);
   transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
 }
 
-.compact-header--visible {
+.compact-bar-wrapper--visible {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+
+.compact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top) + 12px) var(--seed-dimension-spacing-x-global-gutter) 12px;
+}
+
+.compact-sticky-filter {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+}
+
+.compact-sticky-filter--visible {
+  max-height: 80px;
+  opacity: 1;
+}
+
+.compact-sticky-filter .filter-section {
+  margin-bottom: 0;
+  padding-bottom: 8px;
+}
+
+.compact-sticky-filter .filter-bar {
+  padding-top: 0;
 }
 
 .generation-title-button {
@@ -86,7 +109,6 @@ body {
   font-weight: 700;
   color: var(--seed-color-fg-neutral);
   letter-spacing: -0.02em;
-  padding-left: 8px;
 }
 
 

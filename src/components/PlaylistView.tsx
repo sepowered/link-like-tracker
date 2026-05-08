@@ -69,7 +69,9 @@ export default function PlaylistView({ initialData }: Props) {
   );
 
   const [pendingGeneration, setPendingGeneration] = useState<string>(selectedGeneration);
+  const lastScrollY = useRef(0);
   const [scrolled, setScrolled] = useState(false);
+  const [scrollingUp, setScrollingUp] = useState(false);
   const [compactSearchOpen, setCompactSearchOpen] = useState(false);
   const compactSearchRef = useRef<HTMLInputElement>(null);
 
@@ -139,7 +141,10 @@ export default function PlaylistView({ initialData }: Props) {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 60);
+      const currentY = window.scrollY;
+      setScrollingUp(currentY < lastScrollY.current);
+      setScrolled(currentY > 60);
+      lastScrollY.current = currentY;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -244,6 +249,7 @@ export default function PlaylistView({ initialData }: Props) {
   }
 
   const showCompactHeader = scrolled;
+  const showStickyFilter = scrolled && scrollingUp;
 
   if (!isInitialized) return null; // Prevent flash of original data before local storage load
 
@@ -290,7 +296,8 @@ export default function PlaylistView({ initialData }: Props) {
       )}
 
       {/* 컴팩트 스티키 헤더 */}
-      <div className={`compact-header${showCompactHeader ? " compact-header--visible" : ""}`}>
+      <div className={`compact-bar-wrapper${showCompactHeader ? " compact-bar-wrapper--visible" : ""}`}>
+      <div className="compact-header">
         {compactSearchOpen ? (
           <>
             <TextFieldRoot
@@ -345,6 +352,20 @@ export default function PlaylistView({ initialData }: Props) {
             </div>
           </>
         )}
+      </div>
+      <div className={`compact-sticky-filter${showStickyFilter ? " compact-sticky-filter--visible" : ""}`}>
+        <FilterBar
+          filter={filter}
+          categories={categories}
+          query={query}
+          sortOrder={sortOrder}
+          onFilterChange={setFilter}
+          onCategoriesChange={setCategories}
+          onQueryChange={setQuery}
+          onSortOrderChange={setSortOrder}
+          hideSearch
+        />
+      </div>
       </div>
 
       {/* 헤더 */}

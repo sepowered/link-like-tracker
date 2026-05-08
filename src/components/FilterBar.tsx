@@ -54,6 +54,7 @@ interface Props {
   onCategoriesChange: (categories: VideoCategory[]) => void;
   onQueryChange: (q: string) => void;
   onSortOrderChange: (order: "newest" | "oldest") => void;
+  hideSearch?: boolean;
 }
 
 export default function FilterBar({
@@ -65,6 +66,7 @@ export default function FilterBar({
   onCategoriesChange,
   onQueryChange,
   onSortOrderChange,
+  hideSearch = false,
 }: Props) {
   const [openSheet, setOpenSheet] = useState<SheetType | null>(null);
   const adapter = useSnackbarAdapter();
@@ -149,27 +151,29 @@ export default function FilterBar({
       </Flex>
 
       {/* 검색 */}
-      <TextFieldRoot
-        value={query}
-        onValueChange={onQueryChange}
-        size="medium"
-        className="search-field"
-      >
-        <TextFieldPrefixIcon svg={<IconMagnifyingglassLine />} />
-        <TextFieldInput placeholder="제목 검색..." aria-label="영상 제목 검색" />
-        {query && (
-          <div className="search-clear-wrapper">
-            <ActionButton
-              variant="ghost"
-              size="xsmall"
-              onClick={() => onQueryChange("")}
-              aria-label="검색어 지우기"
-            >
-              <Icon svg={<IconXmarkLine />} size="16px" />
-            </ActionButton>
-          </div>
-        )}
-      </TextFieldRoot>
+      {!hideSearch && (
+        <TextFieldRoot
+          value={query}
+          onValueChange={onQueryChange}
+          size="medium"
+          className="search-field"
+        >
+          <TextFieldPrefixIcon svg={<IconMagnifyingglassLine />} />
+          <TextFieldInput placeholder="제목 검색..." aria-label="영상 제목 검색" />
+          {query && (
+            <div className="search-clear-wrapper">
+              <ActionButton
+                variant="ghost"
+                size="xsmall"
+                onClick={() => onQueryChange("")}
+                aria-label="검색어 지우기"
+              >
+                <Icon svg={<IconXmarkLine />} size="16px" />
+              </ActionButton>
+            </div>
+          )}
+        </TextFieldRoot>
+      )}
     </div>
   );
 }
