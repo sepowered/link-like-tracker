@@ -138,7 +138,7 @@ export default function VideoItem({ video, category, onToggle, onUpdateCategory 
   };
 
   return (
-    <div className={`video-item${video.watched ? " watched" : ""}`}>
+    <div id={`video-${video.id}`} className={`video-item${video.watched ? " watched" : ""}`}>
       <Checkbox.Root
         checked={video.watched}
         onCheckedChange={() => onToggle(video.id)}

@@ -19,7 +19,8 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { Callout } from "@/ui/callout";
 import Link from "next/link";
-import { IconChevronDownLine, IconExclamationmarkCircleLine, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
+import { IconChevronDownLine, IconCrosshairLine, IconExclamationmarkCircleLine, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
+import { FloatingActionButton } from "@/ui/floating-action-button";
 
 type FilterType = "all" | "watched" | "unwatched";
 
@@ -251,6 +252,26 @@ export default function PlaylistView({ initialData }: Props) {
   const showCompactHeader = scrolled;
   const showStickyFilter = scrolled && scrollingUp;
 
+  const nextToWatchId = useMemo(() => {
+    for (const season of generationSeasons) {
+      for (const video of season.videos) {
+        if (!video.watched) return video.id;
+      }
+    }
+    return null;
+  }, [generationSeasons]);
+
+  const [scrollTargetId, setScrollTargetId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!scrollTargetId) return;
+    const timer = setTimeout(() => {
+      document.getElementById(`video-${scrollTargetId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setScrollTargetId(null);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [scrollTargetId]);
+
   if (!isInitialized) return null; // Prevent flash of original data before local storage load
 
   return (
@@ -439,8 +460,26 @@ export default function PlaylistView({ initialData }: Props) {
           classifyVideoCategory={classifyVideoCategory}
           onToggle={handleToggle}
           onUpdateCategory={handleUpdateCategory}
+          scrollToVideoId={scrollTargetId}
         />
       ))}
+
+      {/* 다음 미시청 콘텐츠 이동 FAB */}
+      {nextToWatchId && (
+        <div style={{
+          position: "fixed",
+          bottom: "calc(24px + env(safe-area-inset-bottom))",
+          right: "16px",
+          zIndex: 50,
+        }}>
+          <FloatingActionButton
+            icon={<IconCrosshairLine />}
+            label="다음 미시청 콘텐츠로 이동"
+            extended={false}
+            onClick={() => setScrollTargetId(nextToWatchId)}
+          />
+        </div>
+      )}
     </div>
   );
 }
