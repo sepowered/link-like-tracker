@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { generateThemingScript } from "@seed-design/css/theming";
 import { SettingsProvider } from "@/components/SettingsProvider";
+import { AuthProvider } from "@/providers/AuthProvider";
 import { SnackbarProvider } from "@/ui/snackbar";
 import { Analytics } from "@vercel/analytics/next";
 import "@seed-design/css/all.css";
@@ -38,7 +39,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themingScript }} />
         <script dangerouslySetInnerHTML={{ __html: themePreferenceScript }} />
       </head>
-      <body><SnackbarProvider pauseOnInteraction={false}><SettingsProvider>{children}</SettingsProvider></SnackbarProvider><Analytics /></body>
+      <body><SnackbarProvider pauseOnInteraction={false}><AuthProvider><SettingsProvider>{children}</SettingsProvider></AuthProvider></SnackbarProvider><Analytics /></body>
     </html>
   );
 }
