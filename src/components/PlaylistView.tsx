@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { PlaylistData } from "@/types";
 import { VideoCategory, classifyVideoCategory } from "@/lib/video-category";
 import { useSettings } from "./SettingsProvider";
 import SeasonGroup from "./SeasonGroup";
 import FilterBar from "./FilterBar";
 import SettingsLink from "./SettingsLink";
-import * as Progress from "@radix-ui/react-progress";
-import { ActionButton, Icon } from "@seed-design/react";
+import PlaylistProgress from "./PlaylistProgress";
+import AppBar from "./AppBar";
+import { ActionButton, Icon, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import {
   BottomSheetRoot,
-  BottomSheetTrigger,
   BottomSheetContent,
   BottomSheetBody,
   BottomSheetFooter,
@@ -19,7 +19,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { Callout } from "@/ui/callout";
 import Link from "next/link";
-import { IconChevronDownLine, IconExclamationmarkCircleLine } from "@karrotmarket/react-monochrome-icon";
+import { IconChevronDownLine, IconExclamationmarkCircleLine, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 
 type FilterType = "all" | "watched" | "unwatched";
 
@@ -69,6 +69,9 @@ export default function PlaylistView({ initialData }: Props) {
   );
 
   const [pendingGeneration, setPendingGeneration] = useState<string>(selectedGeneration);
+  const [scrolled, setScrolled] = useState(false);
+  const [compactSearchOpen, setCompactSearchOpen] = useState(false);
+  const compactSearchRef = useRef<HTMLInputElement>(null);
 
   function handleGenerationSheetOpenChange(open: boolean) {
     if (open) setPendingGeneration(selectedGeneration);
@@ -133,6 +136,14 @@ export default function PlaylistView({ initialData }: Props) {
       console.error("Failed to save filters to localStorage", e);
     }
   }, [filter, categories, sortOrder, filtersInitialized]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 60);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Save changes to localStorage
   const saveToLocalStorage = (nextData: PlaylistData) => {
@@ -232,84 +243,127 @@ export default function PlaylistView({ initialData }: Props) {
     });
   }
 
-  const percent = stats.total > 0 ? Math.round((stats.watched / stats.total) * 100) : 0;
+  const showCompactHeader = scrolled;
 
   if (!isInitialized) return null; // Prevent flash of original data before local storage load
 
   return (
     <div>
-      {/* 헤더 */}
-      <div className="page-header">
-        <h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--seed-color-fg-neutral)", margin: 0, letterSpacing: "-0.02em" }}>
-          link-like-tracker
-        </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-          {generations.length > 1 && (
-            <BottomSheetRoot
-              open={generationSheetOpen}
-              onOpenChange={handleGenerationSheetOpenChange}
-              closeOnEscape
-              closeOnInteractOutside
-            >
-              <BottomSheetTrigger asChild>
-                <ActionButton variant="ghost" size="small">
-                  {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
-                  <Icon svg={<IconChevronDownLine />} size="16px" />
-                </ActionButton>
-              </BottomSheetTrigger>
-              <BottomSheetContent
-                title="기수 선택"
-                showCloseButton
-                aria-describedby={undefined}
-                style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
+      {/* 기수 선택 시트 */}
+      {generations.length > 1 && (
+        <BottomSheetRoot
+          open={generationSheetOpen}
+          onOpenChange={handleGenerationSheetOpenChange}
+          closeOnEscape
+          closeOnInteractOutside
+        >
+          <BottomSheetContent
+            title="기수 선택"
+            showCloseButton
+            aria-describedby={undefined}
+            style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
+          >
+            <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x6)" }}>
+              <RadioGroup
+                aria-label="기수 선택"
+                value={pendingGeneration}
+                onValueChange={setPendingGeneration}
               >
-                <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x6)" }}>
-                  <RadioGroup
-                    aria-label="기수 선택"
-                    value={pendingGeneration}
-                    onValueChange={setPendingGeneration}
-                  >
-                    <RadioGroupItem value="all" label="전체" tone="neutral" size="large" />
-                    {generations.map((gen) => (
-                      <RadioGroupItem key={gen} value={gen} label={`${gen}기`} tone="neutral" size="large" />
-                    ))}
-                  </RadioGroup>
-                </BottomSheetBody>
-                <BottomSheetFooter>
-                  <ActionButton
-                    size="large"
-                    variant="neutralSolid"
-                    style={{ width: "100%" }}
-                    onClick={handleGenerationSave}
-                  >
-                    저장
-                  </ActionButton>
-                </BottomSheetFooter>
-              </BottomSheetContent>
-            </BottomSheetRoot>
-          )}
-          <SettingsLink />
-        </div>
+                <RadioGroupItem value="all" label="전체" tone="neutral" size="large" />
+                {generations.map((gen) => (
+                  <RadioGroupItem key={gen} value={gen} label={`${gen}기`} tone="neutral" size="large" />
+                ))}
+              </RadioGroup>
+            </BottomSheetBody>
+            <BottomSheetFooter>
+              <ActionButton
+                size="large"
+                variant="neutralSolid"
+                style={{ width: "100%" }}
+                onClick={handleGenerationSave}
+              >
+                저장
+              </ActionButton>
+            </BottomSheetFooter>
+          </BottomSheetContent>
+        </BottomSheetRoot>
+      )}
+
+      {/* 컴팩트 스티키 헤더 */}
+      <div className={`compact-header${showCompactHeader ? " compact-header--visible" : ""}`}>
+        {compactSearchOpen ? (
+          <>
+            <TextFieldRoot
+              value={query}
+              onValueChange={setQuery}
+              size="medium"
+              style={{ flex: 1 }}
+            >
+              <TextFieldPrefixIcon svg={<IconMagnifyingglassLine />} />
+              <TextFieldInput
+                ref={compactSearchRef}
+                placeholder="제목 검색..."
+                aria-label="영상 제목 검색"
+                onKeyDown={(e) => { if (e.key === "Escape") { setQuery(""); setCompactSearchOpen(false); } }}
+              />
+            </TextFieldRoot>
+            <ActionButton
+              variant="ghost"
+              size="small"
+              aria-label="검색 닫기"
+              style={{ marginLeft: "4px", flexShrink: 0 }}
+              onClick={() => { setQuery(""); setCompactSearchOpen(false); }}
+            >
+              <Icon svg={<IconXmarkLine />} size="22px" />
+            </ActionButton>
+          </>
+        ) : (
+          <>
+            {generations.length > 1 ? (
+              <button className="generation-title-button compact-header-title" onClick={() => handleGenerationSheetOpenChange(true)}>
+                {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+                <Icon svg={<IconChevronDownLine />} size="16px" />
+              </button>
+            ) : (
+              <span className="compact-header-title">
+                {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+              </span>
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <ActionButton
+                variant="ghost"
+                size="small"
+                aria-label="검색"
+                onClick={() => {
+                  setCompactSearchOpen(true);
+                  setTimeout(() => compactSearchRef.current?.focus(), 50);
+                }}
+              >
+                <Icon svg={<IconMagnifyingglassLine />} size="22px" />
+              </ActionButton>
+              <SettingsLink />
+            </div>
+          </>
+        )}
       </div>
 
+      {/* 헤더 */}
+      <AppBar
+        variant="home"
+        title="lltracker"
+        leftSlot={
+          generations.length > 1 ? (
+            <button className="generation-title-button" onClick={() => handleGenerationSheetOpenChange(true)}>
+              {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+              <Icon svg={<IconChevronDownLine />} size="18px" />
+            </button>
+          ) : undefined
+        }
+        rightSlot={<SettingsLink />}
+      />
+
       {/* 전체 진행률 */}
-      <div className="progress-section">
-        <div className="progress-stats">
-          <div className="progress-stat-main">
-            <span className="progress-stat-watched">{stats.watched}</span>
-            <span className="progress-stat-sep"> / </span>
-            <span className="progress-stat-total">{stats.total}</span>
-            <span className="progress-stat-unit">편 시청</span>
-          </div>
-          <span className="progress-stat-percent">{percent}%</span>
-        </div>
-        <Progress.Root className="progress-root" value={percent}>
-          <Progress.Indicator
-            className="progress-indicator"
-            style={{ transform: `translateX(-${100 - percent}%)` }}
-          />
-        </Progress.Root>
-      </div>
+      <PlaylistProgress watched={stats.watched} total={stats.total} />
 
       {/* 필터 + 검색 */}
       <FilterBar

@@ -36,10 +36,57 @@ body {
 
 .page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  padding: calc(var(--seed-safe-area-top) + var(--seed-dimension-spacing-x-global-gutter)) var(--seed-dimension-spacing-x-global-gutter) 16px;
+  padding: calc(var(--seed-safe-area-top) + var(--seed-dimension-spacing-x-global-gutter) + 4px) var(--seed-dimension-spacing-x-global-gutter) 20px;
   margin-bottom: 0;
+}
+
+.compact-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top) + 12px) 8px 12px;
+  background-color: var(--seed-color-bg-layer-default);
+  border-bottom: 1px solid var(--seed-color-stroke-neutral-weak);
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.compact-header--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.generation-title-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--seed-color-fg-neutral);
+  letter-spacing: -0.02em;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.compact-header-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--seed-color-fg-neutral);
+  letter-spacing: -0.02em;
+  padding-left: 8px;
 }
 
 
