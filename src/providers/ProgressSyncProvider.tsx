@@ -36,6 +36,7 @@ import {
   type DeviceRow,
   type RemoteProgressRow,
 } from "@/lib/supabase-progress";
+import { getDeviceLabel } from "@/lib/device-info";
 import {
   ActionButton,
   Divider,
@@ -221,7 +222,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       setSyncing(true);
 
       try {
-        await upsertDevice(supabase, userId, devId);
+        await upsertDevice(supabase, userId, devId, getDeviceLabel());
 
         // Load or migrate local store, then sync legacy keys in case user
         // marked videos since last sync (PlaylistView writes only to legacy keys)
