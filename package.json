@@ -13,6 +13,7 @@
     "@radix-ui/react-progress": "^1.1.8",
     "@seed-design/css": "^1.2.11",
     "@seed-design/react": "^1.2.10",
+    "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.3",
     "@vercel/analytics": "^2.0.1",
     "next": "^16.2.4",
