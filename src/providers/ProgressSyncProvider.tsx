@@ -24,7 +24,9 @@ import {
   type ConflictPolicyMode,
   type LocalProgressStore,
   type ProgressEntry,
+  type ProgressStatus,
 } from "@/lib/progress-sync";
+import type { CategoryOverrideValue } from "@/lib/storage";
 import {
   deleteDeviceProgress,
   downloadProgress,
@@ -72,6 +74,11 @@ interface ProgressSyncContextType {
   deleteDevice: (deviceId: string) => Promise<void>;
   mergeAllDevices: (mode?: ProgressMergeMode) => Promise<void>;
   adoptDeviceProgress: (sourceDeviceId: string) => Promise<void>;
+  saveVideoProgress: (
+    videoId: string,
+    status: ProgressStatus,
+    categoryOverride?: CategoryOverrideValue | "auto",
+  ) => Promise<void>;
   resetConflictPolicy: () => void;
   refreshDevices: () => Promise<void>;
 }
@@ -84,6 +91,7 @@ const ProgressSyncContext = createContext<ProgressSyncContextType>({
   deleteDevice: async () => {},
   mergeAllDevices: async () => {},
   adoptDeviceProgress: async () => {},
+  saveVideoProgress: async () => {},
   resetConflictPolicy: () => {},
   refreshDevices: async () => {},
 });
@@ -108,6 +116,8 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
   const pendingLocalRef = useRef<LocalProgressStore | null>(null);
   const syncedSessionRef = useRef<string | null>(null);
   const deviceIdRef = useRef<string>("");
+  const uploadDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visibilitySyncingRef = useRef(false);
   const conflictResolutionOptions: { value: ConflictPolicyMode; label: string; description: string }[] = [
     { value: "local", label: `이 기기 기록으로 맞추기 (${localWatchedCount}개)`, description: "다른 기기도 이 기기 기록으로 맞춰요." },
     { value: "remote", label: `저장된 기록으로 맞추기 (${remoteWatchedCount}개)`, description: "이 기기 기록을 저장된 기록으로 맞춰요." },
@@ -293,6 +303,108 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
   // ── Public actions ────────────────────────────────────────────────────────
 
+  const saveVideoProgress = useCallback(async (
+    videoId: string,
+    status: ProgressStatus,
+    categoryOverride?: CategoryOverrideValue | "auto",
+  ) => {
+    if (!user) return;
+
+    try {
+      const userId = user.id;
+      const devId = deviceIdRef.current || getDeviceId();
+      const now = new Date().toISOString();
+      const raw = loadLocalProgress(userId, devId) ?? createEmptyStore(userId, devId);
+      const existing = raw.entries[videoId];
+      const nextCategoryOverride =
+        categoryOverride === "auto"
+          ? undefined
+          : categoryOverride !== undefined
+            ? categoryOverride
+            : existing?.categoryOverride;
+
+      const updated: LocalProgressStore = {
+        ...raw,
+        entries: {
+          ...raw.entries,
+          [videoId]: {
+            videoId,
+            status,
+            categoryOverride: nextCategoryOverride,
+            updatedAt: now,
+          },
+        },
+      };
+
+      saveLocalProgress(updated);
+      writeLegacyKeys(Object.values(updated.entries));
+      dispatchSyncEvent();
+
+      if (uploadDebounceRef.current) clearTimeout(uploadDebounceRef.current);
+      uploadDebounceRef.current = setTimeout(async () => {
+        uploadDebounceRef.current = null;
+        const latest = loadLocalProgress(userId, devId);
+        if (!latest) return;
+
+        try {
+          const supabase = getSupabaseBrowserClient();
+          await uploadProgress(supabase, userId, devId, Object.values(latest.entries));
+        } catch (err) {
+          console.error("Progress upload error:", err);
+        }
+      }, 500);
+    } catch (err) {
+      console.error("Progress save error:", err);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const currentUser = user;
+    let lastPullAt = 0;
+
+    function handleVisibilityChange() {
+      if (document.visibilityState !== "visible") return;
+      if (visibilitySyncingRef.current) return;
+
+      const now = Date.now();
+      if (now - lastPullAt < 15_000) return;
+      lastPullAt = now;
+      visibilitySyncingRef.current = true;
+
+      void (async () => {
+        const userId = currentUser.id;
+        const devId = deviceIdRef.current || getDeviceId();
+        const supabase = getSupabaseBrowserClient();
+
+        try {
+          const allRemote = await fetchAllDevicesProgress(supabase, userId);
+          const raw = loadLocalProgress(userId, devId) ?? createEmptyStore(userId, devId);
+          const local = syncLegacyKeysToStore(raw);
+          const merged = mergeLatest(local, remoteToEntries(allRemote));
+
+          saveLocalProgress(merged);
+          await uploadProgress(supabase, userId, devId, Object.values(merged.entries));
+          writeLegacyKeys(Object.values(merged.entries));
+          dispatchSyncEvent();
+        } catch (err) {
+          console.error("Visibility progress sync error:", err);
+        } finally {
+          visibilitySyncingRef.current = false;
+        }
+      })();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [user]);
+
+  useEffect(() => {
+    return () => {
+      if (uploadDebounceRef.current) clearTimeout(uploadDebounceRef.current);
+    };
+  }, []);
+
   const deleteDevice = useCallback(async (devId: string) => {
     if (!user) return;
     const supabase = getSupabaseBrowserClient();
@@ -400,6 +512,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       deleteDevice,
       mergeAllDevices,
       adoptDeviceProgress,
+      saveVideoProgress,
       resetConflictPolicy,
       refreshDevices,
     }}>
