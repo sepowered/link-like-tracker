@@ -84,6 +84,14 @@ export async function deleteDeviceProgress(
   await supabase.from("user_devices").delete().eq("user_id", userId).eq("device_id", deviceId);
 }
 
+export async function deleteAllProgress(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<void> {
+  const { error } = await supabase.from("user_progress").delete().eq("user_id", userId);
+  if (error) throw new Error(`deleteAllProgress: ${error.message}`);
+}
+
 export async function fetchAllDevicesProgress(
   supabase: SupabaseClient,
   userId: string,

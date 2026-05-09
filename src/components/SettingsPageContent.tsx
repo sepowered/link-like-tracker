@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
-import { useProgressSync } from "@/providers/ProgressSyncProvider";
 import { useSettings } from "@/components/SettingsProvider";
+import { getSupabaseBrowserClient } from "@/lib/supabase";
 import PageHeader from "@/components/PageHeader";
 import type { VideoCategory } from "@/lib/video-category";
 import {
   ActionButton,
-  Checkbox,
+  Checkbox as SeedCheckbox,
   Divider,
   HStack,
   Icon,
@@ -25,6 +26,7 @@ import {
   BottomSheetBody,
   BottomSheetFooter,
 } from "@/ui/bottom-sheet";
+import { Checkbox, CheckboxGroup } from "@/ui/checkbox";
 import {
   AlertDialogRoot,
   AlertDialogContent,
@@ -40,7 +42,6 @@ import {
   IconCheckmarkFatFill,
   IconChevronRightLine,
   IconPersonCircleLine,
-  IconTrashcanLine,
 } from "@karrotmarket/react-monochrome-icon";
 
 const CATEGORY_OPTIONS: { value: VideoCategory; label: string }[] = [
@@ -50,6 +51,30 @@ const CATEGORY_OPTIONS: { value: VideoCategory; label: string }[] = [
   { value: "fesxrec", label: "FesxReC" },
   { value: "withxmeets", label: "With×MEETS" },
 ];
+
+const GOOGLE_LOGO = (
+  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style={{ flexShrink: 0 }}>
+    <path fill="#4285F4" d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" />
+    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" />
+    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" />
+    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58Z" />
+  </svg>
+);
+
+const REQUIRED_LOGIN_CONSENT = {
+  privacy: false,
+  overseasTransfer: false,
+  ageOver14: false,
+};
+
+const LIST_VALUE_SUFFIX_STYLE = {
+  display: "flex",
+  alignItems: "center",
+  gap: "2px",
+  color: "var(--seed-color-fg-neutral-subtle)",
+  fontSize: "14px",
+  lineHeight: 1,
+} as const;
 
 export default function SettingsPageContent() {
   const {
@@ -62,22 +87,59 @@ export default function SettingsPageContent() {
   } = useSettings();
   const router = useRouter();
   const { user, signOut } = useAuth();
-  const { devices, devicesLoading, currentDeviceId, syncing, deleteDevice, mergeAllDevices, resetConflictPolicy } = useProgressSync();
   const adapter = useSnackbarAdapter();
   const [themeSheetOpen, setThemeSheetOpen] = useState(false);
   const [progressSheetOpen, setProgressSheetOpen] = useState(false);
+  const [loginSheetOpen, setLoginSheetOpen] = useState(false);
   const [logoutSheetOpen, setLogoutSheetOpen] = useState(false);
+  const [loginConsent, setLoginConsent] = useState(REQUIRED_LOGIN_CONSENT);
+  const [loginLoading, setLoginLoading] = useState(false);
   const [pendingCategories, setPendingCategories] = useState<VideoCategory[]>(progressCategories);
+  const allLoginConsentChecked = Object.values(loginConsent).every(Boolean);
 
   function handleProgressSheetOpenChange(open: boolean) {
     if (open) setPendingCategories(progressCategories);
     setProgressSheetOpen(open);
   }
 
+  function handleLoginSheetOpenChange(open: boolean) {
+    if (open) {
+      setLoginConsent(REQUIRED_LOGIN_CONSENT);
+      setLoginLoading(false);
+    }
+    setLoginSheetOpen(open);
+  }
+
+  function handleLoginConsentChange(
+    key: keyof typeof REQUIRED_LOGIN_CONSENT,
+    checked: boolean,
+  ) {
+    setLoginConsent((prev) => ({ ...prev, [key]: checked }));
+  }
+
   function handlePendingToggle(value: VideoCategory, checked: boolean) {
     setPendingCategories((prev) =>
       checked ? [...new Set([...prev, value])] : prev.filter((v) => v !== value),
     );
+  }
+
+  async function handleGoogleSignIn() {
+    if (!allLoginConsentChecked || loginLoading) return;
+
+    setLoginLoading(true);
+
+    const supabase = getSupabaseBrowserClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+
+    if (error) {
+      setLoginLoading(false);
+      adapter.create({
+        render: () => <Snackbar variant="critical" message="Google 로그인 연결에 실패했어요." />,
+      });
+    }
   }
 
   function handleSave() {
@@ -122,58 +184,12 @@ export default function SettingsPageContent() {
                     </HStack>
                   }
                 />
-                {devicesLoading ? (
-                  <ListItem title="기기 목록 불러오는 중..." />
-                ) : (
-                  devices.map((device) => {
-                    const isCurrent = device.device_id === currentDeviceId;
-                    const name = device.device_name ?? `기기 ${device.device_id.slice(0, 8)}`;
-                    const lastSeen = new Date(device.last_seen_at).toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
-                    return (
-                      <ListItem
-                        key={device.device_id}
-                        title={isCurrent ? `${name} (현재 기기)` : name}
-                        detail={`최근 동기화: ${lastSeen}`}
-                        suffix={
-                          !isCurrent ? (
-                            <ActionButton
-                              variant="ghost"
-                              size="small"
-                              color="fg.critical"
-                              layout="iconOnly"
-                              aria-label="기기 삭제"
-                              onClick={async () => {
-                                await deleteDevice(device.device_id);
-                                adapter.create({ render: () => <Snackbar variant="positive" message="기기 기록을 삭제했어요." /> });
-                              }}
-                            >
-                              <Icon svg={<IconTrashcanLine />} />
-                            </ActionButton>
-                          ) : undefined
-                        }
-                      />
-                    );
-                  })
-                )}
-                {devices.length > 0 && (
-                  <ListButtonItem
-                    title={syncing ? "기록 합치는 중..." : "기기별 기록 합치기"}
-                    disabled={syncing}
-                    onClick={async () => {
-                      await mergeAllDevices();
-                      adapter.create({ render: () => <Snackbar variant="positive" message="모든 기기 기록을 합쳤어요." /> });
-                    }}
-                  />
-                )}
-                {devices.length > 0 && (
-                  <ListButtonItem
-                    title="동기화 충돌 설정 초기화"
-                    onClick={() => {
-                      resetConflictPolicy();
-                      adapter.create({ render: () => <Snackbar variant="positive" message="동기화 설정을 초기화했어요." /> });
-                    }}
-                  />
-                )}
+                <ListButtonItem
+                  title="기기 및 동기화 관리"
+                  detail="기기 목록과 기록 합치기 설정을 관리해요."
+                  onClick={() => router.push("/settings/sync")}
+                  suffix={<Icon svg={<IconChevronRightLine />} size="16px" color="fg.neutralSubtle" />}
+                />
                 <ListButtonItem
                   title="로그아웃"
                   onClick={() => setLogoutSheetOpen(true)}
@@ -184,7 +200,7 @@ export default function SettingsPageContent() {
               <ListButtonItem
                 title="Google로 로그인"
                 detail="로그인하면 스마트폰, 태블릿, 웹 어디서든 시청 기록을 동기화해요."
-                onClick={() => router.push("/auth/connect")}
+                onClick={() => handleLoginSheetOpenChange(true)}
                 prefix={
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
                     <path fill="#4285F4" d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/>
@@ -207,10 +223,10 @@ export default function SettingsPageContent() {
               title="화면 스타일"
               onClick={() => setThemeSheetOpen(true)}
               suffix={
-                <HStack gap="x0_5" color="fg.neutralSubtle" style={{ fontSize: "14px" }}>
+                <span style={LIST_VALUE_SUFFIX_STYLE}>
                   {colorSchemeLabel}
                   <Icon svg={<IconChevronRightLine />} size="16px" />
-                </HStack>
+                </span>
               }
             />
           </List>
@@ -231,7 +247,7 @@ export default function SettingsPageContent() {
               title="진행률 표시 기준"
               onClick={() => setProgressSheetOpen(true)}
               suffix={
-                <span style={{ display: "flex", alignItems: "center", gap: "2px", color: "var(--seed-color-fg-neutral-subtle)", fontSize: "14px" }}>
+                <span style={LIST_VALUE_SUFFIX_STYLE}>
                   {progressLabel}
                   <Icon svg={<IconChevronRightLine />} size="16px" />
                 </span>
@@ -267,6 +283,74 @@ export default function SettingsPageContent() {
         </BottomSheetContent>
       </BottomSheetRoot>
 
+      <BottomSheetRoot
+        open={loginSheetOpen}
+        onOpenChange={handleLoginSheetOpenChange}
+        closeOnEscape
+        closeOnInteractOutside
+      >
+        <BottomSheetContent
+          title="시청 기록을 이어보려면 동의가 필요해요"
+          description="Google 계정으로 로그인하고 스마트폰, 태블릿, 웹 어디서든 시청 기록을 동기화해요."
+          showCloseButton
+          style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
+        >
+          <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x4)" }}>
+            <CheckboxGroup
+              label="개인정보 동의"
+              indicator="필수"
+              description="Google 계정 정보는 로그인과 시청 기록 동기화에만 사용돼요."
+            >
+              <Checkbox
+                label={
+                  <>
+                    <Link
+                      href="/terms/privacy"
+                      onClick={(event) => event.stopPropagation()}
+                      className="settings-consent-link"
+                    >
+                      개인정보 처리방침
+                    </Link>
+                    에 동의해요
+                  </>
+                }
+                tone="neutral"
+                size="large"
+                checked={loginConsent.privacy}
+                onCheckedChange={(checked) => handleLoginConsentChange("privacy", checked)}
+              />
+              <Checkbox
+                label="개인정보 국외 처리에 동의해요"
+                tone="neutral"
+                size="large"
+                checked={loginConsent.overseasTransfer}
+                onCheckedChange={(checked) => handleLoginConsentChange("overseasTransfer", checked)}
+              />
+              <Checkbox
+                label="만 14세 이상이에요"
+                tone="neutral"
+                size="large"
+                checked={loginConsent.ageOver14}
+                onCheckedChange={(checked) => handleLoginConsentChange("ageOver14", checked)}
+              />
+            </CheckboxGroup>
+          </BottomSheetBody>
+          <BottomSheetFooter>
+            <ActionButton
+              variant="neutralSolid"
+              size="large"
+              onClick={handleGoogleSignIn}
+              disabled={!allLoginConsentChecked || loginLoading}
+              loading={loginLoading}
+              style={{ width: "100%", gap: "10px" }}
+            >
+              {GOOGLE_LOGO}
+              Google로 계속하기
+            </ActionButton>
+          </BottomSheetFooter>
+        </BottomSheetContent>
+      </BottomSheetRoot>
+
       <AlertDialogRoot open={logoutSheetOpen} onOpenChange={setLogoutSheetOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -298,23 +382,23 @@ export default function SettingsPageContent() {
             <p className="settings-sheet-hint">
               분류를 선택하면 해당 영상만 기준으로 진행률이 표시돼요. 선택하지 않으면 전체를 표시해요.
             </p>
-            <Checkbox.Group aria-label="진행률 표시 기준">
+            <SeedCheckbox.Group aria-label="진행률 표시 기준">
               {CATEGORY_OPTIONS.map((item) => (
-                <Checkbox.Root
+                <SeedCheckbox.Root
                   key={item.value}
                   checked={pendingCategories.includes(item.value)}
                   onCheckedChange={(checked) => handlePendingToggle(item.value, checked)}
                   tone="neutral"
                   size="large"
                 >
-                  <Checkbox.HiddenInput />
-                  <Checkbox.Control>
-                    <Checkbox.Indicator checked={<IconCheckmarkFatFill />} />
-                  </Checkbox.Control>
-                  <Checkbox.Label>{item.label}</Checkbox.Label>
-                </Checkbox.Root>
+                  <SeedCheckbox.HiddenInput />
+                  <SeedCheckbox.Control>
+                    <SeedCheckbox.Indicator checked={<IconCheckmarkFatFill />} />
+                  </SeedCheckbox.Control>
+                  <SeedCheckbox.Label>{item.label}</SeedCheckbox.Label>
+                </SeedCheckbox.Root>
               ))}
-            </Checkbox.Group>
+            </SeedCheckbox.Group>
           </BottomSheetBody>
           <BottomSheetFooter>
             <ActionButton

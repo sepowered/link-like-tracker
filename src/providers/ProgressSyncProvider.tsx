@@ -28,6 +28,7 @@ import {
 import {
   deleteDeviceProgress,
   downloadProgress,
+  deleteAllProgress,
   fetchAllDevicesProgress,
   fetchDevices,
   uploadProgress,
@@ -53,6 +54,8 @@ import {
 } from "@/ui/select-box";
 import { Checkbox } from "@/ui/checkbox";
 
+export type ProgressMergeMode = Exclude<ConflictPolicyMode, "ask">;
+
 // Custom DOM event dispatched after writing to legacy localStorage keys
 export const SYNC_EVENT = "llt-progress-sync";
 export function dispatchSyncEvent() {
@@ -67,7 +70,7 @@ interface ProgressSyncContextType {
   currentDeviceId: string;
   syncing: boolean;
   deleteDevice: (deviceId: string) => Promise<void>;
-  mergeAllDevices: () => Promise<void>;
+  mergeAllDevices: (mode?: ProgressMergeMode) => Promise<void>;
   resetConflictPolicy: () => void;
   refreshDevices: () => Promise<void>;
 }
@@ -295,7 +298,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     await doRefreshDevices(user.id);
   }, [user, doRefreshDevices]);
 
-  const mergeAllDevices = useCallback(async () => {
+  const mergeAllDevices = useCallback(async (mode: ProgressMergeMode = "latest") => {
     if (!user) return;
     const devId = deviceIdRef.current || getDeviceId();
     const supabase = getSupabaseBrowserClient();
@@ -304,10 +307,39 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       const allRemote = await fetchAllDevicesProgress(supabase, user.id);
       const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
       const local = syncLegacyKeysToStore(raw);
-      const merged = mergeLatest(local, remoteToEntries(allRemote));
-      saveLocalProgress(merged);
-      await uploadProgress(supabase, user.id, devId, Object.values(merged.entries));
-      writeLegacyKeys(Object.values(merged.entries));
+
+      if (mode === "local") {
+        const now = new Date().toISOString();
+        const entries = Object.values(local.entries).map((entry) => ({
+          ...entry,
+          updatedAt: now,
+        }));
+        const updated = {
+          ...local,
+          entries: Object.fromEntries(entries.map((entry) => [entry.videoId, entry])),
+        };
+
+        await deleteAllProgress(supabase, user.id);
+        saveLocalProgress(updated);
+        await uploadProgress(supabase, user.id, devId, entries);
+        writeLegacyKeys(entries);
+      } else if (mode === "remote") {
+        const entries = remoteToEntries(allRemote);
+        const updated = {
+          ...local,
+          entries: Object.fromEntries(entries.map((entry) => [entry.videoId, entry])),
+        };
+
+        saveLocalProgress(updated);
+        await uploadProgress(supabase, user.id, devId, entries);
+        writeLegacyKeys(entries);
+      } else {
+        const merged = mergeLatest(local, remoteToEntries(allRemote));
+        saveLocalProgress(merged);
+        await uploadProgress(supabase, user.id, devId, Object.values(merged.entries));
+        writeLegacyKeys(Object.values(merged.entries));
+      }
+
       dispatchSyncEvent();
     } finally {
       setSyncing(false);
