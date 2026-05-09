@@ -80,8 +80,10 @@ export async function deleteDeviceProgress(
   userId: string,
   deviceId: string,
 ): Promise<void> {
-  await supabase.from("user_progress").delete().eq("user_id", userId).eq("device_id", deviceId);
-  await supabase.from("user_devices").delete().eq("user_id", userId).eq("device_id", deviceId);
+  const { error: e1 } = await supabase.from("user_progress").delete().eq("user_id", userId).eq("device_id", deviceId);
+  if (e1) throw new Error(`deleteDeviceProgress(progress): ${e1.message}`);
+  const { error: e2 } = await supabase.from("user_devices").delete().eq("user_id", userId).eq("device_id", deviceId);
+  if (e2) throw new Error(`deleteDeviceProgress(devices): ${e2.message}`);
 }
 
 export async function deleteAllProgress(
@@ -90,6 +92,35 @@ export async function deleteAllProgress(
 ): Promise<void> {
   const { error } = await supabase.from("user_progress").delete().eq("user_id", userId);
   if (error) throw new Error(`deleteAllProgress: ${error.message}`);
+}
+
+export interface DeviceProgressStats {
+  watchedCount: number;
+  lastWatchedAt: string | null;
+  lastWatchedVideoId: string | null;
+}
+
+export async function fetchDeviceProgressStats(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<Map<string, DeviceProgressStats>> {
+  const { data, error } = await supabase
+    .from("user_progress")
+    .select("device_id, video_id, status, updated_at")
+    .eq("user_id", userId);
+  if (error) throw new Error(`fetchDeviceProgressStats: ${error.message}`);
+  const map = new Map<string, DeviceProgressStats>();
+  for (const row of data ?? []) {
+    if (row.status !== "watched") continue;
+    const existing = map.get(row.device_id) ?? { watchedCount: 0, lastWatchedAt: null, lastWatchedVideoId: null };
+    existing.watchedCount++;
+    if (!existing.lastWatchedAt || row.updated_at > existing.lastWatchedAt) {
+      existing.lastWatchedAt = row.updated_at;
+      existing.lastWatchedVideoId = row.video_id;
+    }
+    map.set(row.device_id, existing);
+  }
+  return map;
 }
 
 export async function fetchAllDevicesProgress(

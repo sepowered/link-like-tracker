@@ -71,6 +71,7 @@ interface ProgressSyncContextType {
   syncing: boolean;
   deleteDevice: (deviceId: string) => Promise<void>;
   mergeAllDevices: (mode?: ProgressMergeMode) => Promise<void>;
+  adoptDeviceProgress: (sourceDeviceId: string) => Promise<void>;
   resetConflictPolicy: () => void;
   refreshDevices: () => Promise<void>;
 }
@@ -82,6 +83,7 @@ const ProgressSyncContext = createContext<ProgressSyncContextType>({
   syncing: false,
   deleteDevice: async () => {},
   mergeAllDevices: async () => {},
+  adoptDeviceProgress: async () => {},
   resetConflictPolicy: () => {},
   refreshDevices: async () => {},
 });
@@ -346,6 +348,42 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     }
   }, [user]);
 
+  const adoptDeviceProgress = useCallback(async (sourceDeviceId: string) => {
+    if (!user) return;
+    const devId = deviceIdRef.current || getDeviceId();
+    const supabase = getSupabaseBrowserClient();
+    setSyncing(true);
+    try {
+      let entries: ProgressEntry[];
+      if (sourceDeviceId === devId) {
+        const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
+        entries = Object.values(syncLegacyKeysToStore(raw).entries);
+      } else {
+        entries = remoteToEntries(await downloadProgress(supabase, user.id, sourceDeviceId));
+      }
+
+      if (entries.length === 0) throw new Error("source device has no progress records");
+
+      // Refresh device list right before deletion to avoid leaving orphaned rows
+      const freshDevices = await fetchDevices(supabase, user.id);
+      const knownIds = new Set([...freshDevices.map((d) => d.device_id), devId]);
+
+      await deleteAllProgress(supabase, user.id);
+
+      for (const did of knownIds) {
+        await uploadProgress(supabase, user.id, did, entries);
+      }
+
+      const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
+      const updated = { ...raw, entries: Object.fromEntries(entries.map((e) => [e.videoId, e])) };
+      saveLocalProgress(updated);
+      writeLegacyKeys(entries);
+      dispatchSyncEvent();
+    } finally {
+      setSyncing(false);
+    }
+  }, [user]);
+
   const resetConflictPolicy = useCallback(() => {
     if (!user) return;
     saveConflictPolicy(user.id, { mode: "ask", updatedAt: "" });
@@ -361,6 +399,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       syncing,
       deleteDevice,
       mergeAllDevices,
+      adoptDeviceProgress,
       resetConflictPolicy,
       refreshDevices,
     }}>
