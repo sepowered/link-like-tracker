@@ -10,7 +10,7 @@ import SettingsLink from "./SettingsLink";
 import PlaylistProgress from "./PlaylistProgress";
 import AppBar from "./AppBar";
 import { useAuth } from "@/providers/AuthProvider";
-import { SYNC_EVENT } from "@/providers/ProgressSyncProvider";
+import { SYNC_EVENT, useProgressSync } from "@/providers/ProgressSyncProvider";
 import { ActionButton, Icon, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import {
   BottomSheetRoot,
@@ -40,6 +40,7 @@ interface Props {
 
 export default function PlaylistView({ initialData }: Props) {
   const { user, loading: authLoading } = useAuth();
+  const { saveVideoProgress } = useProgressSync();
   const adapter = useSnackbarAdapter();
   const sessionSnackbarShown = useRef(false);
   const [data, setData] = useState<PlaylistData>(initialData);
@@ -250,6 +251,9 @@ export default function PlaylistView({ initialData }: Props) {
   const isFiltered = filter !== "all" || !categories.includes("all") || query !== "";
 
   async function handleToggle(videoId: string) {
+    const currentVideo = data.seasons.flatMap((s) => s.videos).find((v) => v.id === videoId);
+    const newStatus = currentVideo?.watched ? "unwatched" : "watched";
+
     setData((prev) => {
       const next = {
         seasons: prev.seasons.map((season) => ({
@@ -259,15 +263,20 @@ export default function PlaylistView({ initialData }: Props) {
           ),
         })),
       };
-      saveToLocalStorage(next);
+      if (!user) saveToLocalStorage(next);
       return next;
     });
+
+    if (user) await saveVideoProgress(videoId, newStatus);
   }
 
   async function handleUpdateCategory(
     videoId: string,
     categoryOverride: "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto"
   ) {
+    const currentVideo = data.seasons.flatMap((s) => s.videos).find((v) => v.id === videoId);
+    const currentStatus = currentVideo?.watched ? "watched" : "unwatched";
+
     setData((prev) => {
       const next = {
         seasons: prev.seasons.map((season) => ({
@@ -282,9 +291,11 @@ export default function PlaylistView({ initialData }: Props) {
           }),
         })),
       };
-      saveToLocalStorage(next);
+      if (!user) saveToLocalStorage(next);
       return next;
     });
+
+    if (user) await saveVideoProgress(videoId, currentStatus, categoryOverride);
   }
 
   const showCompactHeader = scrolled;

@@ -178,6 +178,17 @@ export function syncLegacyKeysToStore(store: LocalProgressStore): LocalProgressS
     }
   }
 
+  const watchedSet = new Set(watched);
+  for (const videoId of Object.keys(store.entries)) {
+    if (store.entries[videoId].status === "watched" && !watchedSet.has(videoId)) {
+      updated.entries[videoId] = {
+        ...store.entries[videoId],
+        status: "unwatched",
+        updatedAt: now,
+      };
+    }
+  }
+
   return updated;
 }
 
