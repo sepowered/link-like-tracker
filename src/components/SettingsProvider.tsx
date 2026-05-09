@@ -2,15 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { VideoCategory } from "@/lib/video-category";
+import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { downloadSettings, uploadSettings } from "@/lib/supabase-settings";
+import type { SyncedSettings } from "@/lib/supabase-settings";
+import { useAuth } from "@/providers/AuthProvider";
 
 export type ColorScheme = "light" | "dark" | "system";
 
-interface Settings {
-  progressCategories: VideoCategory[]; // empty = all categories
-  hidePrivateVideos: boolean;
-}
-
-interface SettingsContextValue extends Settings {
+interface SettingsContextValue extends SyncedSettings {
   colorScheme: ColorScheme;
   setColorScheme: (scheme: ColorScheme) => void;
   setProgressCategories: (categories: VideoCategory[]) => void;
@@ -21,7 +20,7 @@ interface SettingsContextValue extends Settings {
 const STORAGE_KEY = "llt-settings";
 const THEME_KEY = "seed-color-scheme";
 
-const DEFAULT_SETTINGS: Settings = {
+const DEFAULT_SETTINGS: SyncedSettings = {
   progressCategories: [],
   hidePrivateVideos: true,
 };
@@ -36,7 +35,7 @@ export function useSettings() {
   return ctx;
 }
 
-function loadSettings(): Settings {
+function loadSettings(): SyncedSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -53,7 +52,7 @@ function loadSettings(): Settings {
   }
 }
 
-function saveSettings(settings: Settings) {
+function saveSettings(settings: SyncedSettings) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch (e) {
@@ -62,9 +61,11 @@ function saveSettings(settings: Settings) {
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const { user, loading: authLoading } = useAuth();
+  const [settings, setSettings] = useState<SyncedSettings>(DEFAULT_SETTINGS);
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>("light");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     setSettings(loadSettings());
@@ -75,10 +76,58 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true);
   }, []);
 
-  const update = (patch: Partial<Settings>) => {
+  useEffect(() => {
+    if (!isInitialized || authLoading) return;
+
+    if (!user) {
+      setSyncedUserId(null);
+      return;
+    }
+
+    let cancelled = false;
+    const userId = user.id;
+
+    async function syncRemoteSettings() {
+      const supabase = getSupabaseBrowserClient();
+
+      try {
+        const remote = await downloadSettings(supabase, userId);
+
+        if (cancelled) return;
+
+        if (remote) {
+          setSettings(remote);
+          saveSettings(remote);
+        } else {
+          const local = loadSettings();
+          await uploadSettings(supabase, userId, local);
+        }
+
+        if (!cancelled) setSyncedUserId(userId);
+      } catch (error) {
+        console.error("Settings sync error:", error);
+      }
+    }
+
+    syncRemoteSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, isInitialized, user]);
+
+  const update = (patch: Partial<SyncedSettings>) => {
     setSettings((prev) => {
       const next = { ...prev, ...patch };
       saveSettings(next);
+
+      if (user && syncedUserId === user.id) {
+        const supabase = getSupabaseBrowserClient();
+        uploadSettings(supabase, user.id, next).catch((error) => {
+          console.error("Settings upload error:", error);
+        });
+      }
+
       return next;
     });
   };

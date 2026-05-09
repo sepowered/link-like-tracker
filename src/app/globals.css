@@ -401,6 +401,31 @@ body {
   margin: 0 0 12px 0;
 }
 
+.settings-consent-link {
+  color: var(--seed-color-fg-neutral);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.terms-page {
+  padding: 0 var(--seed-dimension-spacing-x-global-gutter) 40px;
+  color: var(--seed-color-fg-neutral);
+}
+
+.terms-page h2 {
+  margin: 28px 0 8px;
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.terms-page p {
+  margin: 8px 0;
+  color: var(--seed-color-fg-neutral-subtle);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
 /* ─── 반응형 ──────────────────────────────────────────────────── */
 
 @media (max-width: 600px) {

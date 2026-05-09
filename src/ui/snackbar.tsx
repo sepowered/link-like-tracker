@@ -44,7 +44,7 @@ export function SnackbarProvider({
   return (
     <SeedSnackbar.RootProvider pauseOnInteraction={pauseOnInteraction}>
       {children}
-      <SeedSnackbar.Region>
+      <SeedSnackbar.Region style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}>
         <SeedSnackbar.Renderer />
       </SeedSnackbar.Region>
     </SeedSnackbar.RootProvider>

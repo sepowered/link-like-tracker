@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Season, Video } from "@/types";
 import { VideoCategory } from "@/lib/video-category";
 import VideoItem from "./VideoItem";
@@ -20,6 +20,7 @@ interface Props {
   classifyVideoCategory: (title: string) => Exclude<VideoCategory, "all"> | null;
   onToggle: (videoId: string) => void;
   onUpdateCategory: (videoId: string, categoryOverride: CategoryOverrideArg) => void;
+  scrollToVideoId?: string | null;
 }
 
 function getEffectiveCategory(
@@ -42,8 +43,15 @@ export default function SeasonGroup({
   classifyVideoCategory,
   onToggle,
   onUpdateCategory,
+  scrollToVideoId,
 }: Props) {
   const [open, setOpen] = useState(true);
+
+  useEffect(() => {
+    if (scrollToVideoId && season.videos.some((v) => v.id === scrollToVideoId)) {
+      setOpen(true);
+    }
+  }, [scrollToVideoId]);
 
   const filteredVideos = useMemo(() => {
     const vids = season.videos.filter((v) => {
