@@ -72,7 +72,7 @@ interface ProgressSyncContextType {
   currentDeviceId: string;
   syncing: boolean;
   deleteDevice: (deviceId: string) => Promise<void>;
-  mergeAllDevices: (mode?: ProgressMergeMode) => Promise<void>;
+  mergeAllDevices: (mode?: ProgressMergeMode) => Promise<boolean>;
   adoptDeviceProgress: (sourceDeviceId: string) => Promise<void>;
   saveVideoProgress: (
     videoId: string,
@@ -89,7 +89,7 @@ const ProgressSyncContext = createContext<ProgressSyncContextType>({
   currentDeviceId: "",
   syncing: false,
   deleteDevice: async () => {},
-  mergeAllDevices: async () => {},
+  mergeAllDevices: async () => false,
   adoptDeviceProgress: async () => {},
   saveVideoProgress: async () => {},
   resetConflictPolicy: () => {},
@@ -412,8 +412,8 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     await doRefreshDevices(user.id);
   }, [user, doRefreshDevices]);
 
-  const mergeAllDevices = useCallback(async (mode: ProgressMergeMode = "latest") => {
-    if (!user) return;
+  const mergeAllDevices = useCallback(async (mode: ProgressMergeMode = "latest"): Promise<boolean> => {
+    if (!user) return false;
     const devId = deviceIdRef.current || getDeviceId();
     const supabase = getSupabaseBrowserClient();
     setSyncing(true);
@@ -421,40 +421,42 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       const allRemote = await fetchAllDevicesProgress(supabase, user.id);
       const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
       const local = syncLegacyKeysToStore(raw);
+      const beforeSet = new Set(Object.values(local.entries).map((e) => `${e.videoId}:${e.status}`));
+
+      let finalEntries: ProgressEntry[];
 
       if (mode === "local") {
         const now = new Date().toISOString();
-        const entries = Object.values(local.entries).map((entry) => ({
-          ...entry,
-          updatedAt: now,
-        }));
+        finalEntries = Object.values(local.entries).map((entry) => ({ ...entry, updatedAt: now }));
         const updated = {
           ...local,
-          entries: Object.fromEntries(entries.map((entry) => [entry.videoId, entry])),
+          entries: Object.fromEntries(finalEntries.map((entry) => [entry.videoId, entry])),
         };
-
         await deleteAllProgress(supabase, user.id);
         saveLocalProgress(updated);
-        await uploadProgress(supabase, user.id, devId, entries);
-        writeLegacyKeys(entries);
+        await uploadProgress(supabase, user.id, devId, finalEntries);
+        writeLegacyKeys(finalEntries);
       } else if (mode === "remote") {
-        const entries = remoteToEntries(allRemote);
+        finalEntries = remoteToEntries(allRemote);
         const updated = {
           ...local,
-          entries: Object.fromEntries(entries.map((entry) => [entry.videoId, entry])),
+          entries: Object.fromEntries(finalEntries.map((entry) => [entry.videoId, entry])),
         };
-
         saveLocalProgress(updated);
-        await uploadProgress(supabase, user.id, devId, entries);
-        writeLegacyKeys(entries);
+        await uploadProgress(supabase, user.id, devId, finalEntries);
+        writeLegacyKeys(finalEntries);
       } else {
         const merged = mergeLatest(local, remoteToEntries(allRemote));
+        finalEntries = Object.values(merged.entries);
         saveLocalProgress(merged);
-        await uploadProgress(supabase, user.id, devId, Object.values(merged.entries));
-        writeLegacyKeys(Object.values(merged.entries));
+        await uploadProgress(supabase, user.id, devId, finalEntries);
+        writeLegacyKeys(finalEntries);
       }
 
       dispatchSyncEvent();
+
+      const afterSet = new Set(finalEntries.map((e) => `${e.videoId}:${e.status}`));
+      return beforeSet.size !== afterSet.size || [...beforeSet].some((k) => !afterSet.has(k));
     } finally {
       setSyncing(false);
     }

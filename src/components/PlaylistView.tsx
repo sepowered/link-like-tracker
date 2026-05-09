@@ -11,7 +11,7 @@ import PlaylistProgress from "./PlaylistProgress";
 import AppBar from "./AppBar";
 import { useAuth } from "@/providers/AuthProvider";
 import { SYNC_EVENT, useProgressSync } from "@/providers/ProgressSyncProvider";
-import { ActionButton, Icon, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
+import { ActionButton, Icon, PullToRefresh, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import {
   BottomSheetRoot,
   BottomSheetContent,
@@ -40,7 +40,8 @@ interface Props {
 
 export default function PlaylistView({ initialData }: Props) {
   const { user, loading: authLoading } = useAuth();
-  const { saveVideoProgress } = useProgressSync();
+  const { saveVideoProgress, mergeAllDevices, refreshDevices, syncing } = useProgressSync();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const adapter = useSnackbarAdapter();
   const sessionSnackbarShown = useRef(false);
   const [data, setData] = useState<PlaylistData>(initialData);
@@ -180,14 +181,16 @@ export default function PlaylistView({ initialData }: Props) {
   }, [filter, categories, sortOrder, filtersInitialized]);
 
   useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
     const handleScroll = () => {
-      const currentY = window.scrollY;
+      const currentY = el.scrollTop;
       setScrollingUp(currentY < lastScrollY.current);
       setScrolled(currentY > 60);
       lastScrollY.current = currentY;
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Save changes to localStorage
@@ -298,6 +301,18 @@ export default function PlaylistView({ initialData }: Props) {
     if (user) await saveVideoProgress(videoId, currentStatus, categoryOverride);
   }
 
+  async function handlePtrRefresh() {
+    try {
+      const changed = await mergeAllDevices("latest");
+      await refreshDevices();
+      if (changed) {
+        adapter.create({ render: () => <Snackbar message="업데이트 완료" /> });
+      }
+    } catch {
+      adapter.create({ render: () => <Snackbar message="동기화에 실패했어요. 다시 시도해 주세요." /> });
+    }
+  }
+
   const showCompactHeader = scrolled;
   const showStickyFilter = scrolled && scrollingUp;
 
@@ -305,10 +320,29 @@ export default function PlaylistView({ initialData }: Props) {
   if (!isInitialized) return null; // Prevent flash of original data before local storage load
 
   return (
-    <div>
+    <PullToRefresh.Root
+      ref={scrollContainerRef}
+      disabled={!user}
+      onPtrRefresh={handlePtrRefresh}
+      style={{ height: "100dvh", overflowY: "auto" }}
+    >
+      <PullToRefresh.Indicator>
+        {({ value, maxValue }) => (
+          <div style={{ textAlign: "center", padding: "8px", fontSize: "12px", color: "var(--seed-semantic-color-fg-secondary)" }}>
+            {syncing || value === undefined
+              ? "정보를 불러오고 있어요"
+              : value < maxValue
+              ? "당겨서 업데이트"
+              : "놓아서 업데이트"}
+          </div>
+        )}
+      </PullToRefresh.Indicator>
+
+      <PullToRefresh.Content>
       {/* 기수 선택 시트 */}
       {generations.length > 1 && (
         <BottomSheetRoot
+          {...PullToRefresh.preventPull}
           open={generationSheetOpen}
           onOpenChange={handleGenerationSheetOpenChange}
           closeOnEscape
@@ -494,6 +528,7 @@ export default function PlaylistView({ initialData }: Props) {
       ))}
 
       {/* TODO: 다음 미시청 콘텐츠 이동 FAB — 연속성 기능 완성 후 활성화 */}
-    </div>
+      </PullToRefresh.Content>
+    </PullToRefresh.Root>
   );
 }
