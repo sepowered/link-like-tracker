@@ -39,7 +39,6 @@ import {
 import { getDeviceLabel } from "@/lib/device-info";
 import {
   ActionButton,
-  Divider,
   VStack,
 } from "@seed-design/react";
 import {
@@ -110,9 +109,9 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
   const syncedSessionRef = useRef<string | null>(null);
   const deviceIdRef = useRef<string>("");
   const conflictResolutionOptions: { value: ConflictPolicyMode; label: string; description: string }[] = [
-    { value: "local", label: `현재 기기 기록 사용 (${localWatchedCount}개 시청)`, description: "다른 기기도 현재 기기 기록으로 맞춰요." },
-    { value: "remote", label: `클라우드 기록 사용 (${remoteWatchedCount}개 시청)`, description: "현재 기기 기록을 클라우드 기록으로 맞춰요." },
-    { value: "latest", label: "자동으로 합치기", description: "영상마다 더 최근에 본 기록을 선택해요. (권장)" },
+    { value: "local", label: `이 기기 기록으로 맞추기 (${localWatchedCount}개)`, description: "다른 기기도 이 기기 기록으로 맞춰요." },
+    { value: "remote", label: `저장된 기록으로 맞추기 (${remoteWatchedCount}개)`, description: "이 기기 기록을 저장된 기록으로 맞춰요." },
+    { value: "latest", label: "자동으로 합치기", description: "영상마다 더 최근에 본 기록을 선택해요." },
   ];
 
   useEffect(() => {
@@ -413,14 +412,14 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
         dismissible={false}
       >
         <BottomSheetContent
-          title="기기 간 시청 기록이 달라요"
+          title="기기마다 시청 기록이 달라요"
           description="어떤 기록으로 맞출지 골라요."
           showCloseButton={false}
           aria-describedby={undefined}
           style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
         >
           <BottomSheetBody>
-            <VStack gap="x2">
+            <VStack gap="x4">
               <RadioSelectBoxRoot
                 aria-label="충돌 해결 방식"
                 value={conflictResolution}
@@ -437,10 +436,8 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
                 ))}
               </RadioSelectBoxRoot>
 
-              <Divider />
-
               <Checkbox
-                label="앞으로 자동으로 처리하기"
+                label="선택 기억하기"
                 tone="neutral"
                 checked={dontAskAgain}
                 onCheckedChange={setDontAskAgain}
