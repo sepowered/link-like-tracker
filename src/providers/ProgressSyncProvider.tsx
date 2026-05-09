@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { useAuth } from "./AuthProvider";
+import { useSettings } from "@/components/SettingsProvider";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import {
   createEmptyStore,
@@ -104,6 +105,7 @@ export function useProgressSync() {
 
 export function ProgressSyncProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
+  const { autoSync } = useSettings();
   const [devices, setDevices] = useState<DeviceRow[]>([]);
   const [devicesLoading, setDevicesLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -220,6 +222,11 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     const supabase = getSupabaseBrowserClient();
 
     const runSync = async () => {
+      if (!autoSync) {
+        if (user) await doRefreshDevices(user.id);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       // Deduplicate by access token
@@ -299,7 +306,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     };
 
     runSync();
-  }, [authLoading, user, applyResolution, doRefreshDevices]);
+  }, [authLoading, user, applyResolution, doRefreshDevices, autoSync]);
 
   // ── Public actions ────────────────────────────────────────────────────────
 
@@ -341,6 +348,8 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       dispatchSyncEvent();
 
       if (uploadDebounceRef.current) clearTimeout(uploadDebounceRef.current);
+      if (!autoSync) return;
+      
       uploadDebounceRef.current = setTimeout(async () => {
         uploadDebounceRef.current = null;
         const latest = loadLocalProgress(userId, devId);
@@ -356,7 +365,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     } catch (err) {
       console.error("Progress save error:", err);
     }
-  }, [user]);
+  }, [user, autoSync]);
 
   useEffect(() => {
     if (!user) return;
@@ -364,6 +373,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     let lastPullAt = 0;
 
     function handleVisibilityChange() {
+      if (!autoSync) return;
       if (document.visibilityState !== "visible") return;
       if (visibilitySyncingRef.current) return;
 
@@ -397,7 +407,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [user]);
+  }, [user, autoSync]);
 
   useEffect(() => {
     return () => {

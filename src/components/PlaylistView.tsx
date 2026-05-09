@@ -95,7 +95,7 @@ export default function PlaylistView({ initialData }: Props) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const { progressCategories, hidePrivateVideos } = useSettings();
+  const { progressCategories, hidePrivateVideos, autoSync } = useSettings();
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -322,7 +322,7 @@ export default function PlaylistView({ initialData }: Props) {
   return (
     <PullToRefresh.Root
       ref={scrollContainerRef}
-      disabled={!user}
+      disabled={!user || !autoSync}
       onPtrRefresh={handlePtrRefresh}
       style={{ height: "100dvh", overflowY: "auto" }}
     >

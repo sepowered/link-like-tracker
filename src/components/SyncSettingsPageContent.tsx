@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
+import { useSettings } from "@/components/SettingsProvider";
 import { useProgressSync } from "@/providers/ProgressSyncProvider";
 import PageHeader from "@/components/PageHeader";
 import { ActionButton, HStack, Icon, VStack } from "@seed-design/react";
-import { List, ListItem } from "@/ui/list";
+import { List, ListItem, ListButtonItem, ListSwitchItem } from "@/ui/list";
+import { Switchmark } from "@/ui/switch";
 import { ListHeader } from "@/ui/list-header";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
@@ -38,6 +40,7 @@ function formatDate(iso: string): string {
 
 export default function SyncSettingsPageContent() {
   const { user } = useAuth();
+  const { autoSync, setAutoSync } = useSettings();
   const {
     devices,
     devicesLoading,
@@ -45,6 +48,7 @@ export default function SyncSettingsPageContent() {
     syncing,
     deleteDevice,
     adoptDeviceProgress,
+    mergeAllDevices,
   } = useProgressSync();
   const adapter = useSnackbarAdapter();
 
@@ -52,6 +56,24 @@ export default function SyncSettingsPageContent() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [adoptTarget, setAdoptTarget] = useState<{ deviceId: string; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ deviceId: string; name: string } | null>(null);
+
+  async function handleManualSync() {
+    try {
+      const changed = await mergeAllDevices();
+      adapter.create({
+        render: () => (
+          <Snackbar
+            variant="positive"
+            message={changed ? "기록을 동기화했어요." : "이미 최신 상태예요."}
+          />
+        ),
+      });
+    } catch {
+      adapter.create({
+        render: () => <Snackbar variant="critical" message="동기화하지 못했어요. 다시 시도해요." />,
+      });
+    }
+  }
 
   useEffect(() => {
     if (!user || devices.length === 0) return;
@@ -113,6 +135,32 @@ export default function SyncSettingsPageContent() {
   return (
     <div className="settings-page">
       <PageHeader title="기기 및 동기화" borderBottom={false} />
+
+      {user && (
+        <VStack gap="x3">
+          <ListHeader as="h2">동기화 설정</ListHeader>
+          <List>
+            <ListSwitchItem
+              title="자동 동기화"
+              detail="시청 기록을 모든 기기에서 자동으로 맞추고 보관해요."
+              checked={autoSync}
+              onCheckedChange={setAutoSync}
+              suffix={<Switchmark />}
+            />
+            {!autoSync && (
+              <div style={{ padding: "0 16px 8px", fontSize: "12px", color: "var(--seed-semantic-color-fg-warning)" }}>
+                자동 동기화를 끄면 기록이 자동으로 저장되지 않아 데이터가 유실될 수 있어요.
+              </div>
+            )}
+            <ListButtonItem
+              title="지금 동기화"
+              detail="모든 기기의 시청 기록을 수동으로 불러오고 저장해요."
+              onClick={handleManualSync}
+              disabled={syncing}
+            />
+          </List>
+        </VStack>
+      )}
 
       {!user ? (
         <VStack gap="x3">
