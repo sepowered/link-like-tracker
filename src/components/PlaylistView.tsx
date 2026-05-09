@@ -9,6 +9,8 @@ import FilterBar from "./FilterBar";
 import SettingsLink from "./SettingsLink";
 import PlaylistProgress from "./PlaylistProgress";
 import AppBar from "./AppBar";
+import { useAuth } from "@/providers/AuthProvider";
+import { SYNC_EVENT } from "@/providers/ProgressSyncProvider";
 import { ActionButton, Icon, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import {
   BottomSheetRoot,
@@ -20,6 +22,7 @@ import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { Callout } from "@/ui/callout";
 import Link from "next/link";
 import { IconChevronDownLine, IconExclamationmarkCircleLine, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
+import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 
 type FilterType = "all" | "watched" | "unwatched";
 
@@ -36,6 +39,9 @@ interface Props {
 }
 
 export default function PlaylistView({ initialData }: Props) {
+  const { user, loading: authLoading } = useAuth();
+  const adapter = useSnackbarAdapter();
+  const sessionSnackbarShown = useRef(false);
   const [data, setData] = useState<PlaylistData>(initialData);
   const [filter, setFilter] = useState<FilterType>("all");
   const [categories, setCategories] = useState<VideoCategory[]>(["all"]);
@@ -127,6 +133,39 @@ export default function PlaylistView({ initialData }: Props) {
       setIsInitialized(true);
       setFiltersInitialized(true);
     }
+  }, []);
+
+  // Show login snackbar once when session is first detected
+  useEffect(() => {
+    if (authLoading || !user?.email || sessionSnackbarShown.current) return;
+    sessionSnackbarShown.current = true;
+    adapter.create({
+      render: () => <Snackbar message={`${user.email} 계정으로 로그인했어요.`} />,
+    });
+  }, [authLoading, user]);
+
+  // Re-apply progress from localStorage when ProgressSyncProvider resolves a conflict
+  useEffect(() => {
+    function handleProgressSync() {
+      try {
+        const watchedIdsRaw = localStorage.getItem(STORAGE_KEY_WATCHED);
+        const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
+        const watchedIds: string[] = watchedIdsRaw ? JSON.parse(watchedIdsRaw) : [];
+        const overrides: Record<string, string | null> = overridesRaw ? JSON.parse(overridesRaw) : {};
+        setData((prev) => ({
+          seasons: prev.seasons.map((season) => ({
+            ...season,
+            videos: season.videos.map((v) => ({
+              ...v,
+              watched: watchedIds.includes(v.id),
+              ...(overrides[v.id] !== undefined ? { categoryOverride: overrides[v.id] as any } : {}),
+            })),
+          })),
+        }));
+      } catch {}
+    }
+    window.addEventListener(SYNC_EVENT, handleProgressSync);
+    return () => window.removeEventListener(SYNC_EVENT, handleProgressSync);
   }, []);
 
   // Save filter state to localStorage

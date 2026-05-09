@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import { ActionButton, Icon, VStack } from "@seed-design/react";
-import { IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
+import { IconChevronLeftLine } from "@karrotmarket/react-monochrome-icon";
 import { Checkbox, CheckboxGroup } from "@/ui/checkbox";
 
 const GOOGLE_LOGO = (
@@ -16,6 +17,7 @@ const GOOGLE_LOGO = (
 );
 
 export default function AuthConnectPage() {
+  const router = useRouter();
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -43,12 +45,13 @@ export default function AuthConnectPage() {
         layout="iconOnly"
         variant="ghost"
         size="small"
-        aria-label="닫기"
-        onClick={() => window.close()}
-        style={{ position: "absolute", top: "var(--seed-dimension-x3)", right: "var(--seed-dimension-x3)" }}
+        aria-label="뒤로"
+        onClick={() => router.back()}
+        style={{ position: "absolute", top: "var(--seed-dimension-x3)", left: "var(--seed-dimension-x3)" }}
       >
-        <Icon svg={<IconXmarkLine />} />
+        <Icon svg={<IconChevronLeftLine />} />
       </ActionButton>
+
       <VStack gap="x2">
         <p style={{
           fontSize: "13px",
@@ -109,7 +112,7 @@ export default function AuthConnectPage() {
           margin: 0,
           lineHeight: 1.6,
         }}>
-          Google 계정 정보 외 추가 정보는 수집하지 않아요.
+          Google 계정 정보만 사용해요.
         </p>
       </VStack>
     </div>

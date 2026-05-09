@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import { useProgressSync } from "@/providers/ProgressSyncProvider";
 import { useSettings } from "@/components/SettingsProvider";
 import PageHeader from "@/components/PageHeader";
 import type { VideoCategory } from "@/lib/video-category";
@@ -23,11 +25,22 @@ import {
   BottomSheetBody,
   BottomSheetFooter,
 } from "@/ui/bottom-sheet";
+import {
+  AlertDialogRoot,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "@/ui/alert-dialog";
+import { ResponsivePair } from "@seed-design/react";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
   IconCheckmarkFatFill,
   IconChevronRightLine,
   IconPersonCircleLine,
+  IconTrashcanLine,
 } from "@karrotmarket/react-monochrome-icon";
 
 const CATEGORY_OPTIONS: { value: VideoCategory; label: string }[] = [
@@ -47,10 +60,13 @@ export default function SettingsPageContent() {
     setProgressCategories,
     setHidePrivateVideos,
   } = useSettings();
+  const router = useRouter();
   const { user, signOut } = useAuth();
+  const { devices, devicesLoading, currentDeviceId, syncing, deleteDevice, mergeAllDevices, resetConflictPolicy } = useProgressSync();
   const adapter = useSnackbarAdapter();
   const [themeSheetOpen, setThemeSheetOpen] = useState(false);
   const [progressSheetOpen, setProgressSheetOpen] = useState(false);
+  const [logoutSheetOpen, setLogoutSheetOpen] = useState(false);
   const [pendingCategories, setPendingCategories] = useState<VideoCategory[]>(progressCategories);
 
   function handleProgressSheetOpenChange(open: boolean) {
@@ -68,7 +84,7 @@ export default function SettingsPageContent() {
     setProgressCategories(pendingCategories);
     setProgressSheetOpen(false);
     adapter.create({
-      render: () => <Snackbar variant="positive" message="진행률 표시 기준이 저장되었어요" />,
+      render: () => <Snackbar variant="positive" message="진행률 표시 기준을 저장했어요." />,
     });
   }
 
@@ -87,6 +103,103 @@ export default function SettingsPageContent() {
       <PageHeader title="설정" borderBottom={false} />
 
       <VStack gap="x6">
+        <VStack gap="x3">
+          <ListHeader as="h2">계정 및 동기화</ListHeader>
+          <List>
+            {user ? (
+              <>
+                <ListItem
+                  title={user.user_metadata?.full_name ?? user.email ?? "연결됨"}
+                  detail={user.user_metadata?.full_name ? user.email : undefined}
+                  prefix={
+                    user.user_metadata?.avatar_url
+                      ? <img src={user.user_metadata.avatar_url} alt="" width={32} height={32} style={{ borderRadius: "50%", flexShrink: 0 }} />
+                      : <Icon svg={<IconPersonCircleLine />} size="32px" />
+                  }
+                  suffix={
+                    <HStack color="fg.neutralSubtle" style={{ fontSize: "12px" }}>
+                      연결됨
+                    </HStack>
+                  }
+                />
+                {devicesLoading ? (
+                  <ListItem title="기기 목록 불러오는 중..." />
+                ) : (
+                  devices.map((device) => {
+                    const isCurrent = device.device_id === currentDeviceId;
+                    const name = device.device_name ?? `기기 ${device.device_id.slice(0, 8)}`;
+                    const lastSeen = new Date(device.last_seen_at).toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
+                    return (
+                      <ListItem
+                        key={device.device_id}
+                        title={isCurrent ? `${name} (현재 기기)` : name}
+                        detail={`최근 동기화: ${lastSeen}`}
+                        suffix={
+                          !isCurrent ? (
+                            <ActionButton
+                              variant="ghost"
+                              size="small"
+                              color="fg.critical"
+                              layout="iconOnly"
+                              aria-label="기기 삭제"
+                              onClick={async () => {
+                                await deleteDevice(device.device_id);
+                                adapter.create({ render: () => <Snackbar variant="positive" message="기기 기록을 삭제했어요." /> });
+                              }}
+                            >
+                              <Icon svg={<IconTrashcanLine />} />
+                            </ActionButton>
+                          ) : undefined
+                        }
+                      />
+                    );
+                  })
+                )}
+                {devices.length > 0 && (
+                  <ListButtonItem
+                    title={syncing ? "기록 합치는 중..." : "기기별 기록 합치기"}
+                    disabled={syncing}
+                    onClick={async () => {
+                      await mergeAllDevices();
+                      adapter.create({ render: () => <Snackbar variant="positive" message="모든 기기 기록을 합쳤어요." /> });
+                    }}
+                  />
+                )}
+                {devices.length > 0 && (
+                  <ListButtonItem
+                    title="동기화 충돌 설정 초기화"
+                    onClick={() => {
+                      resetConflictPolicy();
+                      adapter.create({ render: () => <Snackbar variant="positive" message="동기화 설정을 초기화했어요." /> });
+                    }}
+                  />
+                )}
+                <ListButtonItem
+                  title="로그아웃"
+                  onClick={() => setLogoutSheetOpen(true)}
+                  suffix={<Icon svg={<IconChevronRightLine />} size="16px" color="fg.neutralSubtle" />}
+                />
+              </>
+            ) : (
+              <ListButtonItem
+                title="Google로 로그인"
+                detail="로그인하면 스마트폰, 태블릿, 웹 어디서든 시청 기록을 동기화해요."
+                onClick={() => router.push("/auth/connect")}
+                prefix={
+                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                    <path fill="#4285F4" d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/>
+                    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
+                    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/>
+                    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58Z"/>
+                  </svg>
+                }
+              />
+            )}
+          </List>
+        </VStack>
+
+        <Divider />
+
         <VStack>
           <ListHeader as="h2">테마</ListHeader>
           <List>
@@ -126,51 +239,6 @@ export default function SettingsPageContent() {
             />
           </List>
         </VStack>
-
-        <Divider />
-
-        <VStack gap="x3">
-          <ListHeader as="h2">연속성</ListHeader>
-          <List>
-            {user ? (
-              <>
-                <ListItem
-                  title={user.user_metadata?.full_name ?? user.email ?? "연결됨"}
-                  detail={user.user_metadata?.full_name ? user.email : undefined}
-                  prefix={
-                    user.user_metadata?.avatar_url
-                      ? <img src={user.user_metadata.avatar_url} alt="" width={32} height={32} style={{ borderRadius: "50%", flexShrink: 0 }} />
-                      : <Icon svg={<IconPersonCircleLine />} size="32px" />
-                  }
-                  suffix={
-                    <HStack color="fg.neutralSubtle" style={{ fontSize: "12px" }}>
-                      연결됨
-                    </HStack>
-                  }
-                />
-                <ListButtonItem
-                  title="로그아웃"
-                  onClick={signOut}
-                  suffix={<Icon svg={<IconChevronRightLine />} size="16px" color="fg.neutralSubtle" />}
-                />
-              </>
-            ) : (
-              <ListButtonItem
-                title="Google로 로그인"
-                detail="로그인하면 스마트폰, 태블릿, 웹 어디서든 시청 기록을 동기화해요."
-                onClick={() => window.open("/auth/connect", "_blank", "width=420,height=640,left=200,top=100,popup")}
-                prefix={
-                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-                    <path fill="#4285F4" d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/>
-                    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
-                    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/>
-                    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58Z"/>
-                  </svg>
-                }
-              />
-            )}
-          </List>
-        </VStack>
       </VStack>
 
       <BottomSheetRoot
@@ -198,6 +266,21 @@ export default function SettingsPageContent() {
           </BottomSheetBody>
         </BottomSheetContent>
       </BottomSheetRoot>
+
+      <AlertDialogRoot open={logoutSheetOpen} onOpenChange={setLogoutSheetOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>로그아웃할까요?</AlertDialogTitle>
+            <AlertDialogDescription>로그아웃해도 이 기기의 시청 기록은 남아있어요.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <ResponsivePair gap="x2">
+              <AlertDialogAction variant="neutralWeak" onClick={() => setLogoutSheetOpen(false)}>취소</AlertDialogAction>
+              <AlertDialogAction variant="criticalSolid" onClick={() => { setLogoutSheetOpen(false); signOut(); }}>로그아웃</AlertDialogAction>
+            </ResponsivePair>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogRoot>
 
       <BottomSheetRoot
         open={progressSheetOpen}
