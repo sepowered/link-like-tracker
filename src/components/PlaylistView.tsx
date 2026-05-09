@@ -329,7 +329,7 @@ export default function PlaylistView({ initialData }: Props) {
     >
       <PullToRefresh.Indicator>
         {({ value, minValue, maxValue }) => (
-          <ProgressCircle value={value} minValue={minValue} maxValue={maxValue} />
+          <ProgressCircle value={value} minValue={minValue} maxValue={maxValue} size="24" tone="neutral" />
         )}
       </PullToRefresh.Indicator>
 
