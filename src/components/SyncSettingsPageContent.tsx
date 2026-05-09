@@ -22,7 +22,7 @@ import {
   fetchDeviceProgressStats,
   type DeviceProgressStats,
 } from "@/lib/supabase-progress";
-import playlistData from "@/../data/playlist.json";
+import playlistData from "../../data/playlist.initial.json";
 
 const videoTitleMap = new Map<string, string>();
 for (const season of playlistData.seasons) {
