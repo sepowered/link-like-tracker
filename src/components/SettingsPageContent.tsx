@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { useSettings } from "@/components/SettingsProvider";
+import { getAuthCallbackUrl } from "@/lib/auth-redirect-url";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import PageHeader from "@/components/PageHeader";
 import type { VideoCategory } from "@/lib/video-category";
@@ -131,7 +132,7 @@ export default function SettingsPageContent() {
     const supabase = getSupabaseBrowserClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: getAuthCallbackUrl() },
     });
 
     if (error) {

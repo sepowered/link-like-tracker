@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getAuthCallbackUrl } from "@/lib/auth-redirect-url";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import { ActionButton, Icon, VStack } from "@seed-design/react";
 import { IconChevronLeftLine } from "@karrotmarket/react-monochrome-icon";
@@ -27,7 +28,7 @@ export default function AuthConnectPage() {
     const supabase = getSupabaseBrowserClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: getAuthCallbackUrl() },
     });
   }
 
