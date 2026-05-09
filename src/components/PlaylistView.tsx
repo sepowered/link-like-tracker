@@ -12,6 +12,7 @@ import AppBar from "./AppBar";
 import { useAuth } from "@/providers/AuthProvider";
 import { SYNC_EVENT, useProgressSync } from "@/providers/ProgressSyncProvider";
 import { ActionButton, Icon, PullToRefresh, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
+import { ProgressCircle } from "@/ui/progress-circle";
 import {
   BottomSheetRoot,
   BottomSheetContent,
@@ -327,14 +328,8 @@ export default function PlaylistView({ initialData }: Props) {
       style={{ height: "100dvh", overflowY: "auto" }}
     >
       <PullToRefresh.Indicator>
-        {({ value, maxValue }) => (
-          <div style={{ textAlign: "center", padding: "8px", fontSize: "12px", color: "var(--seed-semantic-color-fg-secondary)" }}>
-            {syncing || value === undefined
-              ? "정보를 불러오고 있어요"
-              : value < maxValue
-              ? "당겨서 업데이트"
-              : "놓아서 업데이트"}
-          </div>
+        {({ value, minValue, maxValue }) => (
+          <ProgressCircle value={value} minValue={minValue} maxValue={maxValue} />
         )}
       </PullToRefresh.Indicator>
 
