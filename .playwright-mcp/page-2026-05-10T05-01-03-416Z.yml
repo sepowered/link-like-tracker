@@ -1,0 +1,519 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic:
+        - progressbar
+      - generic [ref=e4]:
+        - generic:
+          - generic:
+            - button "105기":
+              - text: 105기
+              - img
+            - generic:
+              - button "검색":
+                - img
+              - link "설정":
+                - /url: /settings
+                - img
+          - generic:
+            - generic:
+              - generic:
+                - button "시청 상태":
+                  - generic: 시청 상태
+                  - generic:
+                    - img
+                - button "전체 분류":
+                  - generic: 전체 분류
+                  - generic:
+                    - img
+                - button "과거순":
+                  - generic: 과거순
+        - generic [ref=e5]:
+          - generic [ref=e6]:
+            - heading "lltracker" [level=1] [ref=e7]
+            - button "105기" [ref=e8] [cursor=pointer]:
+              - text: 105기
+              - img [ref=e9]
+          - link "설정" [ref=e13] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e14]
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - generic [ref=e22]: "0"
+              - generic [ref=e23]: /
+              - generic [ref=e24]: "80"
+              - generic [ref=e25]: 편 시청
+            - generic [ref=e26]: 0%
+          - progressbar [ref=e27]
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - button "시청 상태" [ref=e31] [cursor=pointer]:
+              - generic [ref=e32]: 시청 상태
+              - img [ref=e34]
+            - button "전체 분류" [ref=e37] [cursor=pointer]:
+              - generic [ref=e38]: 전체 분류
+              - img [ref=e40]
+            - button "과거순" [ref=e43] [cursor=pointer]:
+              - generic [ref=e44]: 과거순
+          - generic [ref=e45]:
+            - img [ref=e46]
+            - textbox "영상 제목 검색" [ref=e49]:
+              - /placeholder: 제목 검색...
+        - generic [ref=e51]:
+          - img [ref=e52]
+          - generic [ref=e58]:
+            - text: 아직 추가되지 않은 스토리 및 콘텐츠가 있나요?
+            - link "추가 요청하기" [ref=e59] [cursor=pointer]:
+              - /url: /add-request
+        - generic [ref=e60]:
+          - button "▼ 105기 0% 0/80" [ref=e61] [cursor=pointer]:
+            - generic [ref=e62]:
+              - generic [ref=e63]: ▼
+              - generic [ref=e64]: 105기
+            - generic [ref=e65]:
+              - progressbar [ref=e66]
+              - generic [ref=e68]: 0/80
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - 'checkbox "\"Link! Like! Love Live!\" March 2026, Episode 12: \"Our Cherry Blossoms That Will Bloom Forever\" ||... 시청 완료" [ref=e72]'
+              - generic [ref=e74]:
+                - button "스토리" [ref=e75] [cursor=pointer]:
+                  - generic [ref=e76]: 스토리
+                - generic [ref=e77] [cursor=pointer]: "\"Link! Like! Love Live!\" March 2026, Episode 12: \"Our Cherry Blossoms That Will Bloom Forever\" ||..."
+            - generic [ref=e78]:
+              - checkbox "【YouTube限定の特別演出付き】 105期 第12話 エンディング 「ずっと花咲く僕らの桜」 PERIOD（ラブライブ!！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e80]
+              - generic [ref=e82]:
+                - button "스토리" [ref=e83] [cursor=pointer]:
+                  - generic [ref=e84]: 스토리
+                - generic [ref=e85] [cursor=pointer]: 【YouTube限定の特別演出付き】 105期 第12話 エンディング 「ずっと花咲く僕らの桜」 PERIOD（ラブライブ!！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e86]:
+              - checkbox "\"Link! Like! Love Live!\" March 2026, Episode 12 \"Our Cherry Blossoms That Will Bloom Forever\" COD... 시청 완료" [ref=e88]
+              - generic [ref=e90]:
+                - button "스토리" [ref=e91] [cursor=pointer]:
+                  - generic [ref=e92]: 스토리
+                - generic [ref=e93] [cursor=pointer]: "\"Link! Like! Love Live!\" March 2026, Episode 12 \"Our Cherry Blossoms That Will Bloom Forever\" COD..."
+            - generic [ref=e94]:
+              - checkbox "「Dream Belivers（B.G.P. Ver）」蓮ノ空女学院スクールアイドルクラブ105期FesLIVE〜Bloom Garden Party〜 2026年3月30日 시청 완료" [ref=e96]
+              - generic [ref=e98]:
+                - button "FesxLIVE" [ref=e99] [cursor=pointer]:
+                  - generic [ref=e100]: FesxLIVE
+                - generic [ref=e101] [cursor=pointer]: 「Dream Belivers（B.G.P. Ver）」蓮ノ空女学院スクールアイドルクラブ105期FesLIVE〜Bloom Garden Party〜 2026年3月30日
+            - generic [ref=e102]:
+              - checkbox "「今、過去、未来の三原色」蓮ノ空女学院スクールアイドルクラブ105期FesLIVE〜Bloom Garden Party〜 2026年3月30日 시청 완료" [ref=e104]
+              - generic [ref=e106]:
+                - button "FesxLIVE" [ref=e107] [cursor=pointer]:
+                  - generic [ref=e108]: FesxLIVE
+                - generic [ref=e109] [cursor=pointer]: 「今、過去、未来の三原色」蓮ノ空女学院スクールアイドルクラブ105期FesLIVE〜Bloom Garden Party〜 2026年3月30日
+            - generic [ref=e110]:
+              - 'checkbox "【全編アーカイブ公開中】Bloom Garden Party 105期 Final Term FesxLIVE STAGE 〜11人で約束のライブ〜 #Fes蓮ノ空ブルパ 시청 완료" [ref=e112]'
+              - generic [ref=e114]:
+                - button "FesxLIVE" [ref=e115] [cursor=pointer]:
+                  - generic [ref=e116]: FesxLIVE
+                - generic [ref=e117] [cursor=pointer]: "【全編アーカイブ公開中】Bloom Garden Party 105期 Final Term FesxLIVE STAGE 〜11人で約束のライブ〜 #Fes蓮ノ空ブルパ"
+            - generic [ref=e118]:
+              - checkbox "\"Link! Like! Love Live!\" March 2026 - Episode 12 \"Our Cherry Blossoms That Will Bloom Forever\" PA... 시청 완료" [ref=e120]
+              - generic [ref=e122]:
+                - button "스토리" [ref=e123] [cursor=pointer]:
+                  - generic [ref=e124]: 스토리
+                - generic [ref=e125] [cursor=pointer]: "\"Link! Like! Love Live!\" March 2026 - Episode 12 \"Our Cherry Blossoms That Will Bloom Forever\" PA..."
+            - generic [ref=e126]:
+              - checkbox "Edel Note「EdelinieN」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e128]
+              - generic [ref=e130]:
+                - button "음악" [ref=e131] [cursor=pointer]:
+                  - generic [ref=e132]: 음악
+                - generic [ref=e133] [cursor=pointer]: Edel Note「EdelinieN」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e134]:
+              - checkbox "蓮ノ空11人で約束のライブ 高校生活3年間のグランドフィナーレ 「Bloom Garden Party FesxLIVE STAGE」 ／Link！Like！ラブライブ！の集大成 시청 완료" [ref=e136]
+              - generic [ref=e138]:
+                - button "FesxLIVE" [ref=e139] [cursor=pointer]:
+                  - generic [ref=e140]: FesxLIVE
+                - generic [ref=e141] [cursor=pointer]: 蓮ノ空11人で約束のライブ 高校生活3年間のグランドフィナーレ 「Bloom Garden Party FesxLIVE STAGE」 ／Link！Like！ラブライブ！の集大成
+            - generic [ref=e142]:
+              - checkbox "\"Link! Like! Love Live!\" March 2026 - Episode 12 \"Our Cherry Blossoms That Will Bloom Forever\" PA... 시청 완료" [ref=e144]
+              - generic [ref=e146]:
+                - button "스토리" [ref=e147] [cursor=pointer]:
+                  - generic [ref=e148]: 스토리
+                - generic [ref=e149] [cursor=pointer]: "\"Link! Like! Love Live!\" March 2026 - Episode 12 \"Our Cherry Blossoms That Will Bloom Forever\" PA..."
+            - generic [ref=e150]:
+              - checkbox "DOLLCHESTRA 「アイシイ」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e152]
+              - generic [ref=e154]:
+                - button "음악" [ref=e155] [cursor=pointer]:
+                  - generic [ref=e156]: 음악
+                - generic [ref=e157] [cursor=pointer]: DOLLCHESTRA 「アイシイ」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e158]:
+              - checkbox "\"Link! Like! Love Live!\" March 2026 Episode 12 \"Our Cherry Blossoms Bloom Forever\" PART 1-PART 3 ... 시청 완료" [ref=e160]
+              - generic [ref=e162]:
+                - button "스토리" [ref=e163] [cursor=pointer]:
+                  - generic [ref=e164]: 스토리
+                - generic [ref=e165] [cursor=pointer]: "\"Link! Like! Love Live!\" March 2026 Episode 12 \"Our Cherry Blossoms Bloom Forever\" PART 1-PART 3 ..."
+            - generic [ref=e166]:
+              - checkbox "スリーズブーケ 「不思議と君とライブラリー」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e168]
+              - generic [ref=e170]:
+                - button "음악" [ref=e171] [cursor=pointer]:
+                  - generic [ref=e172]: 음악
+                - generic [ref=e173] [cursor=pointer]: スリーズブーケ 「不思議と君とライブラリー」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e174]:
+              - checkbox "\"Link! Like! Love Live!\" February 2026 Episode 11 \"Let's all bloom together!\" TREE \"Linkura\" \"Has... 시청 완료" [ref=e176]
+              - generic [ref=e178]:
+                - button "스토리" [ref=e179] [cursor=pointer]:
+                  - generic [ref=e180]: 스토리
+                - generic [ref=e181] [cursor=pointer]: "\"Link! Like! Love Live!\" February 2026 Episode 11 \"Let's all bloom together!\" TREE \"Linkura\" \"Has..."
+            - generic [ref=e182]:
+              - checkbox "みらくらぱーく！ 「トモダチになれる場所」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e184]
+              - generic [ref=e186]:
+                - button "음악" [ref=e187] [cursor=pointer]:
+                  - generic [ref=e188]: 음악
+                - generic [ref=e189] [cursor=pointer]: みらくらぱーく！ 「トモダチになれる場所」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e190]:
+              - checkbox "\"Link! Like! Love Live!\" February 2026 Episode 11 \"Let's all bloom together!\" FLOWER \"Linkura\" \"H... 시청 완료" [ref=e192]
+              - generic [ref=e194]:
+                - button "스토리" [ref=e195] [cursor=pointer]:
+                  - generic [ref=e196]: 스토리
+                - generic [ref=e197] [cursor=pointer]: "\"Link! Like! Love Live!\" February 2026 Episode 11 \"Let's all bloom together!\" FLOWER \"Linkura\" \"H..."
+            - generic [ref=e198]:
+              - checkbox "\"Link! Like! Love Live!\" February 2026 Episode 11 \"Let's all bloom together!\" Part 8-Part 10 \"Lin... 시청 완료" [ref=e200]
+              - generic [ref=e202]:
+                - button "스토리" [ref=e203] [cursor=pointer]:
+                  - generic [ref=e204]: 스토리
+                - generic [ref=e205] [cursor=pointer]: "\"Link! Like! Love Live!\" February 2026 Episode 11 \"Let's all bloom together!\" Part 8-Part 10 \"Lin..."
+            - generic [ref=e206]:
+              - checkbox "「Link! Like! ラブライブ！」2026年February ・第11話『みんなで、花咲きたい！』PART1〜PART7「リンクラ」「蓮ノ空女学院スクールアイドルクラブ」 시청 완료" [ref=e208]
+              - generic [ref=e210]:
+                - button "스토리" [ref=e211] [cursor=pointer]:
+                  - generic [ref=e212]: 스토리
+                - generic [ref=e213] [cursor=pointer]: 「Link! Like! ラブライブ！」2026年February ・第11話『みんなで、花咲きたい！』PART1〜PART7「リンクラ」「蓮ノ空女学院スクールアイドルクラブ」
+            - generic [ref=e214]:
+              - checkbox "Echoes Beyond 시청 완료" [ref=e216]
+              - generic [ref=e218]:
+                - button "미분류" [ref=e219] [cursor=pointer]:
+                  - generic [ref=e220]: 미분류
+                - generic [ref=e221] [cursor=pointer]: Echoes Beyond
+            - generic [ref=e222]:
+              - checkbox "[リンクラ] 103-105th Fes×ReC：LIVE～Road to Bloom ～ CHAPTER：Beyond 시청 완료" [ref=e224]
+              - generic [ref=e226]:
+                - button "미분류" [ref=e227] [cursor=pointer]:
+                  - generic [ref=e228]: 미분류
+                - generic [ref=e229] [cursor=pointer]: "[リンクラ] 103-105th Fes×ReC：LIVE～Road to Bloom ～ CHAPTER：Beyond"
+            - generic [ref=e230]:
+              - checkbox "「Link! Like! ラブライブ！」2026年January・第10話『ゆえに、ルリあり。』PART6〜PART9「リンクラ」「蓮ノ空女学院スクールアイドルクラブ」 시청 완료" [ref=e232]
+              - generic [ref=e234]:
+                - button "스토리" [ref=e235] [cursor=pointer]:
+                  - generic [ref=e236]: 스토리
+                - generic [ref=e237] [cursor=pointer]: 「Link! Like! ラブライブ！」2026年January・第10話『ゆえに、ルリあり。』PART6〜PART9「リンクラ」「蓮ノ空女学院スクールアイドルクラブ」
+            - generic [ref=e238]:
+              - checkbox "「하로메구 찬가(ハロめぐ讃歌)」후지시마 메구미(藤島慈) (CV.츠키네 코나(月音こな)) 시청 완료" [ref=e240]
+              - generic [ref=e242]:
+                - button "미분류" [ref=e243] [cursor=pointer]:
+                  - generic [ref=e244]: 미분류
+                - generic [ref=e245] [cursor=pointer]: 「하로메구 찬가(ハロめぐ讃歌)」후지시마 메구미(藤島慈) (CV.츠키네 코나(月音こな))
+            - generic [ref=e246]:
+              - checkbox "\"Link! Like! Love Live!\" January 2026 Episode 10 \"Therefore, Ruri is here.\" Parts 1-5 \"Linkura\" a... 시청 완료" [ref=e248]
+              - generic [ref=e250]:
+                - button "스토리" [ref=e251] [cursor=pointer]:
+                  - generic [ref=e252]: 스토리
+                - generic [ref=e253] [cursor=pointer]: "\"Link! Like! Love Live!\" January 2026 Episode 10 \"Therefore, Ruri is here.\" Parts 1-5 \"Linkura\" a..."
+            - generic [ref=e254]:
+              - checkbox "\"Link! Like! Love Live!\" December 2025 Episode 9 \"ALL Link to YOU\" Ending Theme \"Linkura\" \"Hasuno... 시청 완료" [ref=e256]
+              - generic [ref=e258]:
+                - button "스토리" [ref=e259] [cursor=pointer]:
+                  - generic [ref=e260]: 스토리
+                - generic [ref=e261] [cursor=pointer]: "\"Link! Like! Love Live!\" December 2025 Episode 9 \"ALL Link to YOU\" Ending Theme \"Linkura\" \"Hasuno..."
+            - generic [ref=e262]:
+              - checkbox "蓮ノ空女学院スクールアイドルクラブ「雪舞う空と二秒の永遠」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e264]
+              - generic [ref=e266]:
+                - button "음악" [ref=e267] [cursor=pointer]:
+                  - generic [ref=e268]: 음악
+                - generic [ref=e269] [cursor=pointer]: 蓮ノ空女学院スクールアイドルクラブ「雪舞う空と二秒の永遠」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e270]:
+              - 'checkbox "【冒頭配信】105期 4th Term FesxLIVE 〜The Buds after Snowmelt〜 (ラブライブ！蓮ノ空女学院スクールアイドルクラブ) #Fes蓮ノ空スノウメルト 시청 완료" [ref=e272]'
+              - generic [ref=e274]:
+                - button "FesxLIVE" [ref=e275] [cursor=pointer]:
+                  - generic [ref=e276]: FesxLIVE
+                - generic [ref=e277] [cursor=pointer]: "【冒頭配信】105期 4th Term FesxLIVE 〜The Buds after Snowmelt〜 (ラブライブ！蓮ノ空女学院スクールアイドルクラブ) #Fes蓮ノ空スノウメルト"
+            - generic [ref=e278]:
+              - checkbox "\"Link! Like! Love Live!\" December 2025 Episode 9 \"ALL Link to YOU\" FRIEND \"Linkura\" \"Hasunozora G... 시청 완료" [ref=e280]
+              - generic [ref=e282]:
+                - button "스토리" [ref=e283] [cursor=pointer]:
+                  - generic [ref=e284]: 스토리
+                - generic [ref=e285] [cursor=pointer]: "\"Link! Like! Love Live!\" December 2025 Episode 9 \"ALL Link to YOU\" FRIEND \"Linkura\" \"Hasunozora G..."
+            - generic [ref=e286]:
+              - checkbox "\"Link! Like! Love Live!\" December 2025 Episode 9 \"ALL Link to YOU\" PART 6-PART 10 \"Linkra\" \"Hasun... 시청 완료" [ref=e288]
+              - generic [ref=e290]:
+                - button "스토리" [ref=e291] [cursor=pointer]:
+                  - generic [ref=e292]: 스토리
+                - generic [ref=e293] [cursor=pointer]: "\"Link! Like! Love Live!\" December 2025 Episode 9 \"ALL Link to YOU\" PART 6-PART 10 \"Linkra\" \"Hasun..."
+            - generic [ref=e294]:
+              - checkbox "「Link! Like! ラブライブ！」2025年度December・第9話『ALL Link to YOU』PART1〜PART5「リンクラ」「蓮ノ空女学院スクールアイドルクラブ」 시청 완료" [ref=e296]
+              - generic [ref=e298]:
+                - button "스토리" [ref=e299] [cursor=pointer]:
+                  - generic [ref=e300]: 스토리
+                - generic [ref=e301] [cursor=pointer]: 「Link! Like! ラブライブ！」2025年度December・第9話『ALL Link to YOU』PART1〜PART5「リンクラ」「蓮ノ空女学院スクールアイドルクラブ」
+            - generic [ref=e302]:
+              - checkbox "【2026년 5월 8일 개봉결정!!】영화 러브라이브! 하스노소라여학원 스쿨아이돌 클럽 Bloom Garden Party 특보 시청 완료" [ref=e304]
+              - generic [ref=e306]:
+                - button "미분류" [ref=e307] [cursor=pointer]:
+                  - generic [ref=e308]: 미분류
+                - generic [ref=e309] [cursor=pointer]: 【2026년 5월 8일 개봉결정!!】영화 러브라이브! 하스노소라여학원 스쿨아이돌 클럽 Bloom Garden Party 특보
+            - generic [ref=e310]:
+              - 'checkbox "ハロめぐちゃんねる！お久しぶりスペシャル～！ #ハロめぐ 시청 완료" [ref=e312]'
+              - generic [ref=e314]:
+                - button "미분류" [ref=e315] [cursor=pointer]:
+                  - generic [ref=e316]: 미분류
+                - generic [ref=e317] [cursor=pointer]: "ハロめぐちゃんねる！お久しぶりスペシャル～！ #ハロめぐ"
+            - generic [ref=e318]:
+              - checkbox "シアター生き様 시청 완료" [ref=e320]
+              - generic [ref=e322]:
+                - button "미분류" [ref=e323] [cursor=pointer]:
+                  - generic [ref=e324]: 미분류
+                - generic [ref=e325] [cursor=pointer]: シアター生き様
+            - generic [ref=e326]:
+              - checkbox "\"Link! Like! Love Live!\" November 2025 Episode 8 \"The Light is Still Far Away, Faint\" VENUS \"Link... 시청 완료" [ref=e328]
+              - generic [ref=e330]:
+                - button "스토리" [ref=e331] [cursor=pointer]:
+                  - generic [ref=e332]: 스토리
+                - generic [ref=e333] [cursor=pointer]: "\"Link! Like! Love Live!\" November 2025 Episode 8 \"The Light is Still Far Away, Faint\" VENUS \"Link..."
+            - generic [ref=e334]:
+              - checkbox "\"Link! Like! Love Live!\" November 2025 Episode 8 \"For Now, the Light is Still Far Away, Faint\" Pa... 시청 완료" [ref=e336]
+              - generic [ref=e338]:
+                - button "스토리" [ref=e339] [cursor=pointer]:
+                  - generic [ref=e340]: 스토리
+                - generic [ref=e341] [cursor=pointer]: "\"Link! Like! Love Live!\" November 2025 Episode 8 \"For Now, the Light is Still Far Away, Faint\" Pa..."
+            - generic [ref=e342]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제8화 Part 1~5 시청 완료" [ref=e344]
+              - generic [ref=e346]:
+                - button "스토리" [ref=e347] [cursor=pointer]:
+                  - generic [ref=e348]: 스토리
+                - generic [ref=e349] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제8화 Part 1~5"
+            - generic [ref=e350]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제7화 ED 시청 완료" [ref=e352]
+              - generic [ref=e354]:
+                - button "스토리" [ref=e355] [cursor=pointer]:
+                  - generic [ref=e356]: 스토리
+                - generic [ref=e357] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제7화 ED"
+            - generic [ref=e358]:
+              - checkbox "蓮ノ空女学院スクールアイドルクラブ 「 はじまりの羽音 」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e360]
+              - generic [ref=e362]:
+                - button "음악" [ref=e363] [cursor=pointer]:
+                  - generic [ref=e364]: 음악
+                - generic [ref=e365] [cursor=pointer]: 蓮ノ空女学院スクールアイドルクラブ 「 はじまりの羽音 」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e366]:
+              - checkbox "DANCE BATTLE KOSUZU vs SAYAKA from DOLLCHESTRA Edited ver （105期FesLIVE竜胆祭 2025年10月31日） 시청 완료" [ref=e368]
+              - generic [ref=e370]:
+                - button "FesxLIVE" [ref=e371] [cursor=pointer]:
+                  - generic [ref=e372]: FesxLIVE
+                - generic [ref=e373] [cursor=pointer]: DANCE BATTLE KOSUZU vs SAYAKA from DOLLCHESTRA Edited ver （105期FesLIVE竜胆祭 2025年10月31日）
+            - generic [ref=e374]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제7화 Part 5~8 시청 완료" [ref=e376]
+              - generic [ref=e378]:
+                - button "스토리" [ref=e379] [cursor=pointer]:
+                  - generic [ref=e380]: 스토리
+                - generic [ref=e381] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제7화 Part 5~8"
+            - generic [ref=e382]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제7화 Part 1~4 시청 완료" [ref=e384]
+              - generic [ref=e386]:
+                - button "스토리" [ref=e387] [cursor=pointer]:
+                  - generic [ref=e388]: 스토리
+                - generic [ref=e389] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제7화 Part 1~4"
+            - generic [ref=e390]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제7화 막간 시청 완료" [ref=e392]
+              - generic [ref=e394]:
+                - button "스토리" [ref=e395] [cursor=pointer]:
+                  - generic [ref=e396]: 스토리
+                - generic [ref=e397] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제7화 막간"
+            - generic [ref=e398]:
+              - checkbox "「一生に夢が咲くように」蓮ノ空女学院スクールアイドルクラブ〜Bloom DaysExtra 〜（105期FesReC:LIVE 2025年10月4日/5日Edited ver） 시청 완료" [ref=e400]
+              - generic [ref=e402]:
+                - button "미분류" [ref=e403] [cursor=pointer]:
+                  - generic [ref=e404]: 미분류
+                - generic [ref=e405] [cursor=pointer]: 「一生に夢が咲くように」蓮ノ空女学院スクールアイドルクラブ〜Bloom DaysExtra 〜（105期FesReC:LIVE 2025年10月4日/5日Edited ver）
+            - generic [ref=e406]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제6화 BD 시청 완료" [ref=e408]
+              - generic [ref=e410]:
+                - button "스토리" [ref=e411] [cursor=pointer]:
+                  - generic [ref=e412]: 스토리
+                - generic [ref=e413] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제6화 BD"
+            - generic [ref=e414]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제6화 Part 5~9 시청 완료" [ref=e416]
+              - generic [ref=e418]:
+                - button "스토리" [ref=e419] [cursor=pointer]:
+                  - generic [ref=e420]: 스토리
+                - generic [ref=e421] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제6화 Part 5~9"
+            - generic [ref=e422]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제6화 Part 1~4 시청 완료" [ref=e424]
+              - generic [ref=e426]:
+                - button "스토리" [ref=e427] [cursor=pointer]:
+                  - generic [ref=e428]: 스토리
+                - generic [ref=e429] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제6화 Part 1~4"
+            - generic [ref=e430]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제5화 ED 시청 완료" [ref=e432]
+              - generic [ref=e434]:
+                - button "스토리" [ref=e435] [cursor=pointer]:
+                  - generic [ref=e436]: 스토리
+                - generic [ref=e437] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제5화 ED"
+            - generic [ref=e438]:
+              - checkbox "Edel Note 「 フュージョンクラスト 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e440]
+              - generic [ref=e442]:
+                - button "음악" [ref=e443] [cursor=pointer]:
+                  - generic [ref=e444]: 음악
+                - generic [ref=e445] [cursor=pointer]: Edel Note 「 フュージョンクラスト 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e446]:
+              - checkbox "みらくらぱーく！ 「 Very! Very! COCO夏っ 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e448]
+              - generic [ref=e450]:
+                - button "음악" [ref=e451] [cursor=pointer]:
+                  - generic [ref=e452]: 음악
+                - generic [ref=e453] [cursor=pointer]: みらくらぱーく！ 「 Very! Very! COCO夏っ 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e454]:
+              - checkbox "スリーズブーケ 「 可惜夜花火 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e456]
+              - generic [ref=e458]:
+                - button "음악" [ref=e459] [cursor=pointer]:
+                  - generic [ref=e460]: 음악
+                - generic [ref=e461] [cursor=pointer]: スリーズブーケ 「 可惜夜花火 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e462]:
+              - checkbox "DOLLCHESTRA 「 ブルウモーメント 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e464]
+              - generic [ref=e466]:
+                - button "음악" [ref=e467] [cursor=pointer]:
+                  - generic [ref=e468]: 음악
+                - generic [ref=e469] [cursor=pointer]: DOLLCHESTRA 「 ブルウモーメント 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e470]:
+              - 'checkbox "【アプリで全編アーカイブ公開中】105期 2nd Term FesxLIVE 〜A Day in Summer Light〜 #Fes蓮ノ空デイサマ (ラブライブ！蓮ノ空女学院スクールアイドルクラブ) 시청 완료" [ref=e472]'
+              - generic [ref=e474]:
+                - button "FesxLIVE" [ref=e475] [cursor=pointer]:
+                  - generic [ref=e476]: FesxLIVE
+                - generic [ref=e477] [cursor=pointer]: "【アプリで全編アーカイブ公開中】105期 2nd Term FesxLIVE 〜A Day in Summer Light〜 #Fes蓮ノ空デイサマ (ラブライブ！蓮ノ空女学院スクールアイドルクラブ)"
+            - generic [ref=e478]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제5화 ABYSS・LIGHT 시청 완료" [ref=e480]
+              - generic [ref=e482]:
+                - button "스토리" [ref=e483] [cursor=pointer]:
+                  - generic [ref=e484]: 스토리
+                - generic [ref=e485] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제5화 ABYSS・LIGHT"
+            - generic [ref=e486]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제5화 Part 5~6 시청 완료" [ref=e488]
+              - generic [ref=e490]:
+                - button "스토리" [ref=e491] [cursor=pointer]:
+                  - generic [ref=e492]: 스토리
+                - generic [ref=e493] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제5화 Part 5~6"
+            - generic [ref=e494]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제5화 Part 1~4 시청 완료" [ref=e496]
+              - generic [ref=e498]:
+                - button "스토리" [ref=e499] [cursor=pointer]:
+                  - generic [ref=e500]: 스토리
+                - generic [ref=e501] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제5화 Part 1~4"
+            - generic [ref=e502]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제4화 Part 7~9 시청 완료" [ref=e504]
+              - generic [ref=e506]:
+                - button "스토리" [ref=e507] [cursor=pointer]:
+                  - generic [ref=e508]: 스토리
+                - generic [ref=e509] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제4화 Part 7~9"
+            - generic [ref=e510]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제4화 Part 1~6 시청 완료" [ref=e512]
+              - generic [ref=e514]:
+                - button "스토리" [ref=e515] [cursor=pointer]:
+                  - generic [ref=e516]: 스토리
+                - generic [ref=e517] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제4화 Part 1~6"
+            - generic [ref=e518]:
+              - checkbox "蓮ノ空女学院スクールアイドルクラブ 「 アイドゥーミー！ 」 リリックビデオ （Link！Like！ラブライブ！） 시청 완료" [ref=e520]
+              - generic [ref=e522]:
+                - button "음악" [ref=e523] [cursor=pointer]:
+                  - generic [ref=e524]: 음악
+                - generic [ref=e525] [cursor=pointer]: 蓮ノ空女学院スクールアイドルクラブ 「 アイドゥーミー！ 」 リリックビデオ （Link！Like！ラブライブ！）
+            - generic [ref=e526]:
+              - 'checkbox "【アプリで全編アーカイブ公開中】105期 1st Term FesxLIVE -撫子祭- #Fes蓮ノ空撫子祭 (ラブライブ！蓮ノ空女学院スクールアイドルクラブ) 시청 완료" [ref=e528]'
+              - generic [ref=e530]:
+                - button "FesxLIVE" [ref=e531] [cursor=pointer]:
+                  - generic [ref=e532]: FesxLIVE
+                - generic [ref=e533] [cursor=pointer]: "【アプリで全編アーカイブ公開中】105期 1st Term FesxLIVE -撫子祭- #Fes蓮ノ空撫子祭 (ラブライブ！蓮ノ空女学院スクールアイドルクラブ)"
+            - generic [ref=e534]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제3화 S.R.K. 1～3 시청 완료" [ref=e536]
+              - generic [ref=e538]:
+                - button "스토리" [ref=e539] [cursor=pointer]:
+                  - generic [ref=e540]: 스토리
+                - generic [ref=e541] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제3화 S.R.K. 1～3"
+            - generic [ref=e542]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제3화 Part 6~8 시청 완료" [ref=e544]
+              - generic [ref=e546]:
+                - button "스토리" [ref=e547] [cursor=pointer]:
+                  - generic [ref=e548]: 스토리
+                - generic [ref=e549] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제3화 Part 6~8"
+            - generic [ref=e550]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제3화 Part 1~5 시청 완료" [ref=e552]
+              - generic [ref=e554]:
+                - button "스토리" [ref=e555] [cursor=pointer]:
+                  - generic [ref=e556]: 스토리
+                - generic [ref=e557] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제3화 Part 1~5"
+            - generic [ref=e558]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제2화 Part 6~8 시청 완료" [ref=e560]
+              - generic [ref=e562]:
+                - button "스토리" [ref=e563] [cursor=pointer]:
+                  - generic [ref=e564]: 스토리
+                - generic [ref=e565] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제2화 Part 6~8"
+            - generic [ref=e566]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제2화 Part 1~5 시청 완료" [ref=e568]
+              - generic [ref=e570]:
+                - button "스토리" [ref=e571] [cursor=pointer]:
+                  - generic [ref=e572]: 스토리
+                - generic [ref=e573] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제2화 Part 1~5"
+            - generic [ref=e574]:
+              - checkbox "자막 Link! Like! LoveLive! 105기 제1화 ED 시청 완료" [ref=e576]
+              - generic [ref=e578]:
+                - button "스토리" [ref=e579] [cursor=pointer]:
+                  - generic [ref=e580]: 스토리
+                - generic [ref=e581] [cursor=pointer]: 자막 Link! Like! LoveLive! 105기 제1화 ED
+            - generic [ref=e582]:
+              - checkbox "みらくらぱーく！ 「WAWO!」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e584]
+              - generic [ref=e586]:
+                - button "음악" [ref=e587] [cursor=pointer]:
+                  - generic [ref=e588]: 음악
+                - generic [ref=e589] [cursor=pointer]: みらくらぱーく！ 「WAWO!」 リリックビデオ（ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e590]:
+              - checkbox "スリーズブーケ 「Celebration! 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e592]
+              - generic [ref=e594]:
+                - button "음악" [ref=e595] [cursor=pointer]:
+                  - generic [ref=e596]: 음악
+                - generic [ref=e597] [cursor=pointer]: スリーズブーケ 「Celebration! 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e598]:
+              - checkbox "DOLLCHESTRA「アンペア」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e600]
+              - generic [ref=e602]:
+                - button "음악" [ref=e603] [cursor=pointer]:
+                  - generic [ref=e604]: 음악
+                - generic [ref=e605] [cursor=pointer]: DOLLCHESTRA「アンペア」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e606]:
+              - checkbox "Edel Note 「 Retrofuture 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ） 시청 완료" [ref=e608]
+              - generic [ref=e610]:
+                - button "음악" [ref=e611] [cursor=pointer]:
+                  - generic [ref=e612]: 음악
+                - generic [ref=e613] [cursor=pointer]: Edel Note 「 Retrofuture 」 リリックビデオ （ラブライブ！蓮ノ空女学院スクールアイドルクラブ）
+            - generic [ref=e614]:
+              - 'checkbox "【アーカイブ公開中】「105期OPENING！FesxLIVE」 蓮ノ空女学院スクールアイドルクラブ #Fes蓮ノ空105期初ライブ 시청 완료" [ref=e616]'
+              - generic [ref=e618]:
+                - button "FesxLIVE" [ref=e619] [cursor=pointer]:
+                  - generic [ref=e620]: FesxLIVE
+                - generic [ref=e621] [cursor=pointer]: "【アーカイブ公開中】「105期OPENING！FesxLIVE」 蓮ノ空女学院スクールアイドルクラブ #Fes蓮ノ空105期初ライブ"
+            - generic [ref=e622]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제1화 Part 6~9 시청 완료" [ref=e624]
+              - generic [ref=e626]:
+                - button "스토리" [ref=e627] [cursor=pointer]:
+                  - generic [ref=e628]: 스토리
+                - generic [ref=e629] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제1화 Part 6~9"
+            - generic [ref=e630]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제1화 Part 1~5 시청 완료" [ref=e632]
+              - generic [ref=e634]:
+                - button "스토리" [ref=e635] [cursor=pointer]:
+                  - generic [ref=e636]: 스토리
+                - generic [ref=e637] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제1화 Part 1~5"
+            - generic [ref=e638]:
+              - checkbox "[자막] Link! Like! LoveLive! 105기 제1화 Part 0 시청 완료" [ref=e640]
+              - generic [ref=e642]:
+                - button "스토리" [ref=e643] [cursor=pointer]:
+                  - generic [ref=e644]: 스토리
+                - generic [ref=e645] [cursor=pointer]: "[자막] Link! Like! LoveLive! 105기 제1화 Part 0"
+            - generic [ref=e646]:
+              - checkbox "[자막] 105기 신체제발표회 및 신입생소개 시청 완료" [ref=e648]
+              - generic [ref=e650]:
+                - button "미분류" [ref=e651] [cursor=pointer]:
+                  - generic [ref=e652]: 미분류
+                - generic [ref=e653] [cursor=pointer]: "[자막] 105기 신체제발표회 및 신입생소개"
+  - region
+  - button "Open Next.js Dev Tools" [ref=e659] [cursor=pointer]:
+    - img [ref=e660]
+  - alert [ref=e663]

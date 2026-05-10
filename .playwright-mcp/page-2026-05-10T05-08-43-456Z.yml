@@ -1,0 +1,42 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - button "뒤로가기" [ref=e5] [cursor=pointer]:
+          - img [ref=e6]
+        - generic [ref=e9]: 설정
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - heading "계정 및 동기화" [level=2] [ref=e12]
+          - list [ref=e13]:
+            - listitem [ref=e14]:
+              - img [ref=e16]
+              - button "Google로 로그인 로그인하면 스마트폰, 태블릿, 웹 어디서든 시청 기록을 동기화해요." [ref=e21]:
+                - generic [ref=e22]: Google로 로그인
+                - generic [ref=e23]: 로그인하면 스마트폰, 태블릿, 웹 어디서든 시청 기록을 동기화해요.
+        - separator [ref=e24]
+        - generic [ref=e25]:
+          - heading "테마" [level=2] [ref=e26]
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - button "화면 스타일" [ref=e29]:
+                - generic [ref=e30]: 화면 스타일
+              - generic [ref=e32]:
+                - text: 라이트
+                - img [ref=e33]
+        - separator [ref=e36]
+        - generic [ref=e37]:
+          - heading "보기 옵션" [level=2] [ref=e38]
+          - list [ref=e39]:
+            - generic [ref=e40]:
+              - generic [ref=e42]: 비공개 영상 숨기기
+              - switch "비공개 영상 숨기기" [checked] [ref=e46]
+            - listitem [ref=e47]:
+              - button "진행률 표시 기준" [ref=e48]:
+                - generic [ref=e49]: 진행률 표시 기준
+              - generic [ref=e51]:
+                - text: 전체
+                - img [ref=e52]
+  - region
+  - button "Open Next.js Dev Tools" [ref=e60] [cursor=pointer]:
+    - img [ref=e61]
