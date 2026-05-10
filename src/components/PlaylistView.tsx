@@ -22,7 +22,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { Callout } from "@/ui/callout";
 import Link from "next/link";
-import { IconChevronDownLine, IconExclamationmarkCircleLine, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
+import { IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 
 type FilterType = "all" | "watched" | "unwatched";
@@ -532,7 +532,7 @@ export default function PlaylistView({ initialData }: Props) {
       <div style={{ padding: "0 var(--seed-dimension-spacing-x-global-gutter)", marginBottom: "8px" }}>
         <Callout
           tone="informative"
-          prefixIcon={<IconExclamationmarkCircleLine />}
+          prefixIcon={<IconExclamationmarkCircleFill />}
           description="아직 추가되지 않은 스토리 및 콘텐츠가 있나요?"
           linkProps={{
             asChild: true,
