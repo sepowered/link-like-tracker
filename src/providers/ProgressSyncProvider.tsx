@@ -165,6 +165,26 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     }));
   }
 
+  const openConflictSheet = useCallback((local: LocalProgressStore, remote: RemoteProgressRow[]) => {
+    setLocalWatchedCount(Object.values(local.entries).filter((entry) => entry.status === "watched").length);
+    setRemoteWatchedCount(remote.filter((entry) => entry.status === "watched").length);
+    pendingRemoteRef.current = remote;
+    pendingLocalRef.current = local;
+    setConflictOpen(true);
+  }, []);
+
+  const loadSyncedLocalProgress = useCallback((userId: string, devId: string) => {
+    let local = loadLocalProgress(userId, devId);
+
+    if (!local) {
+      local = migrateFromV1(userId, devId) ?? createEmptyStore(userId, devId);
+    }
+
+    local = syncLegacyKeysToStore(local);
+    saveLocalProgress(local);
+    return local;
+  }, []);
+
   // ── Auto-resolve ─────────────────────────────────────────────────────────
 
   const applyResolution = useCallback(async (
@@ -194,6 +214,43 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     }
   }, []);
 
+  const validateProgressSync = useCallback(async (userId: string, devId: string) => {
+    const supabase = getSupabaseBrowserClient();
+
+    try {
+      await upsertDevice(supabase, userId, devId, getDeviceLabel());
+
+      const local = loadSyncedLocalProgress(userId, devId);
+      const remote = await downloadProgress(supabase, userId, devId);
+
+      if (remote.length > 0) {
+        if (hasConflict(local, remoteToEntries(remote))) {
+          const policy = loadConflictPolicy(userId);
+          if (policy.mode === "ask") {
+            openConflictSheet(local, remote);
+          } else {
+            await applyResolution(policy.mode, userId, devId, local, remote);
+          }
+        }
+      } else {
+        const allRemote = await fetchAllDevicesProgress(supabase, userId);
+
+        if (allRemote.length > 0 && hasConflict(local, remoteToEntries(allRemote))) {
+          const policy = loadConflictPolicy(userId);
+          if (policy.mode === "ask") {
+            openConflictSheet(local, allRemote);
+          } else {
+            await applyResolution(policy.mode, userId, devId, local, allRemote);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Progress validation error:", err);
+    } finally {
+      await doRefreshDevices(userId);
+    }
+  }, [applyResolution, doRefreshDevices, loadSyncedLocalProgress, openConflictSheet]);
+
   // ── Conflict sheet confirm ────────────────────────────────────────────────
 
   async function handleConflictConfirm() {
@@ -222,19 +279,21 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     const supabase = getSupabaseBrowserClient();
 
     const runSync = async () => {
-      if (!autoSync) {
-        if (user) await doRefreshDevices(user.id);
-        return;
-      }
-
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      // Deduplicate by access token
-      if (syncedSessionRef.current === session.access_token) return;
-      syncedSessionRef.current = session.access_token;
+
+      if (autoSync && syncedSessionRef.current === session.access_token) return;
+      if (autoSync) syncedSessionRef.current = session.access_token;
 
       const userId = session.user.id;
       const devId = deviceIdRef.current || getDeviceId();
+
+      if (!autoSync) {
+        await validateProgressSync(userId, devId);
+
+        return;
+      }
+
       setSyncing(true);
 
       try {
@@ -242,12 +301,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
         // Load or migrate local store, then sync legacy keys in case user
         // marked videos since last sync (PlaylistView writes only to legacy keys)
-        let local = loadLocalProgress(userId, devId);
-        if (!local) {
-          local = migrateFromV1(userId, devId) ?? createEmptyStore(userId, devId);
-          saveLocalProgress(local);
-        }
-        local = syncLegacyKeysToStore(local);
+        const local = loadSyncedLocalProgress(userId, devId);
 
         const remote = await downloadProgress(supabase, userId, devId);
         const localCount = Object.keys(local.entries).length;
@@ -273,11 +327,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
             if (!hasConflict(local, remoteToEntries(allRemote))) {
               await uploadProgress(supabase, userId, devId, Object.values(local.entries));
             } else if (policy.mode === "ask") {
-              setLocalWatchedCount(Object.values(local.entries).filter((e) => e.status === "watched").length);
-              setRemoteWatchedCount(allRemote.filter((r) => r.status === "watched").length);
-              pendingRemoteRef.current = allRemote;
-              pendingLocalRef.current = local;
-              setConflictOpen(true);
+              openConflictSheet(local, allRemote);
             } else {
               await applyResolution(policy.mode, userId, devId, local, allRemote);
             }
@@ -286,11 +336,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
           // Same device has diverged local vs remote
           const policy = loadConflictPolicy(userId);
           if (policy.mode === "ask") {
-            setLocalWatchedCount(Object.values(local.entries).filter((e) => e.status === "watched").length);
-            setRemoteWatchedCount(remote.filter((r) => r.status === "watched").length);
-            pendingRemoteRef.current = remote;
-            pendingLocalRef.current = local;
-            setConflictOpen(true);
+            openConflictSheet(local, remote);
           } else {
             await applyResolution(policy.mode, userId, devId, local, remote);
           }
@@ -306,7 +352,16 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     };
 
     runSync();
-  }, [authLoading, user, applyResolution, doRefreshDevices, autoSync]);
+  }, [
+    authLoading,
+    user,
+    applyResolution,
+    doRefreshDevices,
+    autoSync,
+    loadSyncedLocalProgress,
+    openConflictSheet,
+    validateProgressSync,
+  ]);
 
   // ── Public actions ────────────────────────────────────────────────────────
 
@@ -373,7 +428,6 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     let lastPullAt = 0;
 
     function handleVisibilityChange() {
-      if (!autoSync) return;
       if (document.visibilityState !== "visible") return;
       if (visibilitySyncingRef.current) return;
 
@@ -385,9 +439,14 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       void (async () => {
         const userId = currentUser.id;
         const devId = deviceIdRef.current || getDeviceId();
-        const supabase = getSupabaseBrowserClient();
 
         try {
+          if (!autoSync) {
+            await validateProgressSync(userId, devId);
+            return;
+          }
+
+          const supabase = getSupabaseBrowserClient();
           const allRemote = await fetchAllDevicesProgress(supabase, userId);
           const raw = loadLocalProgress(userId, devId) ?? createEmptyStore(userId, devId);
           const local = syncLegacyKeysToStore(raw);
@@ -407,7 +466,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [user, autoSync]);
+  }, [user, autoSync, validateProgressSync]);
 
   useEffect(() => {
     return () => {

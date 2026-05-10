@@ -41,7 +41,7 @@ interface Props {
 
 export default function PlaylistView({ initialData }: Props) {
   const { user, loading: authLoading } = useAuth();
-  const { saveVideoProgress, mergeAllDevices, refreshDevices, syncing } = useProgressSync();
+  const { saveVideoProgress, mergeAllDevices, refreshDevices } = useProgressSync();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const adapter = useSnackbarAdapter();
   const sessionSnackbarShown = useRef(false);
@@ -306,11 +306,16 @@ export default function PlaylistView({ initialData }: Props) {
     try {
       const changed = await mergeAllDevices("latest");
       await refreshDevices();
-      if (changed) {
-        adapter.create({ render: () => <Snackbar message="업데이트 완료" /> });
-      }
+      adapter.create({
+        render: () => (
+          <Snackbar
+            variant="positive"
+            message={changed ? "기록을 동기화했어요." : "이미 최신 상태예요."}
+          />
+        ),
+      });
     } catch {
-      adapter.create({ render: () => <Snackbar message="동기화에 실패했어요. 다시 시도해 주세요." /> });
+      adapter.create({ render: () => <Snackbar variant="critical" message="동기화에 실패했어요. 다시 시도해 주세요." /> });
     }
   }
 
