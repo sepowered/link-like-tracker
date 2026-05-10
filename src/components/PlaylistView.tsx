@@ -26,10 +26,13 @@ import { IconChevronDownLine, IconExclamationmarkCircleLine, IconMagnifyingglass
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 
 type FilterType = "all" | "watched" | "unwatched";
+type ScrollDirection = "up" | "down" | null;
 
 const STORAGE_KEY_WATCHED = "llt-watched";
 const STORAGE_KEY_OVERRIDES = "llt-overrides";
 const STORAGE_KEY_FILTERS = "llt-filters";
+const STICKY_SCROLL_THRESHOLD = 60;
+const SCROLL_DIRECTION_DELTA = 6;
 
 function isUnavailableVideoTitle(title: string) {
   return title === "[Private video]" || title === "[Deleted video]";
@@ -80,7 +83,7 @@ export default function PlaylistView({ initialData }: Props) {
   const [pendingGeneration, setPendingGeneration] = useState<string>(selectedGeneration);
   const lastScrollY = useRef(0);
   const [scrolled, setScrolled] = useState(false);
-  const [scrollingUp, setScrollingUp] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState<ScrollDirection>(null);
   const [compactSearchOpen, setCompactSearchOpen] = useState(false);
   const compactSearchRef = useRef<HTMLInputElement>(null);
 
@@ -182,17 +185,30 @@ export default function PlaylistView({ initialData }: Props) {
   }, [filter, categories, sortOrder, filtersInitialized]);
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     const el = scrollContainerRef.current;
     if (!el) return;
     const handleScroll = () => {
       const currentY = el.scrollTop;
-      setScrollingUp(currentY < lastScrollY.current);
-      setScrolled(currentY > 60);
+
+      if (currentY <= STICKY_SCROLL_THRESHOLD) {
+        lastScrollY.current = currentY;
+        setScrolled(false);
+        setScrollDirection(null);
+        return;
+      }
+
+      const delta = currentY - lastScrollY.current;
+      if (Math.abs(delta) < SCROLL_DIRECTION_DELTA) return;
+
+      setScrolled(true);
+      setScrollDirection(delta > 0 ? "down" : "up");
       lastScrollY.current = currentY;
     };
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isInitialized]);
 
   // Save changes to localStorage
   const saveToLocalStorage = (nextData: PlaylistData) => {
@@ -320,7 +336,8 @@ export default function PlaylistView({ initialData }: Props) {
   }
 
   const showCompactHeader = scrolled;
-  const showStickyFilter = scrolled && scrollingUp;
+  const showStickyFilter = scrolled && scrollDirection === "up" && !compactSearchOpen;
+  const showCompactBar = showCompactHeader;
   const ptrEnabled = Boolean(user && autoSync);
 
 
@@ -393,76 +410,78 @@ export default function PlaylistView({ initialData }: Props) {
       )}
 
       {/* 컴팩트 스티키 헤더 */}
-      <div className={`compact-bar-wrapper${showCompactHeader ? " compact-bar-wrapper--visible" : ""}`}>
-      <div className="compact-header">
-        {compactSearchOpen ? (
-          <>
-            <TextFieldRoot
-              value={query}
-              onValueChange={setQuery}
-              size="medium"
-              style={{ flex: 1 }}
-            >
-              <TextFieldPrefixIcon svg={<IconMagnifyingglassLine />} />
-              <TextFieldInput
-                ref={compactSearchRef}
-                placeholder="제목 검색..."
-                aria-label="영상 제목 검색"
-                onKeyDown={(e) => { if (e.key === "Escape") { setQuery(""); setCompactSearchOpen(false); } }}
-              />
-            </TextFieldRoot>
-            <ActionButton
-              variant="ghost"
-              size="small"
-              aria-label="검색 닫기"
-              style={{ marginLeft: "4px", flexShrink: 0 }}
-              onClick={() => { setQuery(""); setCompactSearchOpen(false); }}
-            >
-              <Icon svg={<IconXmarkLine />} size="22px" />
-            </ActionButton>
-          </>
-        ) : (
-          <>
-            {generations.length > 1 ? (
-              <button className="generation-title-button compact-header-title" onClick={() => handleGenerationSheetOpenChange(true)}>
-                {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
-                <Icon svg={<IconChevronDownLine />} size="16px" />
-              </button>
+      <div className={`compact-bar-wrapper${showCompactBar ? " compact-bar-wrapper--visible" : ""}`}>
+        {showCompactHeader ? (
+          <div className="compact-header">
+            {compactSearchOpen ? (
+              <>
+                <TextFieldRoot
+                  value={query}
+                  onValueChange={setQuery}
+                  size="medium"
+                  style={{ flex: 1 }}
+                >
+                  <TextFieldPrefixIcon svg={<IconMagnifyingglassLine />} />
+                  <TextFieldInput
+                    ref={compactSearchRef}
+                    placeholder="제목 검색..."
+                    aria-label="영상 제목 검색"
+                    onKeyDown={(e) => { if (e.key === "Escape") { setQuery(""); setCompactSearchOpen(false); } }}
+                  />
+                </TextFieldRoot>
+                <ActionButton
+                  variant="ghost"
+                  size="small"
+                  aria-label="검색 닫기"
+                  style={{ marginLeft: "4px", flexShrink: 0 }}
+                  onClick={() => { setQuery(""); setCompactSearchOpen(false); }}
+                >
+                  <Icon svg={<IconXmarkLine />} size="22px" />
+                </ActionButton>
+              </>
             ) : (
-              <span className="compact-header-title">
-                {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
-              </span>
+              <>
+                {generations.length > 1 ? (
+                  <button className="generation-title-button compact-header-title" onClick={() => handleGenerationSheetOpenChange(true)}>
+                    {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+                    <Icon svg={<IconChevronDownLine />} size="16px" />
+                  </button>
+                ) : (
+                  <span className="compact-header-title">
+                    {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+                  </span>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <ActionButton
+                    variant="ghost"
+                    size="small"
+                    aria-label="검색"
+                    onClick={() => {
+                      setCompactSearchOpen(true);
+                      setTimeout(() => compactSearchRef.current?.focus(), 50);
+                    }}
+                  >
+                    <Icon svg={<IconMagnifyingglassLine />} size="22px" />
+                  </ActionButton>
+                  <SettingsLink />
+                </div>
+              </>
             )}
-            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <ActionButton
-                variant="ghost"
-                size="small"
-                aria-label="검색"
-                onClick={() => {
-                  setCompactSearchOpen(true);
-                  setTimeout(() => compactSearchRef.current?.focus(), 50);
-                }}
-              >
-                <Icon svg={<IconMagnifyingglassLine />} size="22px" />
-              </ActionButton>
-              <SettingsLink />
-            </div>
-          </>
-        )}
-      </div>
-      <div className={`compact-sticky-filter${showStickyFilter ? " compact-sticky-filter--visible" : ""}`}>
-        <FilterBar
-          filter={filter}
-          categories={categories}
-          query={query}
-          sortOrder={sortOrder}
-          onFilterChange={setFilter}
-          onCategoriesChange={setCategories}
-          onQueryChange={setQuery}
-          onSortOrderChange={setSortOrder}
-          hideSearch
-        />
-      </div>
+          </div>
+        ) : null}
+        <div className={`compact-sticky-filter${showStickyFilter ? " compact-sticky-filter--visible" : ""}`}>
+          <FilterBar
+            filter={filter}
+            categories={categories}
+            query={query}
+            sortOrder={sortOrder}
+            onFilterChange={setFilter}
+            onCategoriesChange={setCategories}
+            onQueryChange={setQuery}
+            onSortOrderChange={setSortOrder}
+            hideSearch
+          />
+        </div>
       </div>
 
       {/* 헤더 */}
