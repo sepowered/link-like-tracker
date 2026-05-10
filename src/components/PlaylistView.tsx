@@ -321,6 +321,7 @@ export default function PlaylistView({ initialData }: Props) {
 
   const showCompactHeader = scrolled;
   const showStickyFilter = scrolled && scrollingUp;
+  const ptrEnabled = Boolean(user && autoSync);
 
 
   if (!isInitialized) return null; // Prevent flash of original data before local storage load
@@ -328,15 +329,26 @@ export default function PlaylistView({ initialData }: Props) {
   return (
     <PullToRefresh.Root
       ref={scrollContainerRef}
-      disabled={!user || !autoSync}
+      disabled={!ptrEnabled}
       onPtrRefresh={handlePtrRefresh}
       style={{ height: "100dvh", overflowY: "auto" }}
     >
-      <PullToRefresh.Indicator>
-        {({ value, minValue, maxValue }) => (
-          <ProgressCircle value={value} minValue={minValue} maxValue={maxValue} size="24" tone="neutral" />
-        )}
-      </PullToRefresh.Indicator>
+      {ptrEnabled ? (
+        <PullToRefresh.Indicator
+          style={{ top: "calc(var(--seed-safe-area-top) + var(--seed-dimension-x4))" }}
+        >
+          {({ value, minValue, maxValue }) => (
+            <ProgressCircle
+              value={value}
+              minValue={minValue}
+              maxValue={maxValue}
+              size="24"
+              tone="neutral"
+              style={{ opacity: value === undefined || value > 0 ? 1 : 0 }}
+            />
+          )}
+        </PullToRefresh.Indicator>
+      ) : null}
 
       <PullToRefresh.Content>
       {/* 기수 선택 시트 */}
