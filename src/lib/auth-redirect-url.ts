@@ -19,7 +19,10 @@ export function getAuthCallbackUrl() {
   const browserOrigin =
     typeof window === "undefined" ? null : normalizeOrigin(window.location.origin);
 
-  const origin = configuredOrigin ?? browserOrigin;
+  const origin =
+    process.env.NODE_ENV === "development"
+      ? browserOrigin ?? configuredOrigin
+      : configuredOrigin ?? browserOrigin;
 
   if (!origin) {
     throw new Error("로그인 리디렉션 URL을 만들 수 없습니다.");

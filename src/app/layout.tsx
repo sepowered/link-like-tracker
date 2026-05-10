@@ -40,7 +40,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themingScript }} />
         <script dangerouslySetInnerHTML={{ __html: themePreferenceScript }} />
       </head>
-      <body><SnackbarProvider pauseOnInteraction={false}><AuthProvider><ProgressSyncProvider><SettingsProvider>{children}</SettingsProvider></ProgressSyncProvider></AuthProvider></SnackbarProvider><Analytics /></body>
+      <body><SnackbarProvider pauseOnInteraction={false}><AuthProvider><SettingsProvider><ProgressSyncProvider>{children}</ProgressSyncProvider></SettingsProvider></AuthProvider></SnackbarProvider><Analytics /></body>
     </html>
   );
 }

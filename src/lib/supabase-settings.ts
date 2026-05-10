@@ -4,11 +4,13 @@ import type { VideoCategory } from "./video-category";
 export interface SyncedSettings {
   progressCategories: VideoCategory[];
   hidePrivateVideos: boolean;
+  autoSync: boolean;
 }
 
 export interface RemoteSettingsRow {
   progress_categories: VideoCategory[];
   hide_private_videos: boolean;
+  auto_sync: boolean;
   updated_at: string;
 }
 
@@ -32,6 +34,7 @@ export function remoteSettingsToSettings(row: RemoteSettingsRow): SyncedSettings
   return {
     progressCategories: normalizeProgressCategories(row.progress_categories),
     hidePrivateVideos: row.hide_private_videos,
+    autoSync: row.auto_sync,
   };
 }
 
@@ -41,7 +44,7 @@ export async function downloadSettings(
 ): Promise<SyncedSettings | null> {
   const { data, error } = await supabase
     .from("user_settings")
-    .select("progress_categories, hide_private_videos, updated_at")
+    .select("progress_categories, hide_private_videos, auto_sync, updated_at")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -61,6 +64,7 @@ export async function uploadSettings(
       user_id: userId,
       progress_categories: normalizeProgressCategories(settings.progressCategories),
       hide_private_videos: settings.hidePrivateVideos,
+      auto_sync: settings.autoSync,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" },

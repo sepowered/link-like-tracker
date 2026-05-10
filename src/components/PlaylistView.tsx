@@ -11,7 +11,8 @@ import PlaylistProgress from "./PlaylistProgress";
 import AppBar from "./AppBar";
 import { useAuth } from "@/providers/AuthProvider";
 import { SYNC_EVENT, useProgressSync } from "@/providers/ProgressSyncProvider";
-import { ActionButton, Icon, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
+import { ActionButton, Icon, PullToRefresh, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
+import { ProgressCircle } from "@/ui/progress-circle";
 import {
   BottomSheetRoot,
   BottomSheetContent,
@@ -40,7 +41,8 @@ interface Props {
 
 export default function PlaylistView({ initialData }: Props) {
   const { user, loading: authLoading } = useAuth();
-  const { saveVideoProgress } = useProgressSync();
+  const { saveVideoProgress, mergeAllDevices, refreshDevices } = useProgressSync();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const adapter = useSnackbarAdapter();
   const sessionSnackbarShown = useRef(false);
   const [data, setData] = useState<PlaylistData>(initialData);
@@ -94,7 +96,7 @@ export default function PlaylistView({ initialData }: Props) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const { progressCategories, hidePrivateVideos } = useSettings();
+  const { progressCategories, hidePrivateVideos, autoSync } = useSettings();
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -180,14 +182,16 @@ export default function PlaylistView({ initialData }: Props) {
   }, [filter, categories, sortOrder, filtersInitialized]);
 
   useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
     const handleScroll = () => {
-      const currentY = window.scrollY;
+      const currentY = el.scrollTop;
       setScrollingUp(currentY < lastScrollY.current);
       setScrolled(currentY > 60);
       lastScrollY.current = currentY;
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Save changes to localStorage
@@ -298,17 +302,59 @@ export default function PlaylistView({ initialData }: Props) {
     if (user) await saveVideoProgress(videoId, currentStatus, categoryOverride);
   }
 
+  async function handlePtrRefresh() {
+    try {
+      const changed = await mergeAllDevices("latest");
+      await refreshDevices();
+      adapter.create({
+        render: () => (
+          <Snackbar
+            variant="positive"
+            message={changed ? "기록을 동기화했어요." : "이미 최신 상태예요."}
+          />
+        ),
+      });
+    } catch {
+      adapter.create({ render: () => <Snackbar variant="critical" message="동기화에 실패했어요. 다시 시도해 주세요." /> });
+    }
+  }
+
   const showCompactHeader = scrolled;
   const showStickyFilter = scrolled && scrollingUp;
+  const ptrEnabled = Boolean(user && autoSync);
 
 
   if (!isInitialized) return null; // Prevent flash of original data before local storage load
 
   return (
-    <div>
+    <PullToRefresh.Root
+      ref={scrollContainerRef}
+      disabled={!ptrEnabled}
+      onPtrRefresh={handlePtrRefresh}
+      style={{ height: "100dvh", overflowY: "auto" }}
+    >
+      {ptrEnabled ? (
+        <PullToRefresh.Indicator
+          style={{ top: "calc(var(--seed-safe-area-top) + var(--seed-dimension-x4))" }}
+        >
+          {({ value, minValue, maxValue }) => (
+            <ProgressCircle
+              value={value}
+              minValue={minValue}
+              maxValue={maxValue}
+              size="24"
+              tone="neutral"
+              style={{ opacity: value === undefined || value > 0 ? 1 : 0 }}
+            />
+          )}
+        </PullToRefresh.Indicator>
+      ) : null}
+
+      <PullToRefresh.Content>
       {/* 기수 선택 시트 */}
       {generations.length > 1 && (
         <BottomSheetRoot
+          {...PullToRefresh.preventPull}
           open={generationSheetOpen}
           onOpenChange={handleGenerationSheetOpenChange}
           closeOnEscape
@@ -494,6 +540,7 @@ export default function PlaylistView({ initialData }: Props) {
       ))}
 
       {/* TODO: 다음 미시청 콘텐츠 이동 FAB — 연속성 기능 완성 후 활성화 */}
-    </div>
+      </PullToRefresh.Content>
+    </PullToRefresh.Root>
   );
 }

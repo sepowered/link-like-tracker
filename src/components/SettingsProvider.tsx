@@ -14,6 +14,7 @@ interface SettingsContextValue extends SyncedSettings {
   setColorScheme: (scheme: ColorScheme) => void;
   setProgressCategories: (categories: VideoCategory[]) => void;
   setHidePrivateVideos: (hide: boolean) => void;
+  setAutoSync: (autoSync: boolean) => void;
   isInitialized: boolean;
 }
 
@@ -23,6 +24,7 @@ const THEME_KEY = "seed-color-scheme";
 const DEFAULT_SETTINGS: SyncedSettings = {
   progressCategories: [],
   hidePrivateVideos: true,
+  autoSync: true,
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -46,6 +48,7 @@ function loadSettings(): SyncedSettings {
       // Migrate: strip legacy "all" sentinel value (empty array now means all)
       progressCategories: cats.filter((c) => c !== "all") as VideoCategory[],
       hidePrivateVideos: parsed.hidePrivateVideos ?? DEFAULT_SETTINGS.hidePrivateVideos,
+      autoSync: parsed.autoSync ?? DEFAULT_SETTINGS.autoSync,
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -150,6 +153,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         isInitialized,
         setProgressCategories: (categories) => update({ progressCategories: categories }),
         setHidePrivateVideos: (hide) => update({ hidePrivateVideos: hide }),
+        setAutoSync: (autoSync) => update({ autoSync }),
       }}
     >
       {children}
