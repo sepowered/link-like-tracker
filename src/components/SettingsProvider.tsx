@@ -8,10 +8,13 @@ import type { SyncedSettings } from "@/lib/supabase-settings";
 import { useAuth } from "@/providers/AuthProvider";
 
 export type ColorScheme = "light" | "dark" | "system";
+export type Language = "ko" | "jp";
 
 interface SettingsContextValue extends SyncedSettings {
   colorScheme: ColorScheme;
   setColorScheme: (scheme: ColorScheme) => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
   setProgressCategories: (categories: VideoCategory[]) => void;
   setHidePrivateVideos: (hide: boolean) => void;
   setAutoSync: (autoSync: boolean) => void;
@@ -20,6 +23,7 @@ interface SettingsContextValue extends SyncedSettings {
 
 const STORAGE_KEY = "llt-settings";
 const THEME_KEY = "seed-color-scheme";
+const LANGUAGE_KEY = "llt-language";
 
 const DEFAULT_SETTINGS: SyncedSettings = {
   progressCategories: [],
@@ -67,6 +71,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const [settings, setSettings] = useState<SyncedSettings>(DEFAULT_SETTINGS);
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>("light");
+  const [language, setLanguageState] = useState<Language>("ko");
   const [isInitialized, setIsInitialized] = useState(false);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
 
@@ -75,6 +80,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     try {
       const stored = localStorage.getItem(THEME_KEY);
       setColorSchemeState(stored === "dark" ? "dark" : stored === "light" ? "light" : "system");
+      const storedLang = localStorage.getItem(LANGUAGE_KEY);
+      setLanguageState(storedLang === "jp" ? "jp" : "ko");
     } catch {}
     setIsInitialized(true);
   }, []);
@@ -144,12 +151,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setColorSchemeState(scheme);
   };
 
+  const setLanguage = (lang: Language) => {
+    try {
+      localStorage.setItem(LANGUAGE_KEY, lang);
+    } catch {}
+    setLanguageState(lang);
+  };
+
   return (
     <SettingsContext.Provider
       value={{
         ...settings,
         colorScheme,
         setColorScheme,
+        language,
+        setLanguage,
         isInitialized,
         setProgressCategories: (categories) => update({ progressCategories: categories }),
         setHidePrivateVideos: (hide) => update({ hidePrivateVideos: hide }),
