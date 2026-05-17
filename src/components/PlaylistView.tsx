@@ -55,14 +55,7 @@ export default function PlaylistView({ initialData }: Props) {
     return result;
   }, [data.seasons]);
 
-  const [selectedGeneration, setSelectedGeneration] = useState<string>(
-    () => {
-      const seen = new Set<string>();
-      for (const s of initialData.seasons) seen.add(s.id.split("-")[0]);
-      const arr = [...seen];
-      return arr[arr.length - 1] ?? "";
-    }
-  );
+  const [selectedGeneration, setSelectedGeneration] = useState<string>("all");
 
   const generationSeasons = useMemo(
     () => selectedGeneration === "all" ? data.seasons : data.seasons.filter((s) => s.id.startsWith(selectedGeneration + "-")),
