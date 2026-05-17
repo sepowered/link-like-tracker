@@ -5,7 +5,6 @@ import { Season, Episode, Content } from "@/types";
 import { VideoCategory } from "@/lib/video-category";
 import ContentItem from "./ContentItem";
 import { useSettings } from "./SettingsProvider";
-import * as Progress from "@radix-ui/react-progress";
 
 type FilterType = "all" | "watched" | "unwatched";
 type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
@@ -142,7 +141,6 @@ export default function SeasonGroup({
 
   const watchedCount = allContents.filter((c) => c.watched).length;
   const totalCount = allContents.length;
-  const seasonPercent = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0;
 
   const orderedEpisodes = sortOrder === "newest"
     ? [...season.episodes].reverse()
@@ -155,17 +153,7 @@ export default function SeasonGroup({
           <span className={`chevron ${open ? "open" : ""}`}>▼</span>
           <span className="season-name">{season.name}</span>
         </div>
-        <div className="season-header-right">
-          <Progress.Root className="season-mini-progress" value={seasonPercent}>
-            <Progress.Indicator
-              className="season-mini-progress-fill"
-              style={{ transform: `translateX(-${100 - seasonPercent}%)` }}
-            />
-          </Progress.Root>
-          <span className="season-progress-text">
-            {watchedCount}/{totalCount}
-          </span>
-        </div>
+        <span className="season-progress-text">{watchedCount}/{totalCount}</span>
       </button>
       {open && (
         <div className="season-videos">
