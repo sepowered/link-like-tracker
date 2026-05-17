@@ -116,7 +116,8 @@ body {
 /* ─── 전체 진행률 섹션 ─────────────────────────────────────── */
 
 .progress-section {
-  background-color: var(--seed-color-bg-layer-basement);
+  background-color: var(--seed-color-bg-layer-default);
+  border: 1px solid var(--seed-color-stroke-neutral-subtle);
   border-radius: 12px;
   padding: 14px 16px;
   margin: 0 var(--seed-dimension-spacing-x-global-gutter) 16px;
@@ -125,67 +126,41 @@ body {
 .progress-stats {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  gap: 6px;
   margin-bottom: 10px;
 }
 
-.progress-stat-main {
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-  font-size: 13px;
-  color: var(--seed-color-fg-neutral-subtle);
-}
-
-.progress-stat-watched {
+.progress-stat-percent {
   font-size: 22px;
   font-weight: 700;
   color: var(--seed-color-fg-neutral);
   line-height: 1;
 }
 
-.progress-stat-sep {
-  font-size: 16px;
-  color: var(--seed-color-fg-disabled);
-  margin: 0 1px;
+.progress-stat-fraction {
+  font-size: 13px;
+  color: var(--seed-color-fg-neutral-subtle);
 }
 
-.progress-stat-total {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--seed-color-fg-neutral-muted);
-}
+/* ─── Progress Bar ─────────────────────────────────────────── */
 
-.progress-stat-unit {
-  font-size: 12px;
-  color: var(--seed-color-fg-placeholder);
-  margin-left: 4px;
-}
-
-.progress-stat-percent {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--seed-color-fg-neutral);
-}
-
-/* ─── Radix UI Progress ─────────────────────────────────────── */
-
-.progress-root {
-  position: relative;
-  overflow: hidden;
-  background: var(--seed-color-stroke-neutral-weak);
-  border-radius: 999px;
+.progress-track {
   width: 100%;
-  height: 12px; /* 6px -> 12px로 두껍게 변경 */
+  height: 4px;
+  border-radius: 9999px;
+  /* gray-200: 라이트 #f3f4f5 / 다크 #1d2025 — 팔레트 반전으로 자동 대응 */
+  background-color: var(--seed-color-palette-gray-200);
   /* Fix overflow clipping in Safari/iOS */
   transform: translateZ(0);
+  overflow: hidden;
 }
 
-.progress-indicator {
-  background-color: var(--seed-color-bg-neutral-solid);
-  width: 100%;
+.progress-fill {
   height: 100%;
-  transition: transform 660ms cubic-bezier(0.65, 0, 0.35, 1);
+  border-radius: 9999px;
+  /* gray-1000: 라이트 #1a1c20 / 다크 #f3f4f5 — 팔레트 반전으로 자동 대응 */
+  background-color: var(--seed-color-palette-gray-1000);
+  transition: width 300ms cubic-bezier(0, 0, 0.15, 1);
 }
 
 /* ─── 필터 바 ────────────────────────────────────────────────── */

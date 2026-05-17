@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Season, Video } from "@/types";
 import { VideoCategory } from "@/lib/video-category";
 import VideoItem from "./VideoItem";
-import * as Progress from "@radix-ui/react-progress";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/ui/accordion";
 
 type FilterType = "all" | "watched" | "unwatched";
 type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
@@ -25,7 +25,7 @@ interface Props {
 
 function getEffectiveCategory(
   video: Video,
-  classifyVideoCategory: (title: string) => Exclude<VideoCategory, "all"> | null
+  classifyVideoCategory: (title: string) => Exclude<VideoCategory, "all"> | null,
 ) {
   return video.categoryOverride !== undefined
     ? video.categoryOverride
@@ -45,11 +45,11 @@ export default function SeasonGroup({
   onUpdateCategory,
   scrollToVideoId,
 }: Props) {
-  const [open, setOpen] = useState(true);
+  const [values, setValues] = useState<string[]>(["season"]);
 
   useEffect(() => {
     if (scrollToVideoId && season.videos.some((v) => v.id === scrollToVideoId)) {
-      setOpen(true);
+      setValues(["season"]);
     }
   }, [scrollToVideoId]);
 
@@ -59,15 +59,14 @@ export default function SeasonGroup({
         filter === "all" ||
         (filter === "watched" && v.watched) ||
         (filter === "unwatched" && !v.watched);
-      const matchesQuery =
-        !query || v.title.toLowerCase().includes(query.toLowerCase());
+      const matchesQuery = !query || v.title.toLowerCase().includes(query.toLowerCase());
       const matchesAvailability = !hidePrivateVideos || !isUnavailableVideoTitle(v.title);
       const effectiveCategory = getEffectiveCategory(v, classifyVideoCategory);
       const matchesCategory =
         categories.includes("all") || categories.includes(effectiveCategory as VideoCategory);
       return matchesFilter && matchesQuery && matchesAvailability && matchesCategory;
     });
-    
+
     return sortOrder === "newest" ? vids.reverse() : vids;
   }, [season.videos, filter, categories, query, sortOrder, hidePrivateVideos, isUnavailableVideoTitle, classifyVideoCategory]);
 
@@ -75,29 +74,16 @@ export default function SeasonGroup({
 
   const watchedCount = season.videos.filter((v) => v.watched).length;
   const totalCount = season.videos.length;
-  const seasonPercent = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="season-group">
-      <button className="season-header" onClick={() => setOpen((o) => !o)}>
-        <div className="season-header-left">
-          <span className={`chevron ${open ? "open" : ""}`}>▼</span>
-          <span className="season-name">{season.name}</span>
-        </div>
-        <div className="season-header-right">
-          <Progress.Root className="season-mini-progress" value={seasonPercent}>
-            <Progress.Indicator
-              className="season-mini-progress-fill"
-              style={{ transform: `translateX(-${100 - seasonPercent}%)` }}
-            />
-          </Progress.Root>
-          <span className="season-progress-text">
-            {watchedCount}/{totalCount}
-          </span>
-        </div>
-      </button>
-      {open && (
-        <div className="season-videos">
+    <Accordion values={values} onValuesChange={setValues}>
+      <AccordionItem value="season">
+        <AccordionTrigger
+          title={season.name}
+          description={`${watchedCount}/${totalCount}`}
+          headingLevel={3}
+        />
+        <AccordionContent>
           {filteredVideos.map((video) => (
             <VideoItem
               key={video.id}
@@ -107,8 +93,8 @@ export default function SeasonGroup({
               onUpdateCategory={onUpdateCategory}
             />
           ))}
-        </div>
-      )}
-    </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }
