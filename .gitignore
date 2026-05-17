@@ -46,3 +46,5 @@ next-env.d.ts
 # tool state directories
 .omc/
 .codex/
+.sisyphus/
+.claude/
