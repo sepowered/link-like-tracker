@@ -19,6 +19,7 @@ interface Props {
   hidePrivateVideos: boolean;
   onToggle: (contentId: string) => void;
   onUpdateCategory: (contentId: string, categoryOverride: CategoryOverrideArg) => void;
+  headingLevel?: 4 | 5;
 }
 
 function matchesFilters(
@@ -55,6 +56,7 @@ function EpisodeGroup({
   query,
   sortOrder,
   hidePrivateVideos,
+  headingLevel = 4,
   onToggle,
   onUpdateCategory,
 }: {
@@ -64,6 +66,7 @@ function EpisodeGroup({
   query: string;
   sortOrder: "newest" | "oldest";
   hidePrivateVideos: boolean;
+  headingLevel?: 4 | 5;
   onToggle: (contentId: string) => void;
   onUpdateCategory: (contentId: string, categoryOverride: CategoryOverrideArg) => void;
 }) {
@@ -92,7 +95,7 @@ function EpisodeGroup({
         <AccordionTrigger
           title={episodeLabel}
           description={`${watchedCount}/${totalCount}`}
-          headingLevel={4}
+          headingLevel={headingLevel}
         />
         <AccordionContent>
           {filteredContents.map((content) => (
@@ -118,14 +121,8 @@ export default function SeasonGroup({
   hidePrivateVideos,
   onToggle,
   onUpdateCategory,
+  headingLevel = 4,
 }: Props) {
-  const [values, setValues] = useState<string[]>(["season"]);
-
-  const allContents = useMemo(
-    () => season.episodes.flatMap((ep) => ep.contents),
-    [season.episodes]
-  );
-
   const hasVisibleContents = useMemo(
     () =>
       season.episodes.some((ep) =>
@@ -136,37 +133,26 @@ export default function SeasonGroup({
 
   if (!hasVisibleContents) return null;
 
-  const watchedCount = allContents.filter((c) => c.watched).length;
-  const totalCount = allContents.length;
-
   const orderedEpisodes = sortOrder === "newest"
     ? [...season.episodes].reverse()
     : season.episodes;
 
   return (
-    <Accordion values={values} onValuesChange={setValues}>
-      <AccordionItem value="season">
-        <AccordionTrigger
-          title={season.name}
-          description={`${watchedCount}/${totalCount}`}
-          headingLevel={3}
+    <>
+      {orderedEpisodes.map((episode) => (
+        <EpisodeGroup
+          key={episode.id}
+          episode={episode}
+          filter={filter}
+          categories={categories}
+          query={query}
+          sortOrder={sortOrder}
+          hidePrivateVideos={hidePrivateVideos}
+          headingLevel={headingLevel}
+          onToggle={onToggle}
+          onUpdateCategory={onUpdateCategory}
         />
-        <AccordionContent>
-          {orderedEpisodes.map((episode) => (
-            <EpisodeGroup
-              key={episode.id}
-              episode={episode}
-              filter={filter}
-              categories={categories}
-              query={query}
-              sortOrder={sortOrder}
-              hidePrivateVideos={hidePrivateVideos}
-              onToggle={onToggle}
-              onUpdateCategory={onUpdateCategory}
-            />
-          ))}
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+      ))}
+    </>
   );
 }

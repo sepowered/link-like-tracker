@@ -117,13 +117,16 @@ export interface MenuContentProps extends MenuContentPrimitiveProps {
 }
 
 export const MenuContent = React.forwardRef<HTMLDivElement, MenuContentProps>(
-  ({ children, positionerContainer, ...props }, ref) => (
-    <MenuPrimitive.Positioner container={positionerContainer}>
-      <MenuContentBase ref={ref} {...props}>
-        <MenuScrollArea>{children}</MenuScrollArea>
-      </MenuContentBase>
-    </MenuPrimitive.Positioner>
-  ),
+  ({ children, positionerContainer, ...props }, ref) => {
+    const classNames = useMenuClassNames();
+    return (
+      <MenuPrimitive.Positioner container={positionerContainer} className={classNames.positioner}>
+        <MenuContentBase ref={ref} {...props}>
+          <MenuScrollArea>{children}</MenuScrollArea>
+        </MenuContentBase>
+      </MenuPrimitive.Positioner>
+    );
+  },
 );
 MenuContent.displayName = "MenuContent";
 

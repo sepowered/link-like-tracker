@@ -69,6 +69,17 @@ export default function PlaylistView({ initialData }: Props) {
     [data.seasons, selectedGeneration]
   );
 
+  const generationGroups = useMemo(() => {
+    if (selectedGeneration !== "all") return null;
+    const groups = new Map<string, typeof data.seasons>();
+    for (const season of generationSeasons) {
+      const gen = season.id.split("-")[0];
+      if (!groups.has(gen)) groups.set(gen, []);
+      groups.get(gen)!.push(season);
+    }
+    return [...groups.entries()];
+  }, [generationSeasons, selectedGeneration, data.seasons]);
+
   const lastScrollY = useRef(0);
   const [scrolled, setScrolled] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<ScrollDirection>(null);
@@ -394,7 +405,7 @@ export default function PlaylistView({ initialData }: Props) {
                         <Icon svg={<IconChevronDownLine />} size="16px" />
                       </button>
                     </MenuTrigger>
-                    <MenuContent>
+                    <MenuContent >
                       <MenuItem
                         label="전체"
                         suffixIcon={selectedGeneration === "all" ? <IconCheckmarkLine /> : undefined}
@@ -519,19 +530,44 @@ export default function PlaylistView({ initialData }: Props) {
       </div>
 
       {/* 시즌별 그룹 */}
-      {(sortOrder === "newest" ? [...generationSeasons].reverse() : generationSeasons).map((season) => (
-        <SeasonGroup
-          key={season.id}
-          season={season}
-          filter={filter}
-          categories={categories}
-          query={query}
-          sortOrder={sortOrder}
-          hidePrivateVideos={hidePrivateVideos}
-          onToggle={handleToggle}
-          onUpdateCategory={handleUpdateCategory}
-        />
-      ))}
+      {selectedGeneration === "all"
+        ? (sortOrder === "newest" ? [...(generationGroups ?? [])].reverse() : (generationGroups ?? [])).map(([gen, seasons]) => {
+            const orderedSeasons = sortOrder === "newest" ? [...seasons].reverse() : seasons;
+            return (
+              <div key={gen}>
+                <h3 className="generation-heading">{gen}기</h3>
+                {orderedSeasons.map((season) => (
+                  <SeasonGroup
+                    key={season.id}
+                    season={season}
+                    filter={filter}
+                    categories={categories}
+                    query={query}
+                    sortOrder={sortOrder}
+                    hidePrivateVideos={hidePrivateVideos}
+                    onToggle={handleToggle}
+                    onUpdateCategory={handleUpdateCategory}
+                    headingLevel={4}
+                  />
+                ))}
+              </div>
+            );
+          })
+        : (sortOrder === "newest" ? [...generationSeasons].reverse() : generationSeasons).map((season) => (
+            <SeasonGroup
+              key={season.id}
+              season={season}
+              filter={filter}
+              categories={categories}
+              query={query}
+              sortOrder={sortOrder}
+              hidePrivateVideos={hidePrivateVideos}
+              onToggle={handleToggle}
+              onUpdateCategory={handleUpdateCategory}
+              headingLevel={4}
+            />
+          ))
+      }
       </PullToRefresh.Content>
     </PullToRefresh.Root>
   );

@@ -90,6 +90,17 @@ body {
   padding-top: 0;
 }
 
+/* ─── 기수 구분 헤더 (전체 보기) ──────────────────────────────── */
+
+.generation-heading {
+  margin: 0;
+  padding: 20px var(--seed-dimension-spacing-x-global-gutter) 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--seed-color-fg-neutral);
+  letter-spacing: -0.02em;
+}
+
 .generation-title-button {
   display: inline-flex;
   align-items: center;
