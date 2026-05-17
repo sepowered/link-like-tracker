@@ -13,16 +13,10 @@ import { useAuth } from "@/providers/AuthProvider";
 import { SYNC_EVENT, useProgressSync } from "@/providers/ProgressSyncProvider";
 import { ActionButton, Icon, PullToRefresh, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import { ProgressCircle } from "@/ui/progress-circle";
-import {
-  BottomSheetRoot,
-  BottomSheetContent,
-  BottomSheetBody,
-  BottomSheetFooter,
-} from "@/ui/bottom-sheet";
-import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
+import { MenuRoot, MenuTrigger, MenuContent, MenuItem } from "@/ui/menu";
 import { Callout } from "@/ui/callout";
 import Link from "next/link";
-import { IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
+import { IconCheckmarkLine, IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 
 type FilterType = "all" | "watched" | "unwatched";
@@ -61,7 +55,6 @@ export default function PlaylistView({ initialData }: Props) {
     return result;
   }, [data.seasons]);
 
-  const [generationSheetOpen, setGenerationSheetOpen] = useState(false);
   const [selectedGeneration, setSelectedGeneration] = useState<string>(
     () => {
       const seen = new Set<string>();
@@ -76,22 +69,11 @@ export default function PlaylistView({ initialData }: Props) {
     [data.seasons, selectedGeneration]
   );
 
-  const [pendingGeneration, setPendingGeneration] = useState<string>(selectedGeneration);
   const lastScrollY = useRef(0);
   const [scrolled, setScrolled] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<ScrollDirection>(null);
   const [compactSearchOpen, setCompactSearchOpen] = useState(false);
   const compactSearchRef = useRef<HTMLInputElement>(null);
-
-  function handleGenerationSheetOpenChange(open: boolean) {
-    if (open) setPendingGeneration(selectedGeneration);
-    setGenerationSheetOpen(open);
-  }
-
-  function handleGenerationSave() {
-    setSelectedGeneration(pendingGeneration);
-    setGenerationSheetOpen(false);
-  }
 
   const [isInitialized, setIsInitialized] = useState(false);
   const { progressCategories, hidePrivateVideos, autoSync } = useSettings();
@@ -372,47 +354,6 @@ export default function PlaylistView({ initialData }: Props) {
       ) : null}
 
       <PullToRefresh.Content>
-      {/* 기수 선택 시트 */}
-      {generations.length > 1 && (
-        <BottomSheetRoot
-          {...PullToRefresh.preventPull}
-          open={generationSheetOpen}
-          onOpenChange={handleGenerationSheetOpenChange}
-          closeOnEscape
-          closeOnInteractOutside
-        >
-          <BottomSheetContent
-            title="기수 선택"
-            showCloseButton
-            aria-describedby={undefined}
-            style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
-          >
-            <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x6)" }}>
-              <RadioGroup
-                aria-label="기수 선택"
-                value={pendingGeneration}
-                onValueChange={setPendingGeneration}
-              >
-                <RadioGroupItem value="all" label="전체" tone="neutral" size="large" />
-                {generations.map((gen) => (
-                  <RadioGroupItem key={gen} value={gen} label={`${gen}기`} tone="neutral" size="large" />
-                ))}
-              </RadioGroup>
-            </BottomSheetBody>
-            <BottomSheetFooter>
-              <ActionButton
-                size="large"
-                variant="neutralSolid"
-                style={{ width: "100%" }}
-                onClick={handleGenerationSave}
-              >
-                저장
-              </ActionButton>
-            </BottomSheetFooter>
-          </BottomSheetContent>
-        </BottomSheetRoot>
-      )}
-
       {/* 컴팩트 스티키 헤더 */}
       <div className={`compact-bar-wrapper${showCompactBar ? " compact-bar-wrapper--visible" : ""}`}>
         {showCompactHeader ? (
@@ -446,10 +387,29 @@ export default function PlaylistView({ initialData }: Props) {
             ) : (
               <>
                 {generations.length > 1 ? (
-                  <button className="generation-title-button compact-header-title" onClick={() => handleGenerationSheetOpenChange(true)}>
-                    {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
-                    <Icon svg={<IconChevronDownLine />} size="16px" />
-                  </button>
+                  <MenuRoot>
+                    <MenuTrigger asChild>
+                      <button className="generation-title-button compact-header-title">
+                        {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+                        <Icon svg={<IconChevronDownLine />} size="16px" />
+                      </button>
+                    </MenuTrigger>
+                    <MenuContent>
+                      <MenuItem
+                        label="전체"
+                        suffixIcon={selectedGeneration === "all" ? <IconCheckmarkLine /> : undefined}
+                        onClick={() => setSelectedGeneration("all")}
+                      />
+                      {generations.map((gen) => (
+                        <MenuItem
+                          key={gen}
+                          label={`${gen}기`}
+                          suffixIcon={selectedGeneration === gen ? <IconCheckmarkLine /> : undefined}
+                          onClick={() => setSelectedGeneration(gen)}
+                        />
+                      ))}
+                    </MenuContent>
+                  </MenuRoot>
                 ) : (
                   <span className="compact-header-title">
                     {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
@@ -494,10 +454,29 @@ export default function PlaylistView({ initialData }: Props) {
         title="lltracker"
         leftSlot={
           generations.length > 1 ? (
-            <button className="generation-title-button" onClick={() => handleGenerationSheetOpenChange(true)}>
-              {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
-              <Icon svg={<IconChevronDownLine />} size="18px" />
-            </button>
+            <MenuRoot>
+              <MenuTrigger asChild>
+                <button className="generation-title-button">
+                  {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+                  <Icon svg={<IconChevronDownLine />} size="18px" />
+                </button>
+              </MenuTrigger>
+              <MenuContent>
+                <MenuItem
+                  label="전체"
+                  suffixIcon={selectedGeneration === "all" ? <IconCheckmarkLine /> : undefined}
+                  onClick={() => setSelectedGeneration("all")}
+                />
+                {generations.map((gen) => (
+                  <MenuItem
+                    key={gen}
+                    label={`${gen}기`}
+                    suffixIcon={selectedGeneration === gen ? <IconCheckmarkLine /> : undefined}
+                    onClick={() => setSelectedGeneration(gen)}
+                  />
+                ))}
+              </MenuContent>
+            </MenuRoot>
           ) : undefined
         }
         rightSlot={<SettingsLink />}

@@ -5,6 +5,7 @@ import { Season, Episode, Content } from "@/types";
 import { VideoCategory } from "@/lib/video-category";
 import ContentItem from "./ContentItem";
 import { useSettings } from "./SettingsProvider";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/ui/accordion";
 
 type FilterType = "all" | "watched" | "unwatched";
 type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
@@ -67,7 +68,7 @@ function EpisodeGroup({
   onUpdateCategory: (contentId: string, categoryOverride: CategoryOverrideArg) => void;
 }) {
   const { language } = useSettings();
-  const [open, setOpen] = useState(true);
+  const [values, setValues] = useState<string[]>(["episode"]);
 
   const filteredContents = useMemo(() => {
     const matched = episode.contents.filter((c) =>
@@ -86,18 +87,14 @@ function EpisodeGroup({
     : episodeTitle;
 
   return (
-    <div className="episode-group">
-      <button className="episode-header" onClick={() => setOpen((o) => !o)}>
-        <div className="episode-header-left">
-          <span className={`chevron chevron--small ${open ? "open" : ""}`}>▼</span>
-          <span className="episode-title">{episodeLabel}</span>
-        </div>
-        <span className="episode-progress-text">
-          {watchedCount}/{totalCount}
-        </span>
-      </button>
-      {open && (
-        <div className="season-videos">
+    <Accordion values={values} onValuesChange={setValues}>
+      <AccordionItem value="episode">
+        <AccordionTrigger
+          title={episodeLabel}
+          description={`${watchedCount}/${totalCount}`}
+          headingLevel={4}
+        />
+        <AccordionContent>
           {filteredContents.map((content) => (
             <ContentItem
               key={content.id}
@@ -106,9 +103,9 @@ function EpisodeGroup({
               onUpdateCategory={onUpdateCategory}
             />
           ))}
-        </div>
-      )}
-    </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }
 
@@ -122,7 +119,7 @@ export default function SeasonGroup({
   onToggle,
   onUpdateCategory,
 }: Props) {
-  const [open, setOpen] = useState(true);
+  const [values, setValues] = useState<string[]>(["season"]);
 
   const allContents = useMemo(
     () => season.episodes.flatMap((ep) => ep.contents),
@@ -147,16 +144,14 @@ export default function SeasonGroup({
     : season.episodes;
 
   return (
-    <div className="season-group">
-      <button className="season-header" onClick={() => setOpen((o) => !o)}>
-        <div className="season-header-left">
-          <span className={`chevron ${open ? "open" : ""}`}>▼</span>
-          <span className="season-name">{season.name}</span>
-        </div>
-        <span className="season-progress-text">{watchedCount}/{totalCount}</span>
-      </button>
-      {open && (
-        <div className="season-videos">
+    <Accordion values={values} onValuesChange={setValues}>
+      <AccordionItem value="season">
+        <AccordionTrigger
+          title={season.name}
+          description={`${watchedCount}/${totalCount}`}
+          headingLevel={3}
+        />
+        <AccordionContent>
           {orderedEpisodes.map((episode) => (
             <EpisodeGroup
               key={episode.id}
@@ -170,8 +165,8 @@ export default function SeasonGroup({
               onUpdateCategory={onUpdateCategory}
             />
           ))}
-        </div>
-      )}
-    </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }

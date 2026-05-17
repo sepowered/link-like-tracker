@@ -324,57 +324,6 @@ body {
   transform: rotate(180deg);
 }
 
-/* ─── 에피소드 그룹 ─────────────────────────────────────────── */
-
-.episode-group {
-  border-bottom: 1px solid var(--seed-color-stroke-neutral-weak);
-}
-
-.episode-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 9px var(--seed-dimension-spacing-x-global-gutter) 9px calc(var(--seed-dimension-spacing-x-global-gutter) + 16px);
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  gap: 8px;
-}
-
-.episode-header:active {
-  background: var(--seed-color-bg-layer-default-pressed);
-}
-
-.episode-header-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
-}
-
-.episode-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--seed-color-fg-neutral-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.episode-progress-text {
-  font-size: 11px;
-  color: var(--seed-color-fg-placeholder);
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
-.chevron--small {
-  font-size: 8px;
-}
-
 /* ─── 영상 아이템 ────────────────────────────────────────────── */
 
 .video-item {
