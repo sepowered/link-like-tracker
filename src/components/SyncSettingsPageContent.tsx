@@ -27,9 +27,12 @@ import {
 import playlistData from "../../data/playlist.initial.json";
 
 const videoTitleMap = new Map<string, string>();
-for (const season of playlistData.seasons) {
-  for (const video of season.videos) {
-    videoTitleMap.set(video.id, video.title);
+for (const season of (playlistData as any).seasons) {
+  for (const episode of season.episodes) {
+    for (const content of episode.contents) {
+      const title = content.title_jp ?? content.title_ko ?? content.part_label ?? episode.title_ko ?? "";
+      videoTitleMap.set(content.id, title);
+    }
   }
 }
 const totalVideos = videoTitleMap.size;

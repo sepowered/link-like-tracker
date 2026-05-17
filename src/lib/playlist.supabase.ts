@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { PlaylistData } from "@/types";
+import { PlaylistData, ContentType } from "@/types";
 import { IPlaylistStorage, CategoryOverrideValue } from "./storage";
 
 function getClient() {
@@ -24,6 +24,15 @@ type SeasonRow = {
   videos: VideoRow[];
 };
 
+function inferContentType(title: string): ContentType {
+  const t = title.toLowerCase();
+  if (t === "[private video]" || t === "[deleted video]") return "unavailable";
+  if (/fesxrec/i.test(t)) return "fesxrec";
+  if (/fesxlive|feslive|fes x live/i.test(t)) return "fesxlive";
+  if (/with×meets|withxmeets/i.test(t)) return "withxmeets";
+  return "music";
+}
+
 export const supabaseStorage: IPlaylistStorage = {
   async getPlaylist(): Promise<PlaylistData> {
     const supabase = getClient();
@@ -41,19 +50,32 @@ export const supabaseStorage: IPlaylistStorage = {
       seasons: (data ?? []).map((s) => ({
         id: s.id,
         name: s.name,
-        videos: (s.videos ?? []).map((v) => ({
-          id: v.id,
-          title: v.title,
-          url: v.url,
-          watched: false,
-          ...(v.category_override != null && { categoryOverride: v.category_override }),
-        })),
+        // Wrap all videos in a single stub episode until DB migration is done
+        episodes: [
+          {
+            id: `${s.id}-all`,
+            episode_number: 0,
+            title_ko: "전체",
+            title_jp: "全部",
+            contents: (s.videos ?? []).map((v) => ({
+              id: v.id,
+              type: inferContentType(v.title),
+              title_ko: null,
+              title_jp: v.title,
+              part_label: null,
+              legacy_video_id: v.id,
+              watched: false,
+              sources: [{ url: v.url, label: "원본" }],
+              ...(v.category_override != null && { categoryOverride: v.category_override }),
+            })),
+          },
+        ],
       })),
     };
   },
 
   async setCategoryOverride(
-    videoId: string,
+    contentId: string,
     categoryOverride: CategoryOverrideValue | "auto"
   ): Promise<{ categoryOverride: CategoryOverrideValue } | null> {
     const supabase = getClient();
@@ -62,7 +84,7 @@ export const supabaseStorage: IPlaylistStorage = {
     const { data, error } = await supabase
       .from("videos")
       .update({ category_override: value })
-      .eq("id", videoId)
+      .eq("id", contentId)
       .select("id")
       .single();
 
@@ -71,7 +93,7 @@ export const supabaseStorage: IPlaylistStorage = {
   },
 
   // watched 상태는 user_progress에서 관리 — 카탈로그 관심사 아님
-  async toggleWatched(_videoId: string): Promise<{ watched: boolean } | null> {
+  async toggleWatched(_contentId: string): Promise<{ watched: boolean } | null> {
     return { watched: false };
   },
 };

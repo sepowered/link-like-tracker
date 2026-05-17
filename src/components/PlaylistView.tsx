@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { PlaylistData } from "@/types";
-import { VideoCategory, classifyVideoCategory } from "@/lib/video-category";
+import { VideoCategory } from "@/lib/video-category";
 import { useSettings } from "./SettingsProvider";
 import SeasonGroup from "./SeasonGroup";
 import FilterBar from "./FilterBar";
@@ -33,10 +33,6 @@ const STORAGE_KEY_OVERRIDES = "llt-overrides";
 const STORAGE_KEY_FILTERS = "llt-filters";
 const STICKY_SCROLL_THRESHOLD = 60;
 const SCROLL_DIRECTION_DELTA = 6;
-
-function isUnavailableVideoTitle(title: string) {
-  return title === "[Private video]" || title === "[Deleted video]";
-}
 
 interface Props {
   initialData: PlaylistData;
@@ -96,9 +92,8 @@ export default function PlaylistView({ initialData }: Props) {
     setSelectedGeneration(pendingGeneration);
     setGenerationSheetOpen(false);
   }
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
 
+  const [isInitialized, setIsInitialized] = useState(false);
   const { progressCategories, hidePrivateVideos, autoSync } = useSettings();
 
   // Load from localStorage on mount
@@ -108,22 +103,26 @@ export default function PlaylistView({ initialData }: Props) {
       const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
       const filtersRaw = localStorage.getItem(STORAGE_KEY_FILTERS);
 
+      // Support both legacy YouTube IDs and new content IDs
       const watchedIds: string[] = watchedIdsRaw ? JSON.parse(watchedIdsRaw) : [];
       const overrides: Record<string, string | null> = overridesRaw ? JSON.parse(overridesRaw) : {};
 
       setData((prev) => ({
         seasons: prev.seasons.map((season) => ({
           ...season,
-          videos: season.videos.map((v) => {
-            const hasWatchedLocal = watchedIds.includes(v.id);
-            const overrideLocal = overrides[v.id];
-
-            return {
-              ...v,
-              watched: hasWatchedLocal || v.watched,
-              ...(overrideLocal !== undefined ? { categoryOverride: overrideLocal as any } : {}),
-            };
-          }),
+          episodes: season.episodes.map((ep) => ({
+            ...ep,
+            contents: ep.contents.map((c) => {
+              const isWatched =
+                watchedIds.includes(c.id) || watchedIds.includes(c.legacy_video_id);
+              const overrideVal = overrides[c.id] ?? overrides[c.legacy_video_id];
+              return {
+                ...c,
+                watched: isWatched || c.watched,
+                ...(overrideVal !== undefined ? { categoryOverride: overrideVal as any } : {}),
+              };
+            }),
+          })),
         })),
       }));
 
@@ -161,10 +160,17 @@ export default function PlaylistView({ initialData }: Props) {
         setData((prev) => ({
           seasons: prev.seasons.map((season) => ({
             ...season,
-            videos: season.videos.map((v) => ({
-              ...v,
-              watched: watchedIds.includes(v.id),
-              ...(overrides[v.id] !== undefined ? { categoryOverride: overrides[v.id] as any } : {}),
+            episodes: season.episodes.map((ep) => ({
+              ...ep,
+              contents: ep.contents.map((c) => ({
+                ...c,
+                watched: watchedIds.includes(c.id) || watchedIds.includes(c.legacy_video_id),
+                ...(overrides[c.id] !== undefined
+                  ? { categoryOverride: overrides[c.id] as any }
+                  : overrides[c.legacy_video_id] !== undefined
+                    ? { categoryOverride: overrides[c.legacy_video_id] as any }
+                    : {}),
+              })),
             })),
           })),
         }));
@@ -186,22 +192,18 @@ export default function PlaylistView({ initialData }: Props) {
 
   useEffect(() => {
     if (!isInitialized) return;
-
     const el = scrollContainerRef.current;
     if (!el) return;
     const handleScroll = () => {
       const currentY = el.scrollTop;
-
       if (currentY <= STICKY_SCROLL_THRESHOLD) {
         lastScrollY.current = currentY;
         setScrolled(false);
         setScrollDirection(null);
         return;
       }
-
       const delta = currentY - lastScrollY.current;
       if (Math.abs(delta) < SCROLL_DIRECTION_DELTA) return;
-
       setScrolled(true);
       setScrollDirection(delta > 0 ? "down" : "up");
       lastScrollY.current = currentY;
@@ -210,112 +212,115 @@ export default function PlaylistView({ initialData }: Props) {
     return () => el.removeEventListener("scroll", handleScroll);
   }, [isInitialized]);
 
-  // Save changes to localStorage
   const saveToLocalStorage = (nextData: PlaylistData) => {
-    const allVideos = nextData.seasons.flatMap((s) => s.videos);
-    
-    // 1. Watched IDs (only those that are different from original or all watched)
-    // For simplicity, we save all currently watched IDs
-    const watchedIds = allVideos.filter((v) => v.watched).map((v) => v.id);
+    const allContents = nextData.seasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
+
+    const watchedIds = allContents.filter((c) => c.watched).map((c) => c.id);
     localStorage.setItem(STORAGE_KEY_WATCHED, JSON.stringify(watchedIds));
 
-    // 2. Overrides
     const overrides: Record<string, any> = {};
-    allVideos.forEach((v) => {
-      if (v.categoryOverride !== undefined) {
-        overrides[v.id] = v.categoryOverride;
-      }
+    allContents.forEach((c) => {
+      if (c.categoryOverride !== undefined) overrides[c.id] = c.categoryOverride;
     });
     localStorage.setItem(STORAGE_KEY_OVERRIDES, JSON.stringify(overrides));
   };
 
   const stats = useMemo(() => {
-    const allVideos = generationSeasons.flatMap((s) => s.videos);
-    const targetVideos =
+    const allContents = generationSeasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
+    const targetContents =
       progressCategories.length === 0
-        ? allVideos
-        : allVideos.filter((v) => {
-            const effectiveCategory =
-              v.categoryOverride !== undefined
-                ? v.categoryOverride
-                : classifyVideoCategory(v.title);
+        ? allContents
+        : allContents.filter((c) => {
+            const effectiveCategory = c.categoryOverride !== undefined ? c.categoryOverride : c.type;
             return progressCategories.includes(effectiveCategory as VideoCategory);
           });
-    const total = targetVideos.length;
-    const watched = targetVideos.filter((v) => v.watched).length;
-    return { total, watched };
+    return {
+      total: targetContents.length,
+      watched: targetContents.filter((c) => c.watched).length,
+    };
   }, [generationSeasons, progressCategories]);
 
-  // 현재 필터 조건에 맞는 영상 수 계산
   const filteredCount = useMemo(() => {
     return generationSeasons.reduce((total, season) => {
-      const count = season.videos.filter((v) => {
-        const matchesFilter =
-          filter === "all" ||
-          (filter === "watched" && v.watched) ||
-          (filter === "unwatched" && !v.watched);
-        const matchesQuery =
-          !query || v.title.toLowerCase().includes(query.toLowerCase());
-        const matchesAvailability = !hidePrivateVideos || !isUnavailableVideoTitle(v.title);
-        
-        const effectiveCategory = v.categoryOverride !== undefined ? v.categoryOverride : classifyVideoCategory(v.title);
-        const matchesCategory =
-          categories.includes("all") || categories.includes(effectiveCategory as VideoCategory);
-
-        return matchesFilter && matchesQuery && matchesAvailability && matchesCategory;
-      }).length;
-      return total + count;
+      return total + season.episodes.reduce((epTotal, ep) => {
+        return epTotal + ep.contents.filter((c) => {
+          if (filter === "watched" && !c.watched) return false;
+          if (filter === "unwatched" && c.watched) return false;
+          if (hidePrivateVideos && c.type === "unavailable") return false;
+          if (query) {
+            const q = query.toLowerCase();
+            const inTitle =
+              (c.title_ko ?? "").toLowerCase().includes(q) ||
+              (c.title_jp ?? "").toLowerCase().includes(q) ||
+              (c.part_label ?? "").toLowerCase().includes(q);
+            if (!inTitle) return false;
+          }
+          if (!categories.includes("all")) {
+            const effectiveCategory = c.categoryOverride !== undefined ? c.categoryOverride : c.type;
+            if (!categories.includes(effectiveCategory as VideoCategory)) return false;
+          }
+          return true;
+        }).length;
+      }, 0);
     }, 0);
   }, [generationSeasons, filter, categories, query, hidePrivateVideos]);
 
   const isFiltered = filter !== "all" || !categories.includes("all") || query !== "";
 
-  async function handleToggle(videoId: string) {
-    const currentVideo = data.seasons.flatMap((s) => s.videos).find((v) => v.id === videoId);
-    const newStatus = currentVideo?.watched ? "unwatched" : "watched";
+  async function handleToggle(contentId: string) {
+    const allContents = data.seasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
+    const current = allContents.find((c) => c.id === contentId);
+    const newStatus = current?.watched ? "unwatched" : "watched";
 
     setData((prev) => {
-      const next = {
+      const next: PlaylistData = {
         seasons: prev.seasons.map((season) => ({
           ...season,
-          videos: season.videos.map((v) =>
-            v.id === videoId ? { ...v, watched: !v.watched } : v
-          ),
+          episodes: season.episodes.map((ep) => ({
+            ...ep,
+            contents: ep.contents.map((c) =>
+              c.id === contentId ? { ...c, watched: !c.watched } : c
+            ),
+          })),
         })),
       };
       if (!user) saveToLocalStorage(next);
       return next;
     });
 
-    if (user) await saveVideoProgress(videoId, newStatus);
+    if (user) await saveVideoProgress(contentId, newStatus);
   }
 
   async function handleUpdateCategory(
-    videoId: string,
+    contentId: string,
     categoryOverride: "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto"
   ) {
-    const currentVideo = data.seasons.flatMap((s) => s.videos).find((v) => v.id === videoId);
-    const currentStatus = currentVideo?.watched ? "watched" : "unwatched";
+    const allContents = data.seasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
+    const current = allContents.find((c) => c.id === contentId);
+    const currentStatus = current?.watched ? "watched" : "unwatched";
 
     setData((prev) => {
-      const next = {
+      const next: PlaylistData = {
         seasons: prev.seasons.map((season) => ({
           ...season,
-          videos: season.videos.map((v) => {
-            if (v.id !== videoId) return v;
-            if (categoryOverride === "auto") {
-              const { categoryOverride: _, ...rest } = v;
-              return rest;
-            }
-            return { ...v, categoryOverride };
-          }),
+          episodes: season.episodes.map((ep) => ({
+            ...ep,
+            contents: ep.contents.map((c) => {
+              if (c.id !== contentId) return c;
+              if (categoryOverride === "auto") {
+                const { categoryOverride: _, ...rest } = c;
+                return rest;
+              }
+              return { ...c, categoryOverride };
+            }),
+          })),
         })),
       };
       if (!user) saveToLocalStorage(next);
       return next;
     });
 
-    if (user) await saveVideoProgress(videoId, currentStatus, categoryOverride);
+    if (user) await saveVideoProgress(contentId, currentStatus, categoryOverride);
   }
 
   async function handlePtrRefresh() {
@@ -340,8 +345,7 @@ export default function PlaylistView({ initialData }: Props) {
   const showCompactBar = showCompactHeader;
   const ptrEnabled = Boolean(user && autoSync);
 
-
-  if (!isInitialized) return null; // Prevent flash of original data before local storage load
+  if (!isInitialized) return null;
 
   return (
     <PullToRefresh.Root
@@ -425,7 +429,7 @@ export default function PlaylistView({ initialData }: Props) {
                   <TextFieldInput
                     ref={compactSearchRef}
                     placeholder="제목 검색..."
-                    aria-label="영상 제목 검색"
+                    aria-label="콘텐츠 제목 검색"
                     onKeyDown={(e) => { if (e.key === "Escape") { setQuery(""); setCompactSearchOpen(false); } }}
                   />
                 </TextFieldRoot>
@@ -522,12 +526,6 @@ export default function PlaylistView({ initialData }: Props) {
         </div>
       )}
 
-      {errorMessage ? (
-        <p role="alert" className="error-message">
-          {errorMessage}
-        </p>
-      ) : null}
-
       {/* 추가 요청 배너 */}
       <div style={{ padding: "0 var(--seed-dimension-spacing-x-global-gutter)", marginBottom: "8px" }}>
         <Callout
@@ -551,14 +549,10 @@ export default function PlaylistView({ initialData }: Props) {
           query={query}
           sortOrder={sortOrder}
           hidePrivateVideos={hidePrivateVideos}
-          isUnavailableVideoTitle={isUnavailableVideoTitle}
-          classifyVideoCategory={classifyVideoCategory}
           onToggle={handleToggle}
           onUpdateCategory={handleUpdateCategory}
         />
       ))}
-
-      {/* TODO: 다음 미시청 콘텐츠 이동 FAB — 연속성 기능 완성 후 활성화 */}
       </PullToRefresh.Content>
     </PullToRefresh.Root>
   );

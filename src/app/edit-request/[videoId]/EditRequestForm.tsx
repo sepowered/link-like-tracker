@@ -16,7 +16,7 @@ import {
 } from "@/ui/bottom-sheet";
 import Link from "next/link";
 import { IconArrowUpRightLine } from "@karrotmarket/react-monochrome-icon";
-import type { Video } from "@/types";
+import type { Content } from "@/types";
 import { submitEditRequest } from "@/app/actions/requests";
 import PageHeader from "@/components/PageHeader";
 
@@ -38,7 +38,24 @@ const CATEGORIES = [
   { value: "not-listed", label: "이 중에 없어요" },
 ];
 
-export default function EditRequestForm({ video, generations }: { video: Video; generations: string[] }) {
+function getDisplayTitle(content: Content, episodeTitle: string): string {
+  if (content.type === "story") {
+    return episodeTitle + (content.part_label ? ` (${content.part_label})` : "");
+  }
+  return content.title_ko ?? content.title_jp ?? "";
+}
+
+export default function EditRequestForm({
+  content,
+  episodeTitle,
+  generations,
+}: {
+  content: Content;
+  episodeTitle: string;
+  generations: string[];
+}) {
+  const displayTitle = getDisplayTitle(content, episodeTitle);
+  const primaryUrl = content.sources[0]?.url ?? "";
   const router = useRouter();
   const adapter = useSnackbarAdapter();
   const [requestType, setRequestType] = useState<string>("");
@@ -71,7 +88,7 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
     setIsSubmitting(true);
     try {
       await submitEditRequest({
-        video_title: video.title,
+        video_title: displayTitle,
         request_type: requestType,
         category,
         generation,
@@ -138,13 +155,13 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
                 overflowWrap: "break-word",
               }}
             >
-              {video.title}
+              {displayTitle}
             </span>
             <ActionButton
               size="small"
               variant="neutralWeak"
               style={{ alignSelf: "flex-start" }}
-              onClick={() => window.open(video.url, "_blank", "noopener,noreferrer")}
+              onClick={() => window.open(primaryUrl, "_blank", "noopener,noreferrer")}
             >
               유튜브에서 보기
               <Icon svg={<IconArrowUpRightLine />} size="14px" />

@@ -8,7 +8,7 @@ export async function PATCH(
   { params }: { params: Promise<{ videoId: string }> }
 ) {
   try {
-    const { videoId } = await params;
+    const { videoId: contentId } = await params;
 
     let body: { categoryOverride?: CategoryOverrideValue | "auto" } = {};
     try {
@@ -18,17 +18,17 @@ export async function PATCH(
     }
 
     if ("categoryOverride" in body) {
-      const result = await storage.setCategoryOverride(videoId, body.categoryOverride ?? "auto");
+      const result = await storage.setCategoryOverride(contentId, body.categoryOverride ?? "auto");
 
       if (!result) {
-        return NextResponse.json({ error: "Video not found" }, { status: 404 });
+        return NextResponse.json({ error: "Content not found" }, { status: 404 });
       }
 
       revalidatePath("/");
       return NextResponse.json(result);
     }
 
-    const result = await storage.toggleWatched(videoId);
+    const result = await storage.toggleWatched(contentId);
 
     if (!result) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });

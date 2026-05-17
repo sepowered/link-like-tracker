@@ -10,16 +10,21 @@ export default async function EditRequestPage({
   const { videoId } = await params;
   const data = await storage.getPlaylist();
 
-  let video = null;
+  let content = null;
+  let episodeTitle = "";
   for (const season of data.seasons) {
-    const found = season.videos.find((v) => v.id === videoId);
-    if (found) {
-      video = found;
-      break;
+    for (const episode of season.episodes) {
+      const found = episode.contents.find((c) => c.id === videoId);
+      if (found) {
+        content = found;
+        episodeTitle = episode.title_ko;
+        break;
+      }
     }
+    if (content) break;
   }
 
-  if (!video) notFound();
+  if (!content) notFound();
 
   const seen = new Set<string>();
   for (const season of data.seasons) {
@@ -27,5 +32,5 @@ export default async function EditRequestPage({
   }
   const generations = [...seen];
 
-  return <EditRequestForm video={video} generations={generations} />;
+  return <EditRequestForm content={content} episodeTitle={episodeTitle} generations={generations} />;
 }

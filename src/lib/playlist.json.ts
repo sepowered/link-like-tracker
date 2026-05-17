@@ -27,60 +27,43 @@ let playlistCache:
   | null = null;
 
 function isPlaylistData(value: unknown): value is PlaylistData {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
+  if (!value || typeof value !== "object") return false;
   const { seasons } = value as { seasons?: unknown };
+  if (!Array.isArray(seasons)) return false;
 
-  return (
-    Array.isArray(seasons) &&
-    seasons.every((season) => {
-      if (!season || typeof season !== "object") {
-        return false;
-      }
+  return seasons.every((season) => {
+    if (!season || typeof season !== "object") return false;
+    const s = season as { id?: unknown; name?: unknown; episodes?: unknown };
+    if (typeof s.id !== "string" || typeof s.name !== "string") return false;
+    if (!Array.isArray(s.episodes)) return false;
 
-      const seasonRecord = season as {
+    return s.episodes.every((ep) => {
+      if (!ep || typeof ep !== "object") return false;
+      const e = ep as {
         id?: unknown;
-        name?: unknown;
-        videos?: unknown;
+        episode_number?: unknown;
+        contents?: unknown;
       };
+      if (typeof e.id !== "string" || typeof e.episode_number !== "number") return false;
+      if (!Array.isArray(e.contents)) return false;
 
-      return (
-        typeof seasonRecord.id === "string" &&
-        typeof seasonRecord.name === "string" &&
-        Array.isArray(seasonRecord.videos) &&
-        seasonRecord.videos.every((video) => {
-          if (!video || typeof video !== "object") {
-            return false;
-          }
-
-          const videoRecord = video as {
-            id?: unknown;
-            title?: unknown;
-            url?: unknown;
-            watched?: unknown;
-            categoryOverride?: unknown;
-          };
-
-          const validCategoryValues = ["story", "music", "fesxlive", "withxmeets", "fesxrec"];
-          const validCategoryOverride =
-            !("categoryOverride" in videoRecord) ||
-            videoRecord.categoryOverride === null ||
-            (typeof videoRecord.categoryOverride === "string" &&
-              validCategoryValues.includes(videoRecord.categoryOverride));
-
-          return (
-            typeof videoRecord.id === "string" &&
-            typeof videoRecord.title === "string" &&
-            typeof videoRecord.url === "string" &&
-            typeof videoRecord.watched === "boolean" &&
-            validCategoryOverride
-          );
-        })
-      );
-    })
-  );
+      return e.contents.every((c) => {
+        if (!c || typeof c !== "object") return false;
+        const content = c as {
+          id?: unknown;
+          type?: unknown;
+          legacy_video_id?: unknown;
+          sources?: unknown;
+        };
+        return (
+          typeof content.id === "string" &&
+          typeof content.type === "string" &&
+          typeof content.legacy_video_id === "string" &&
+          Array.isArray(content.sources)
+        );
+      });
+    });
+  });
 }
 
 async function ensurePlaylistFile(): Promise<void> {
@@ -141,22 +124,24 @@ export const jsonStorage: IPlaylistStorage = {
   },
 
   async setCategoryOverride(
-    videoId: string,
+    contentId: string,
     categoryOverride: CategoryOverrideValue | "auto"
   ): Promise<{ categoryOverride: CategoryOverrideValue } | null> {
     const data = await readPlaylistData();
     let found = false;
 
-    for (const season of data.seasons) {
-      const video = season.videos.find((v) => v.id === videoId);
-      if (video) {
-        if (categoryOverride === "auto") {
-          delete video.categoryOverride;
-        } else {
-          video.categoryOverride = categoryOverride;
+    outer: for (const season of data.seasons) {
+      for (const episode of season.episodes) {
+        const content = episode.contents.find((c) => c.id === contentId);
+        if (content) {
+          if (categoryOverride === "auto") {
+            delete content.categoryOverride;
+          } else {
+            content.categoryOverride = categoryOverride;
+          }
+          found = true;
+          break outer;
         }
-        found = true;
-        break;
       }
     }
 
@@ -170,18 +155,20 @@ export const jsonStorage: IPlaylistStorage = {
     return { categoryOverride: categoryOverride === "auto" ? null : categoryOverride };
   },
 
-  async toggleWatched(videoId: string): Promise<{ watched: boolean } | null> {
+  async toggleWatched(contentId: string): Promise<{ watched: boolean } | null> {
     const data = await readPlaylistData();
     let found = false;
     let newWatched = false;
 
-    for (const season of data.seasons) {
-      const video = season.videos.find((v) => v.id === videoId);
-      if (video) {
-        video.watched = !video.watched;
-        newWatched = video.watched;
-        found = true;
-        break;
+    outer: for (const season of data.seasons) {
+      for (const episode of season.episodes) {
+        const content = episode.contents.find((c) => c.id === contentId);
+        if (content) {
+          content.watched = !content.watched;
+          newWatched = content.watched;
+          found = true;
+          break outer;
+        }
       }
     }
 
@@ -190,10 +177,7 @@ export const jsonStorage: IPlaylistStorage = {
     await fs.writeFile(dataPath, JSON.stringify(data, null, 2), "utf-8");
 
     const stats = await fs.stat(dataPath);
-    playlistCache = {
-      data,
-      modifiedAtMs: stats.mtimeMs,
-    };
+    playlistCache = { data, modifiedAtMs: stats.mtimeMs };
 
     return { watched: newWatched };
   },
