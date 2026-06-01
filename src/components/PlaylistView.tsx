@@ -391,7 +391,7 @@ export default function PlaylistView({ initialData }: Props) {
             ) : (
               <>
                 {generations.length > 1 ? (
-                  <MenuRoot>
+                  <MenuRoot placement="bottom-start">
                     <MenuTrigger asChild>
                       <button className="generation-title-button compact-header-title">
                         {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
@@ -458,7 +458,7 @@ export default function PlaylistView({ initialData }: Props) {
         title="lltracker"
         leftSlot={
           generations.length > 1 ? (
-            <MenuRoot>
+            <MenuRoot placement="bottom-start">
               <MenuTrigger asChild>
                 <button className="generation-title-button">
                   {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
