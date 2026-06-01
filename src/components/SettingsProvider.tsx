@@ -15,6 +15,8 @@ interface SettingsContextValue extends SyncedSettings {
   setColorScheme: (scheme: ColorScheme) => void;
   language: Language;
   setLanguage: (lang: Language) => void;
+  uiLanguage: Language;
+  setUiLanguage: (lang: Language) => void;
   setProgressCategories: (categories: VideoCategory[]) => void;
   setHidePrivateVideos: (hide: boolean) => void;
   setAutoSync: (autoSync: boolean) => void;
@@ -24,6 +26,7 @@ interface SettingsContextValue extends SyncedSettings {
 const STORAGE_KEY = "llt-settings";
 const THEME_KEY = "seed-color-scheme";
 const LANGUAGE_KEY = "llt-language";
+const UI_LANGUAGE_KEY = "llt-ui-language";
 
 const DEFAULT_SETTINGS: SyncedSettings = {
   progressCategories: [],
@@ -72,6 +75,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SyncedSettings>(DEFAULT_SETTINGS);
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>("light");
   const [language, setLanguageState] = useState<Language>("ko");
+  const [uiLanguage, setUiLanguageState] = useState<Language>("ko");
   const [isInitialized, setIsInitialized] = useState(false);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
 
@@ -82,6 +86,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setColorSchemeState(stored === "dark" ? "dark" : stored === "light" ? "light" : "system");
       const storedLang = localStorage.getItem(LANGUAGE_KEY);
       setLanguageState(storedLang === "jp" ? "jp" : "ko");
+      const storedUiLang = localStorage.getItem(UI_LANGUAGE_KEY);
+      setUiLanguageState(storedUiLang === "jp" ? "jp" : "ko");
     } catch {}
     setIsInitialized(true);
   }, []);
@@ -158,6 +164,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setLanguageState(lang);
   };
 
+  const setUiLanguage = (lang: Language) => {
+    try {
+      localStorage.setItem(UI_LANGUAGE_KEY, lang);
+    } catch {}
+    setUiLanguageState(lang);
+  };
+
   return (
     <SettingsContext.Provider
       value={{
@@ -166,6 +179,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setColorScheme,
         language,
         setLanguage,
+        uiLanguage,
+        setUiLanguage,
         isInitialized,
         setProgressCategories: (categories) => update({ progressCategories: categories }),
         setHidePrivateVideos: (hide) => update({ hidePrivateVideos: hide }),
