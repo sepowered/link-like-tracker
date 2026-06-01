@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { PlaylistData, ContentType } from "@/types";
+import { PlaylistData, ContentType, ContentSource } from "@/types";
 import { IPlaylistStorage, CategoryOverrideValue } from "./storage";
 
 function getClient() {
@@ -9,29 +9,42 @@ function getClient() {
   );
 }
 
-type VideoRow = {
-  id: string;
-  title: string;
+type ContentSourceRow = {
   url: string;
+  label: string | null;
+  timestamp_todo: boolean;
+  sort_order: number;
+};
+
+type ContentRow = {
+  id: string;
+  episode_id: string;
+  type: ContentType;
+  title_ko: string | null;
+  title_jp: string | null;
+  part_label: string | null;
+  legacy_video_id: string;
   sort_order: number;
   category_override: CategoryOverrideValue;
+  content_sources: ContentSourceRow[];
+};
+
+type EpisodeRow = {
+  id: string;
+  season_id: string;
+  episode_number: number;
+  title_ko: string | null;
+  title_jp: string | null;
+  sort_order: number;
+  contents: ContentRow[];
 };
 
 type SeasonRow = {
   id: string;
   name: string;
   sort_order: number;
-  videos: VideoRow[];
+  episodes: EpisodeRow[];
 };
-
-function inferContentType(title: string): ContentType {
-  const t = title.toLowerCase();
-  if (t === "[private video]" || t === "[deleted video]") return "unavailable";
-  if (/fesxrec/i.test(t)) return "fesxrec";
-  if (/fesxlive|feslive|fes x live/i.test(t)) return "fesxlive";
-  if (/with×meets|withxmeets/i.test(t)) return "withxmeets";
-  return "music";
-}
 
 export const supabaseStorage: IPlaylistStorage = {
   async getPlaylist(): Promise<PlaylistData> {
@@ -39,39 +52,58 @@ export const supabaseStorage: IPlaylistStorage = {
 
     const { data, error } = await supabase
       .from("seasons")
-      .select("id, name, sort_order, videos(id, title, url, sort_order, category_override)")
-      .order("sort_order", { ascending: true })
-      .order("sort_order", { ascending: true, referencedTable: "videos" })
+      .select(
+        "id, name, sort_order, " +
+          "episodes(id, season_id, episode_number, title_ko, title_jp, sort_order, " +
+          "contents(id, episode_id, type, title_ko, title_jp, part_label, legacy_video_id, sort_order, category_override, " +
+          "content_sources(url, label, timestamp_todo, sort_order)))"
+      )
       .returns<SeasonRow[]>();
 
     if (error) throw error;
 
-    return {
-      seasons: (data ?? []).map((s) => ({
+    // 3단계 중첩 정렬은 PostgREST에서 까다로우므로 JS에서 결정론적으로 정렬
+    const seasons = [...(data ?? [])]
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((s) => ({
         id: s.id,
         name: s.name,
-        // Wrap all videos in a single stub episode until DB migration is done
-        episodes: [
-          {
-            id: `${s.id}-all`,
-            episode_number: 0,
-            title_ko: "전체",
-            title_jp: "全部",
-            contents: (s.videos ?? []).map((v) => ({
-              id: v.id,
-              type: inferContentType(v.title),
-              title_ko: null,
-              title_jp: v.title,
-              part_label: null,
-              legacy_video_id: v.id,
-              watched: false,
-              sources: [{ url: v.url, label: "원본" }],
-              ...(v.category_override != null && { categoryOverride: v.category_override }),
-            })),
-          },
-        ],
-      })),
-    };
+        episodes: [...(s.episodes ?? [])]
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((e) => ({
+            id: e.id,
+            episode_number: e.episode_number,
+            title_ko: e.title_ko ?? "",
+            title_jp: e.title_jp ?? "",
+            contents: [...(e.contents ?? [])]
+              .sort((a, b) => a.sort_order - b.sort_order)
+              .map((c) => {
+                const sources: ContentSource[] = [...(c.content_sources ?? [])]
+                  .sort((x, y) => x.sort_order - y.sort_order)
+                  .map((src) => ({
+                    url: src.url,
+                    label: src.label ?? "",
+                    ...(src.timestamp_todo && { timestamp_todo: true }),
+                  }));
+
+                return {
+                  id: c.id,
+                  type: c.type,
+                  title_ko: c.title_ko,
+                  title_jp: c.title_jp,
+                  part_label: c.part_label,
+                  legacy_video_id: c.legacy_video_id,
+                  watched: false,
+                  sources,
+                  ...(c.category_override != null && {
+                    categoryOverride: c.category_override,
+                  }),
+                };
+              }),
+          })),
+      }));
+
+    return { seasons };
   },
 
   async setCategoryOverride(
@@ -82,7 +114,7 @@ export const supabaseStorage: IPlaylistStorage = {
     const value = categoryOverride === "auto" ? null : categoryOverride;
 
     const { data, error } = await supabase
-      .from("videos")
+      .from("contents")
       .update({ category_override: value })
       .eq("id", contentId)
       .select("id")
