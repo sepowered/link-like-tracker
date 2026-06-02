@@ -1,4 +1,8 @@
 import type { CategoryOverrideValue } from "./storage";
+import { expandLegacyId, isContentId, type LegacyMap } from "./legacy-map";
+
+// Bump when the legacy→content.id migration semantics change.
+export const CURRENT_MIGRATION = 1;
 
 // ── Key constants ────────────────────────────────────────────────────────────
 
@@ -31,6 +35,8 @@ export interface LocalProgressStore {
   deviceId: string;
   deviceName?: string;
   updatedAt: string;
+  /** Set to CURRENT_MIGRATION once legacy ids have been converted to content.id. */
+  migratedSchema?: number;
   entries: Record<string, ProgressEntry>;
 }
 
@@ -107,6 +113,9 @@ export function createEmptyStore(
     userId,
     deviceId,
     updatedAt: new Date().toISOString(),
+    // Brand-new / clean devices have nothing legacy to migrate, so the marker is
+    // set immediately and the upload fence opens on the same pass.
+    migratedSchema: CURRENT_MIGRATION,
     entries: {},
   };
 }
@@ -146,6 +155,10 @@ export function migrateFromV1(
 
   const store = createEmptyStore(userId, deviceId);
   store.entries = entries;
+  // createEmptyStore stamps migratedSchema=CURRENT_MIGRATION, but this store
+  // contains raw legacy ids (incl. split parents) that still need expansion.
+  // Clear the marker so migrateLegacyEntries runs and expands them.
+  store.migratedSchema = undefined;
   return store;
 }
 
@@ -172,7 +185,18 @@ export function saveConflictPolicy(userId: string, policy: ConflictPolicy): void
 
 // PlaylistView writes only to legacy keys (llt-watched / llt-overrides) when
 // the user marks videos. Call this before any merge to capture those changes.
-export function syncLegacyKeysToStore(store: LocalProgressStore): LocalProgressStore {
+//
+// Legacy-AWARE: each id read from the legacy keys is resolved through
+// `expandLegacyId(id, legacyMap)` to its content.id(s) BEFORE comparing/ingesting.
+// A legacy split id therefore resolves to all its content.ids; if those already
+// match the store's status (e.g. set by migrateLegacyEntries) nothing is
+// re-stamped (no now() leak). A genuine new content.id mark resolves to itself
+// and is ingested with now() (a real change). Unknown ids (expand → []) are
+// skipped — not dropped from the store, just not ingested.
+export function syncLegacyKeysToStore(
+  store: LocalProgressStore,
+  legacyMap: LegacyMap,
+): LocalProgressStore {
   if (typeof window === "undefined") return store;
   const watchedRaw = localStorage.getItem("llt-watched");
   const overridesRaw = localStorage.getItem("llt-overrides");
@@ -183,26 +207,46 @@ export function syncLegacyKeysToStore(store: LocalProgressStore): LocalProgressS
   const now = new Date().toISOString();
 
   const updated = { ...store, entries: { ...store.entries } };
+  const watchedSet = new Set(watched);
   const allIds = new Set([...watched, ...Object.keys(overrides)]);
 
-  for (const videoId of allIds) {
-    const legacyStatus: ProgressStatus = watched.includes(videoId) ? "watched" : "unwatched";
-    const existing = updated.entries[videoId];
-    if (!existing || existing.status !== legacyStatus) {
-      updated.entries[videoId] = {
-        videoId,
-        status: legacyStatus,
-        categoryOverride: overrides[videoId] !== undefined
-          ? (overrides[videoId] as CategoryOverrideValue ?? undefined)
-          : existing?.categoryOverride,
-        updatedAt: now,
-      };
+  // Resolved content.id → effective override (from the first legacy id that
+  // carried one). Also tracks which content.ids the legacy keys map to so the
+  // demotion pass below only un-watches genuinely-absent content.ids.
+  const resolvedWatched = new Set<string>();
+
+  for (const legacyId of allIds) {
+    const contentIds = expandLegacyId(legacyId, legacyMap);
+    if (contentIds.length === 0) continue; // unknown id — skip (do not drop store entries)
+
+    const legacyStatus: ProgressStatus = watchedSet.has(legacyId) ? "watched" : "unwatched";
+    const override =
+      overrides[legacyId] !== undefined
+        ? (overrides[legacyId] as CategoryOverrideValue ?? undefined)
+        : undefined;
+
+    for (const contentId of contentIds) {
+      if (legacyStatus === "watched") resolvedWatched.add(contentId);
+      const existing = updated.entries[contentId];
+      if (!existing || existing.status !== legacyStatus) {
+        updated.entries[contentId] = {
+          videoId: contentId,
+          status: legacyStatus,
+          categoryOverride: override !== undefined ? override : existing?.categoryOverride,
+          updatedAt: now,
+        };
+      }
     }
   }
 
-  const watchedSet = new Set(watched);
+  // Demote content.id entries that are watched in the store but no longer
+  // present (as a resolved content.id) in the legacy watched set.
   for (const videoId of Object.keys(store.entries)) {
-    if (store.entries[videoId].status === "watched" && !watchedSet.has(videoId)) {
+    if (
+      store.entries[videoId].status === "watched" &&
+      isContentId(videoId, legacyMap) &&
+      !resolvedWatched.has(videoId)
+    ) {
       updated.entries[videoId] = {
         ...store.entries[videoId],
         status: "unwatched",
@@ -212,6 +256,75 @@ export function syncLegacyKeysToStore(store: LocalProgressStore): LocalProgressS
   }
 
   return updated;
+}
+
+// ── One-time legacy→content.id conversion of the store's own entries ─────────
+
+/**
+ * Convert the store's own legacy-only entries to content.id entries, ONCE.
+ * Idempotent: a store already at CURRENT_MIGRATION is returned unchanged.
+ *
+ * - content.id entries are kept as-is.
+ * - legacy-only (split parent) entries expand to all N content.ids, each
+ *   carrying the ORIGINAL updatedAt (never now(); epoch stays epoch) and the
+ *   legacy entry's categoryOverride; the legacy-only entry is then dropped.
+ * - Unknown ids are kept as-is (forward-compat, never dropped).
+ * - Collision (expansion hits an existing content.id entry): status-union
+ *   (watched wins); updatedAt = max(existing, incoming).
+ *
+ * Pure/deterministic — only reads entry fields; no localStorage/Date access.
+ */
+export function migrateLegacyEntries(
+  store: LocalProgressStore,
+  legacyMap: LegacyMap,
+): LocalProgressStore {
+  if (store.migratedSchema === CURRENT_MIGRATION) return store;
+
+  const entries: Record<string, ProgressEntry> = {};
+
+  const merge = (incoming: ProgressEntry) => {
+    const existing = entries[incoming.videoId];
+    if (!existing) {
+      entries[incoming.videoId] = incoming;
+      return;
+    }
+    const status: ProgressStatus =
+      existing.status === "watched" || incoming.status === "watched"
+        ? "watched"
+        : "unwatched";
+    const updatedAt =
+      existing.updatedAt >= incoming.updatedAt ? existing.updatedAt : incoming.updatedAt;
+    entries[incoming.videoId] = {
+      videoId: incoming.videoId,
+      status,
+      categoryOverride: incoming.categoryOverride ?? existing.categoryOverride,
+      updatedAt,
+    };
+  };
+
+  for (const entry of Object.values(store.entries)) {
+    if (isContentId(entry.videoId, legacyMap)) {
+      merge({ ...entry });
+      continue;
+    }
+    const contentIds = expandLegacyId(entry.videoId, legacyMap);
+    if (contentIds.length === 0) {
+      // Unknown id — keep as-is.
+      merge({ ...entry });
+      continue;
+    }
+    // Legacy-only split parent — expand, carrying the ORIGINAL timestamp.
+    for (const contentId of contentIds) {
+      merge({
+        videoId: contentId,
+        status: entry.status,
+        categoryOverride: entry.categoryOverride,
+        updatedAt: entry.updatedAt,
+      });
+    }
+  }
+
+  return { ...store, entries, migratedSchema: CURRENT_MIGRATION };
 }
 
 // ── Merge helpers ────────────────────────────────────────────────────────────

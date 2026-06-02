@@ -13,12 +13,14 @@ import { useSettings } from "@/components/SettingsProvider";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import {
   createEmptyStore,
+  CURRENT_MIGRATION,
   getDeviceId,
   hasConflict,
   loadConflictPolicy,
   loadLocalProgress,
   mergeLatest,
   migrateFromV1,
+  migrateLegacyEntries,
   saveConflictPolicy,
   saveLocalProgress,
   syncLegacyKeysToStore,
@@ -27,6 +29,9 @@ import {
   type ProgressEntry,
   type ProgressStatus,
 } from "@/lib/progress-sync";
+import { buildLegacyMap, expandLegacyId } from "@/lib/legacy-map";
+import type { PlaylistData } from "@/types";
+import playlistInitial from "../../data/playlist.initial.json";
 import type { CategoryOverrideValue } from "@/lib/storage";
 import {
   deleteDeviceProgress,
@@ -59,10 +64,28 @@ import { Checkbox } from "@/ui/checkbox";
 
 export type ProgressMergeMode = Exclude<ConflictPolicyMode, "ask">;
 
+// Canonical legacy_video_id → content.id map, built ONCE at module load from the
+// bundled v2 catalog snapshot (playlist.initial.json, 309 contents).
+const LEGACY_MAP = buildLegacyMap(playlistInitial as unknown as PlaylistData);
+
 // Custom DOM event dispatched after writing to legacy localStorage keys
 export const SYNC_EVENT = "llt-progress-sync";
 export function dispatchSyncEvent() {
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(SYNC_EVENT));
+}
+
+// Upload fence (§4.4b): never upload a store whose legacy→content.id migration
+// has not completed. A not-yet-migrated store may still hold legacy ids; the
+// next loadSyncedLocalProgress will migrate it and upload then.
+async function fencedUpload(
+  store: LocalProgressStore,
+  supabase: ReturnType<typeof getSupabaseBrowserClient>,
+  userId: string,
+  devId: string,
+  entries: ProgressEntry[],
+): Promise<void> {
+  if (store.migratedSchema !== CURRENT_MIGRATION) return;
+  await uploadProgress(supabase, userId, devId, entries);
 }
 
 // ── Context ──────────────────────────────────────────────────────────────────
@@ -156,18 +179,56 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     localStorage.setItem("llt-overrides", JSON.stringify(overrides));
   }
 
+  // Legacy-AWARE remote ingestion choke point (§4.5). Each remote row's
+  // video_id is expanded through expandLegacyId: a legacy split id emits one
+  // entry per content.id (carrying the row's status/override/updated_at);
+  // status-union (watched wins, max updated_at) when two rows resolve to the
+  // same content.id. Unknown ids are kept 1:1 so nothing is dropped.
   function remoteToEntries(remote: RemoteProgressRow[]): ProgressEntry[] {
-    return remote.map((r) => ({
-      videoId: r.video_id,
-      status: r.status,
-      categoryOverride: r.category_override ?? undefined,
-      updatedAt: r.updated_at,
-    }));
+    const byId = new Map<string, ProgressEntry>();
+
+    const add = (entry: ProgressEntry) => {
+      const existing = byId.get(entry.videoId);
+      if (!existing) {
+        byId.set(entry.videoId, entry);
+        return;
+      }
+      const status: ProgressStatus =
+        existing.status === "watched" || entry.status === "watched"
+          ? "watched"
+          : "unwatched";
+      const updatedAt =
+        existing.updatedAt >= entry.updatedAt ? existing.updatedAt : entry.updatedAt;
+      byId.set(entry.videoId, {
+        videoId: entry.videoId,
+        status,
+        categoryOverride: entry.categoryOverride ?? existing.categoryOverride,
+        updatedAt,
+      });
+    };
+
+    for (const r of remote) {
+      const contentIds = expandLegacyId(r.video_id, LEGACY_MAP);
+      // Unknown id → keep the row as-is (1:1).
+      const targets = contentIds.length > 0 ? contentIds : [r.video_id];
+      for (const videoId of targets) {
+        add({
+          videoId,
+          status: r.status,
+          categoryOverride: r.category_override ?? undefined,
+          updatedAt: r.updated_at,
+        });
+      }
+    }
+
+    return [...byId.values()];
   }
 
   const openConflictSheet = useCallback((local: LocalProgressStore, remote: RemoteProgressRow[]) => {
     setLocalWatchedCount(Object.values(local.entries).filter((entry) => entry.status === "watched").length);
-    setRemoteWatchedCount(remote.filter((entry) => entry.status === "watched").length);
+    // Expand remote rows to content.ids before counting so split parents count
+    // as N (not 1) — matches what the user would see after resolution.
+    setRemoteWatchedCount(remoteToEntries(remote).filter((e) => e.status === "watched").length);
     pendingRemoteRef.current = remote;
     pendingLocalRef.current = local;
     setConflictOpen(true);
@@ -180,7 +241,10 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       local = migrateFromV1(userId, devId) ?? createEmptyStore(userId, devId);
     }
 
-    local = syncLegacyKeysToStore(local);
+    // Order: load/migrateV1 → migrateLegacyEntries (sets marker) →
+    // syncLegacyKeysToStore (legacy-aware) → save.
+    local = migrateLegacyEntries(local, LEGACY_MAP);
+    local = syncLegacyKeysToStore(local, LEGACY_MAP);
     saveLocalProgress(local);
     return local;
   }, []);
@@ -197,7 +261,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     const supabase = getSupabaseBrowserClient();
 
     if (mode === "local") {
-      await uploadProgress(supabase, userId, devId, Object.values(local.entries));
+      await fencedUpload(local, supabase, userId, devId, Object.values(local.entries));
     } else if (mode === "remote") {
       const entries = remoteToEntries(remote);
       const updated = { ...local, entries: Object.fromEntries(entries.map((e) => [e.videoId, e])) };
@@ -208,7 +272,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       // "latest" — last-write-wins merge
       const merged = mergeLatest(local, remoteToEntries(remote));
       saveLocalProgress(merged);
-      await uploadProgress(supabase, userId, devId, Object.values(merged.entries));
+      await fencedUpload(merged, supabase, userId, devId, Object.values(merged.entries));
       writeLegacyKeys(Object.values(merged.entries));
       dispatchSyncEvent();
     }
@@ -312,20 +376,20 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
           if (allRemote.length === 0) {
             // No data anywhere — upload local
-            await uploadProgress(supabase, userId, devId, Object.values(local.entries));
+            await fencedUpload(local, supabase, userId, devId, Object.values(local.entries));
           } else if (localCount === 0) {
             // Fresh device — silently adopt merged data from other devices
             const entries = remoteToEntries(allRemote);
             const updated = { ...local, entries: Object.fromEntries(entries.map((e) => [e.videoId, e])) };
             saveLocalProgress(updated);
-            await uploadProgress(supabase, userId, devId, entries);
+            await fencedUpload(updated, supabase, userId, devId, entries);
             writeLegacyKeys(entries);
             dispatchSyncEvent();
           } else {
             // Local has data, other devices also have data — check conflict
             const policy = loadConflictPolicy(userId);
             if (!hasConflict(local, remoteToEntries(allRemote))) {
-              await uploadProgress(supabase, userId, devId, Object.values(local.entries));
+              await fencedUpload(local, supabase, userId, devId, Object.values(local.entries));
             } else if (policy.mode === "ask") {
               openConflictSheet(local, allRemote);
             } else {
@@ -376,7 +440,10 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       const userId = user.id;
       const devId = deviceIdRef.current || getDeviceId();
       const now = new Date().toISOString();
-      const raw = loadLocalProgress(userId, devId) ?? createEmptyStore(userId, devId);
+      const raw0 = loadLocalProgress(userId, devId) ?? createEmptyStore(userId, devId);
+      // Ensure the store is migrated (idempotent) so no write ever persists a
+      // marker-less store and fencedUpload never silently drops the upload.
+      const raw = migrateLegacyEntries(raw0, LEGACY_MAP);
       const existing = raw.entries[videoId];
       const nextCategoryOverride =
         categoryOverride === "auto"
@@ -412,7 +479,9 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
         try {
           const supabase = getSupabaseBrowserClient();
-          await uploadProgress(supabase, userId, devId, Object.values(latest.entries));
+          // Fence: if this store has not been migrated yet, skip — the next
+          // loadSyncedLocalProgress will migrate it and upload then.
+          await fencedUpload(latest, supabase, userId, devId, Object.values(latest.entries));
         } catch (err) {
           console.error("Progress upload error:", err);
         }
@@ -449,11 +518,12 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
           const supabase = getSupabaseBrowserClient();
           const allRemote = await fetchAllDevicesProgress(supabase, userId);
           const raw = loadLocalProgress(userId, devId) ?? createEmptyStore(userId, devId);
-          const local = syncLegacyKeysToStore(raw);
+          const migrated = migrateLegacyEntries(raw, LEGACY_MAP);
+          const local = syncLegacyKeysToStore(migrated, LEGACY_MAP);
           const merged = mergeLatest(local, remoteToEntries(allRemote));
 
           saveLocalProgress(merged);
-          await uploadProgress(supabase, userId, devId, Object.values(merged.entries));
+          await fencedUpload(merged, supabase, userId, devId, Object.values(merged.entries));
           writeLegacyKeys(Object.values(merged.entries));
           dispatchSyncEvent();
         } catch (err) {
@@ -489,7 +559,8 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     try {
       const allRemote = await fetchAllDevicesProgress(supabase, user.id);
       const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
-      const local = syncLegacyKeysToStore(raw);
+      const migrated = migrateLegacyEntries(raw, LEGACY_MAP);
+      const local = syncLegacyKeysToStore(migrated, LEGACY_MAP);
       const beforeSet = new Set(Object.values(local.entries).map((e) => `${e.videoId}:${e.status}`));
 
       let finalEntries: ProgressEntry[];
@@ -503,7 +574,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
         };
         await deleteAllProgress(supabase, user.id);
         saveLocalProgress(updated);
-        await uploadProgress(supabase, user.id, devId, finalEntries);
+        await fencedUpload(updated, supabase, user.id, devId, finalEntries);
         writeLegacyKeys(finalEntries);
       } else if (mode === "remote") {
         finalEntries = remoteToEntries(allRemote);
@@ -512,13 +583,13 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
           entries: Object.fromEntries(finalEntries.map((entry) => [entry.videoId, entry])),
         };
         saveLocalProgress(updated);
-        await uploadProgress(supabase, user.id, devId, finalEntries);
+        await fencedUpload(updated, supabase, user.id, devId, finalEntries);
         writeLegacyKeys(finalEntries);
       } else {
         const merged = mergeLatest(local, remoteToEntries(allRemote));
         finalEntries = Object.values(merged.entries);
         saveLocalProgress(merged);
-        await uploadProgress(supabase, user.id, devId, finalEntries);
+        await fencedUpload(merged, supabase, user.id, devId, finalEntries);
         writeLegacyKeys(finalEntries);
       }
 
@@ -540,8 +611,10 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       let entries: ProgressEntry[];
       if (sourceDeviceId === devId) {
         const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
-        entries = Object.values(syncLegacyKeysToStore(raw).entries);
+        const migrated = migrateLegacyEntries(raw, LEGACY_MAP);
+        entries = Object.values(syncLegacyKeysToStore(migrated, LEGACY_MAP).entries);
       } else {
+        // remoteToEntries expands any legacy ids to content.ids before adopt.
         entries = remoteToEntries(await downloadProgress(supabase, user.id, sourceDeviceId));
       }
 
@@ -553,12 +626,16 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
       await deleteAllProgress(supabase, user.id);
 
+      const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
+      const updated = {
+        ...migrateLegacyEntries(raw, LEGACY_MAP),
+        entries: Object.fromEntries(entries.map((e) => [e.videoId, e])),
+      };
+
       for (const did of knownIds) {
-        await uploadProgress(supabase, user.id, did, entries);
+        await fencedUpload(updated, supabase, user.id, did, entries);
       }
 
-      const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
-      const updated = { ...raw, entries: Object.fromEntries(entries.map((e) => [e.videoId, e])) };
       saveLocalProgress(updated);
       writeLegacyKeys(entries);
       dispatchSyncEvent();
