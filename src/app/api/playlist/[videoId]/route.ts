@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { storage } from "@/lib/playlist";
+import { getRequestPlaylistStorage } from "@/lib/playlist";
 import { CategoryOverrideValue } from "@/lib/storage";
 
 export async function PATCH(
@@ -9,6 +9,7 @@ export async function PATCH(
 ) {
   try {
     const { videoId: contentId } = await params;
+    const storage = await getRequestPlaylistStorage();
 
     let body: { categoryOverride?: CategoryOverrideValue | "auto" } = {};
     try {

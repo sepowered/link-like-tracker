@@ -1,6 +1,8 @@
-import { storage } from "@/lib/playlist";
+import { getRequestPlaylistStorage } from "@/lib/playlist";
 import { notFound } from "next/navigation";
 import EditRequestForm from "./EditRequestForm";
+
+export const dynamic = "force-dynamic";
 
 export default async function EditRequestPage({
   params,
@@ -8,6 +10,7 @@ export default async function EditRequestPage({
   params: Promise<{ videoId: string }>;
 }) {
   const { videoId } = await params;
+  const storage = await getRequestPlaylistStorage();
   const data = await storage.getPlaylist();
 
   let content = null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
@@ -77,6 +77,20 @@ const LIST_VALUE_SUFFIX_STYLE = {
   lineHeight: 1,
 } as const;
 
+type CatalogSource = "json" | "supabase";
+
+type CatalogSourceState = {
+  labEnabled: boolean;
+  defaultSource: CatalogSource;
+  currentSource: CatalogSource;
+  sources: CatalogSource[];
+};
+
+const CATALOG_SOURCE_LABELS: Record<CatalogSource, string> = {
+  json: "JSON",
+  supabase: "Supabase",
+};
+
 export default function SettingsPageContent() {
   const {
     colorScheme,
@@ -96,14 +110,48 @@ export default function SettingsPageContent() {
   const [progressSheetOpen, setProgressSheetOpen] = useState(false);
   const [loginSheetOpen, setLoginSheetOpen] = useState(false);
   const [logoutSheetOpen, setLogoutSheetOpen] = useState(false);
+  const [catalogSourceSheetOpen, setCatalogSourceSheetOpen] = useState(false);
+  const [catalogSourceState, setCatalogSourceState] = useState<CatalogSourceState | null>(null);
+  const [pendingCatalogSource, setPendingCatalogSource] = useState<CatalogSource>("json");
+  const [catalogSourceSaving, setCatalogSourceSaving] = useState(false);
   const [loginConsent, setLoginConsent] = useState(REQUIRED_LOGIN_CONSENT);
   const [loginLoading, setLoginLoading] = useState(false);
   const [pendingCategories, setPendingCategories] = useState<VideoCategory[]>(progressCategories);
   const allLoginConsentChecked = Object.values(loginConsent).every(Boolean);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCatalogSource() {
+      try {
+        const response = await fetch("/api/catalog-source", { cache: "no-store" });
+        if (!response.ok) return;
+        const state = (await response.json()) as CatalogSourceState;
+        if (cancelled) return;
+        setCatalogSourceState(state);
+        setPendingCatalogSource(state.currentSource);
+      } catch (error) {
+        console.error("Failed to load catalog source state", error);
+      }
+    }
+
+    loadCatalogSource();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function handleProgressSheetOpenChange(open: boolean) {
     if (open) setPendingCategories(progressCategories);
     setProgressSheetOpen(open);
+  }
+
+  function handleCatalogSourceSheetOpenChange(open: boolean) {
+    if (open && catalogSourceState) {
+      setPendingCatalogSource(catalogSourceState.currentSource);
+    }
+    setCatalogSourceSheetOpen(open);
   }
 
   function handleLoginSheetOpenChange(open: boolean) {
@@ -154,6 +202,42 @@ export default function SettingsPageContent() {
     });
   }
 
+  async function handleCatalogSourceSave() {
+    if (!catalogSourceState?.labEnabled || catalogSourceSaving) return;
+
+    setCatalogSourceSaving(true);
+
+    try {
+      const response = await fetch("/api/catalog-source", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: pendingCatalogSource }),
+      });
+
+      if (!response.ok) throw new Error("catalog source update failed");
+
+      const nextState = (await response.json()) as CatalogSourceState;
+      setCatalogSourceState(nextState);
+      setCatalogSourceSheetOpen(false);
+      router.refresh();
+      adapter.create({
+        render: () => (
+          <Snackbar
+            variant="positive"
+            message={`카탈로그 읽기 소스를 ${CATALOG_SOURCE_LABELS[pendingCatalogSource]}로 바꿨어요.`}
+          />
+        ),
+      });
+    } catch (error) {
+      console.error("Failed to save catalog source", error);
+      adapter.create({
+        render: () => <Snackbar variant="critical" message="카탈로그 읽기 소스 변경에 실패했어요." />,
+      });
+    } finally {
+      setCatalogSourceSaving(false);
+    }
+  }
+
   const progressLabel =
     progressCategories.length === 0
       ? "전체"
@@ -164,6 +248,9 @@ export default function SettingsPageContent() {
   const colorSchemeLabel =
     colorScheme === "dark" ? "다크" : colorScheme === "light" ? "라이트" : "시스템";
   const languageLabel = language === "jp" ? "日本語" : "한국어";
+  const catalogSourceLabel = catalogSourceState
+    ? CATALOG_SOURCE_LABELS[catalogSourceState.currentSource]
+    : "확인 중";
 
   return (
     <div className="settings-page">
@@ -265,6 +352,30 @@ export default function SettingsPageContent() {
                 <span style={LIST_VALUE_SUFFIX_STYLE}>
                   {progressLabel}
                   <Icon svg={<IconChevronRightLine />} size="16px" />
+                </span>
+              }
+            />
+          </List>
+        </VStack>
+
+        <Divider />
+
+        <VStack>
+          <ListHeader as="h2">실험실</ListHeader>
+          <List>
+            <ListButtonItem
+              title="카탈로그 읽기 소스"
+              detail={
+                catalogSourceState?.labEnabled
+                  ? "Preview/local 검증용이에요. 변경만으로 시청 기록은 쓰지 않아요."
+                  : "운영에서는 기본 소스만 사용해요."
+              }
+              onClick={() => handleCatalogSourceSheetOpenChange(true)}
+              disabled={!catalogSourceState?.labEnabled}
+              suffix={
+                <span style={LIST_VALUE_SUFFIX_STYLE}>
+                  {catalogSourceLabel}
+                  {catalogSourceState?.labEnabled ? <Icon svg={<IconChevronRightLine />} size="16px" /> : null}
                 </span>
               }
             />
@@ -448,6 +559,53 @@ export default function SettingsPageContent() {
               onClick={handleSave}
             >
               설정 저장
+            </ActionButton>
+          </BottomSheetFooter>
+        </BottomSheetContent>
+      </BottomSheetRoot>
+
+      <BottomSheetRoot
+        open={catalogSourceSheetOpen}
+        onOpenChange={handleCatalogSourceSheetOpenChange}
+        closeOnEscape
+        closeOnInteractOutside
+      >
+        <BottomSheetContent
+          title="카탈로그 읽기 소스"
+          description="Preview/local 검증용 설정이에요. 기본값은 JSON이고, 전환만으로 시청 기록을 서버에 쓰지 않아요."
+          showCloseButton
+          style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
+        >
+          <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x4)" }}>
+            <RadioGroup
+              aria-label="카탈로그 읽기 소스"
+              value={pendingCatalogSource}
+              onValueChange={(value) => setPendingCatalogSource(value as CatalogSource)}
+            >
+              <RadioGroupItem
+                value="json"
+                label="JSON — 운영 기본값"
+                tone="neutral"
+                size="large"
+              />
+              <RadioGroupItem
+                value="supabase"
+                label="Supabase — #12 preview 검증"
+                tone="neutral"
+                size="large"
+              />
+            </RadioGroup>
+          </BottomSheetBody>
+          <BottomSheetFooter>
+            <ActionButton
+              variant="neutralSolid"
+              size="large"
+              style={{ width: "100%" }}
+              loading={catalogSourceSaving}
+              disabled={!catalogSourceState?.labEnabled}
+              onClick={handleCatalogSourceSave}
+            >
+              읽기 소스 저장
             </ActionButton>
           </BottomSheetFooter>
         </BottomSheetContent>

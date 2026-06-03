@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { storage } from "@/lib/playlist";
+import { getRequestPlaylistStorage } from "@/lib/playlist";
 
 export async function GET() {
   try {
+    const storage = await getRequestPlaylistStorage();
     const data = await storage.getPlaylist();
     return NextResponse.json(data);
   } catch (error) {
