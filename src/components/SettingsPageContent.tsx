@@ -28,6 +28,7 @@ import {
   BottomSheetFooter,
 } from "@/ui/bottom-sheet";
 import { Checkbox, CheckboxGroup } from "@/ui/checkbox";
+import { Callout } from "@/ui/callout";
 import {
   AlertDialogRoot,
   AlertDialogContent,
@@ -42,6 +43,7 @@ import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
   IconCheckmarkFatFill,
   IconChevronRightLine,
+  IconExclamationmarkCircleFill,
   IconPersonCircleLine,
 } from "@karrotmarket/react-monochrome-icon";
 
@@ -91,6 +93,9 @@ const CATALOG_SOURCE_LABELS: Record<CatalogSource, string> = {
   supabase: "Supabase",
 };
 
+const CATALOG_SOURCE_RISK_ACKNOWLEDGEMENT =
+  "데이터 손실 가능성을 이해했고, 테스트 계정/preview 환경에서만 사용합니다.";
+
 export default function SettingsPageContent() {
   const {
     colorScheme,
@@ -114,6 +119,7 @@ export default function SettingsPageContent() {
   const [catalogSourceState, setCatalogSourceState] = useState<CatalogSourceState | null>(null);
   const [pendingCatalogSource, setPendingCatalogSource] = useState<CatalogSource>("json");
   const [catalogSourceSaving, setCatalogSourceSaving] = useState(false);
+  const [catalogRiskAcknowledged, setCatalogRiskAcknowledged] = useState(false);
   const [loginConsent, setLoginConsent] = useState(REQUIRED_LOGIN_CONSENT);
   const [loginLoading, setLoginLoading] = useState(false);
   const [pendingCategories, setPendingCategories] = useState<VideoCategory[]>(progressCategories);
@@ -150,7 +156,9 @@ export default function SettingsPageContent() {
   function handleCatalogSourceSheetOpenChange(open: boolean) {
     if (open && catalogSourceState) {
       setPendingCatalogSource(catalogSourceState.currentSource);
+      setCatalogRiskAcknowledged(catalogSourceState.currentSource === "json");
     }
+    if (!open) setCatalogRiskAcknowledged(false);
     setCatalogSourceSheetOpen(open);
   }
 
@@ -204,6 +212,13 @@ export default function SettingsPageContent() {
 
   async function handleCatalogSourceSave() {
     if (!catalogSourceState?.labEnabled || catalogSourceSaving) return;
+
+    if (pendingCatalogSource === "supabase" && !catalogRiskAcknowledged) {
+      adapter.create({
+        render: () => <Snackbar variant="critical" message="주의 사항을 확인해야 Supabase 읽기를 켤 수 있어요." />,
+      });
+      return;
+    }
 
     setCatalogSourceSaving(true);
 
@@ -367,7 +382,7 @@ export default function SettingsPageContent() {
               title="카탈로그 읽기 소스"
               detail={
                 catalogSourceState?.labEnabled
-                  ? "Preview/local 검증용이에요. 변경만으로 시청 기록은 쓰지 않아요."
+                  ? "데이터 손실 방지가 아직 완전히 검증되지 않은 실험 기능이에요."
                   : "운영에서는 기본 소스만 사용해요."
               }
               onClick={() => handleCatalogSourceSheetOpenChange(true)}
@@ -572,11 +587,25 @@ export default function SettingsPageContent() {
       >
         <BottomSheetContent
           title="카탈로그 읽기 소스"
-          description="Preview/local 검증용 설정이에요. 기본값은 JSON이고, 전환만으로 시청 기록을 서버에 쓰지 않아요."
+          description="Preview/local 검증용 설정이에요. Supabase 선택은 데이터 손실 방지가 완전히 검증되기 전까지 테스트 계정에서만 사용하세요."
           showCloseButton
           style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
         >
           <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x4)" }}>
+            <Callout
+              tone="critical"
+              title="데이터 손실 미검증 경고"
+              prefixIcon={<IconExclamationmarkCircleFill />}
+              description={
+                <>
+                  이 스위치는 #12 마이그레이션 검증용입니다. catalog 읽기 전환 자체는 시청 기록을
+                  쓰지 않도록 설계됐지만, 로그인/동기화/토글 등 실제 사용 흐름에서 기존 사용자
+                  시청기록 손실이 없다는 점은 아직 충분히 검증되지 않았습니다. Supabase 선택은
+                  테스트 계정과 preview/local 환경에서만 사용하고, 운영 데이터 손실에 대한 보증으로
+                  간주하지 마세요.
+                </>
+              }
+            />
             <RadioGroup
               aria-label="카탈로그 읽기 소스"
               value={pendingCatalogSource}
@@ -595,6 +624,17 @@ export default function SettingsPageContent() {
                 size="large"
               />
             </RadioGroup>
+            {pendingCatalogSource === "supabase" ? (
+              <div className="settings-catalog-risk-ack">
+                <Checkbox
+                  label={CATALOG_SOURCE_RISK_ACKNOWLEDGEMENT}
+                  tone="neutral"
+                  size="large"
+                  checked={catalogRiskAcknowledged}
+                  onCheckedChange={setCatalogRiskAcknowledged}
+                />
+              </div>
+            ) : null}
           </BottomSheetBody>
           <BottomSheetFooter>
             <ActionButton
@@ -602,7 +642,7 @@ export default function SettingsPageContent() {
               size="large"
               style={{ width: "100%" }}
               loading={catalogSourceSaving}
-              disabled={!catalogSourceState?.labEnabled}
+              disabled={!catalogSourceState?.labEnabled || (pendingCatalogSource === "supabase" && !catalogRiskAcknowledged)}
               onClick={handleCatalogSourceSave}
             >
               읽기 소스 저장

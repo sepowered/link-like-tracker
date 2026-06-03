@@ -386,6 +386,11 @@ body {
   margin: 0 0 12px 0;
 }
 
+
+.settings-catalog-risk-ack {
+  margin-top: var(--seed-dimension-x4);
+}
+
 .settings-consent-link {
   color: var(--seed-color-fg-neutral);
   font-weight: 700;
