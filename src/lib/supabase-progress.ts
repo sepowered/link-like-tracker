@@ -1,6 +1,23 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ProgressEntry, ProgressStatus } from "./progress-sync";
 import type { CategoryOverrideValue } from "./storage";
+import { isProgressWriteFrozen } from "./progress-write";
+
+// Single chokepoint for the read-only guard. Returns true when the write must be
+// suppressed (preview points at the production Supabase instance). Warns once so
+// testers see why nothing persisted, without spamming the console.
+let readonlyWarned = false;
+function writeSuppressed(op: string): boolean {
+  if (!isProgressWriteFrozen()) return false;
+  if (!readonlyWarned && typeof console !== "undefined") {
+    readonlyWarned = true;
+    console.warn(
+      `[progress] read-only mode active (NEXT_PUBLIC_PROGRESS_READONLY=enabled): ` +
+        `database writes are suppressed. First blocked write: ${op}.`,
+    );
+  }
+  return true;
+}
 
 export interface RemoteProgressRow {
   video_id: string;
@@ -22,6 +39,7 @@ export async function upsertDevice(
   deviceId: string,
   deviceName?: string,
 ): Promise<void> {
+  if (writeSuppressed("upsertDevice")) return;
   await supabase.from("user_devices").upsert(
     { user_id: userId, device_id: deviceId, device_name: deviceName ?? null, last_seen_at: new Date().toISOString() },
     { onConflict: "user_id,device_id" },
@@ -46,6 +64,7 @@ export async function uploadProgress(
   deviceId: string,
   entries: ProgressEntry[],
 ): Promise<void> {
+  if (writeSuppressed("uploadProgress")) return;
   if (entries.length === 0) return;
   const rows = entries.map((e) => ({
     user_id: userId,
@@ -80,6 +99,7 @@ export async function deleteDeviceProgress(
   userId: string,
   deviceId: string,
 ): Promise<void> {
+  if (writeSuppressed("deleteDeviceProgress")) return;
   const { error: e1 } = await supabase.from("user_progress").delete().eq("user_id", userId).eq("device_id", deviceId);
   if (e1) throw new Error(`deleteDeviceProgress(progress): ${e1.message}`);
   const { error: e2 } = await supabase.from("user_devices").delete().eq("user_id", userId).eq("device_id", deviceId);
@@ -90,6 +110,7 @@ export async function deleteAllProgress(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<void> {
+  if (writeSuppressed("deleteAllProgress")) return;
   const { error } = await supabase.from("user_progress").delete().eq("user_id", userId);
   if (error) throw new Error(`deleteAllProgress: ${error.message}`);
 }
