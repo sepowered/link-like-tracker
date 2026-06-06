@@ -487,7 +487,7 @@ export default function PlaylistView({ initialData }: Props) {
       />
 
       {/* 전체 진행률 */}
-      <PlaylistProgress watched={stats.watched} total={stats.total} />
+      <PlaylistProgress watched={stats.watched} total={stats.total} progressCategories={progressCategories} />
 
       {/* 필터 + 검색 */}
       <FilterBar
