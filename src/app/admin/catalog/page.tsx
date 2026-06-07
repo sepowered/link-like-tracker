@@ -8,6 +8,9 @@ import CatalogClient from "./CatalogClient";
  * 서버 컴포넌트: service_role로 전체 카탈로그(IDs 포함)를 fetch해 CatalogClient에 넘긴다.
  * 공개 페이지의 supabaseStorage.getPlaylist()와 달리 content_sources.id 등 모든 PK를
  * 포함한 adminAction을 사용한다. 변경 후 revalidatePath는 각 액션에서 처리한다.
+ *
+ * 레이아웃: 데이터-툴 풀-블리드. TopBar/툴바/테이블 뷰포트는 CatalogClient가
+ * DataPageShell로 직접 구성한다(이 서버 컴포넌트는 카드/지표행 없이 그대로 렌더).
  */
 export const dynamic = "force-dynamic";
 
@@ -16,36 +19,5 @@ export default async function CatalogPage() {
   await requireAdmin();
   const seasons = await getCatalogAdmin();
 
-  const episodeCount = seasons.reduce((n, s) => n + s.episodes.length, 0);
-  const contentCount = seasons.reduce(
-    (n, s) => n + s.episodes.reduce((m, e) => m + e.contents.length, 0),
-    0,
-  );
-
-  return (
-    <div style={{ maxWidth: "900px" }}>
-      <h1
-        style={{
-          fontSize: "20px",
-          fontWeight: 700,
-          color: "var(--seed-color-fg-neutral)",
-          marginBottom: "4px",
-          letterSpacing: "-0.02em",
-        }}
-      >
-        카탈로그
-      </h1>
-      <p
-        style={{
-          fontSize: "13px",
-          color: "var(--seed-color-fg-neutral-subtle)",
-          marginBottom: "24px",
-        }}
-      >
-        시즌 {seasons.length}개 · 에피소드 {episodeCount}개 · 콘텐츠 {contentCount}개
-      </p>
-
-      <CatalogClient initialSeasons={seasons} />
-    </div>
-  );
+  return <CatalogClient initialSeasons={seasons} />;
 }

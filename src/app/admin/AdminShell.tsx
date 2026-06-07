@@ -52,7 +52,8 @@ export default function AdminShell({ children }: AdminShellProps) {
     <div
       style={{
         display: "flex",
-        minHeight: "100dvh",
+        height: "100dvh",
+        overflow: "hidden",
         backgroundColor: "var(--seed-color-bg-layer-default)",
       }}
     >
@@ -104,6 +105,7 @@ export default function AdminShell({ children }: AdminShellProps) {
           display: "flex",
           flexDirection: "column",
           minWidth: 0,
+          minHeight: 0,
           overflowX: "hidden",
         }}
       >
@@ -158,8 +160,17 @@ export default function AdminShell({ children }: AdminShellProps) {
           </span>
         </div>
 
-        {/* Page content */}
-        <main style={{ flex: 1, padding: "24px" }}>
+        {/* Page content — data-tool: 페이지가 자체 패딩을 갖는 풀-블리드 영역.
+            <main>은 바운디드 높이만 내려주고, 내부 테이블 뷰포트가 스크롤을 맡는다. */}
+        <main
+          style={{
+            flex: 1,
+            minWidth: 0,
+            minHeight: 0,
+            overflow: "hidden",
+            backgroundColor: "var(--seed-color-bg-layer-default)",
+          }}
+        >
           {children}
         </main>
       </div>
