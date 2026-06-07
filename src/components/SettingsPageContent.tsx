@@ -100,8 +100,6 @@ export default function SettingsPageContent() {
   const {
     colorScheme,
     setColorScheme,
-    language,
-    setLanguage,
     progressCategories,
     hidePrivateVideos,
     setProgressCategories,
@@ -111,7 +109,6 @@ export default function SettingsPageContent() {
   const { user, signOut } = useAuth();
   const adapter = useSnackbarAdapter();
   const [themeSheetOpen, setThemeSheetOpen] = useState(false);
-  const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
   const [progressSheetOpen, setProgressSheetOpen] = useState(false);
   const [loginSheetOpen, setLoginSheetOpen] = useState(false);
   const [logoutSheetOpen, setLogoutSheetOpen] = useState(false);
@@ -262,7 +259,6 @@ export default function SettingsPageContent() {
 
   const colorSchemeLabel =
     colorScheme === "dark" ? "다크" : colorScheme === "light" ? "라이트" : "시스템";
-  const languageLabel = language === "jp" ? "日本語" : "한국어";
   const catalogSourceLabel = catalogSourceState
     ? CATALOG_SOURCE_LABELS[catalogSourceState.currentSource]
     : "확인 중";
@@ -272,7 +268,7 @@ export default function SettingsPageContent() {
       <PageHeader title="설정" borderBottom={false} />
 
       <VStack gap="x6">
-        <VStack gap="x3">
+        <VStack>
           <ListHeader as="h2">계정 및 동기화</ListHeader>
           <List>
             {user ? (
@@ -336,15 +332,18 @@ export default function SettingsPageContent() {
                 </span>
               }
             />
+          </List>
+        </VStack>
+
+        <Divider />
+
+        <VStack>
+          <ListHeader as="h2">언어</ListHeader>
+          <List>
             <ListButtonItem
-              title="콘텐츠 제목 언어"
-              onClick={() => setLanguageSheetOpen(true)}
-              suffix={
-                <span style={LIST_VALUE_SUFFIX_STYLE}>
-                  {languageLabel}
-                  <Icon svg={<IconChevronRightLine />} size="16px" />
-                </span>
-              }
+              title="표시 언어"
+              onClick={() => router.push("/settings/language")}
+              suffix={<Icon svg={<IconChevronRightLine />} size="16px" color="fg.neutralSubtle" />}
             />
           </List>
         </VStack>
@@ -419,31 +418,6 @@ export default function SettingsPageContent() {
               <RadioGroupItem value="system" label="시스템 설정 사용" tone="neutral" size="large" />
               <RadioGroupItem value="light" label="라이트" tone="neutral" size="large" />
               <RadioGroupItem value="dark" label="다크" tone="neutral" size="large" />
-            </RadioGroup>
-          </BottomSheetBody>
-        </BottomSheetContent>
-      </BottomSheetRoot>
-
-      <BottomSheetRoot
-        open={languageSheetOpen}
-        onOpenChange={setLanguageSheetOpen}
-        closeOnEscape
-        closeOnInteractOutside
-      >
-        <BottomSheetContent
-          title="콘텐츠 제목 언어"
-          showCloseButton
-          aria-describedby={undefined}
-          style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
-        >
-          <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x6)" }}>
-            <RadioGroup
-              aria-label="콘텐츠 제목 언어"
-              value={language}
-              onValueChange={(v) => setLanguage(v as "ko" | "jp")}
-            >
-              <RadioGroupItem value="ko" label="한국어" tone="neutral" size="large" />
-              <RadioGroupItem value="jp" label="日本語" tone="neutral" size="large" />
             </RadioGroup>
           </BottomSheetBody>
         </BottomSheetContent>
