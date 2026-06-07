@@ -16,15 +16,16 @@ export type { RequestStatus, RequestType, RequestRow };
 /**
  * `requests` 테이블 읽기/상태관리 레포지토리 (service_role).
  *
- * 이 테이블은 프로덕션에 이미 존재하며 repo 마이그레이션에 없다. 절대 재생성하지
- * 않는다. 백오피스는 status만 관리한다. 스키마 실측은 REQUESTS_SCHEMA.md 참고.
+ * 스키마는 007a_requests_content_id.sql / 007b_requests_rls_hardening.sql 가 단일 출처다
+ * (멱등 제자리 강화; 파괴적 재생성은 금지). 요청↔카탈로그 연결(content_id) 포함.
+ * 스키마 상세는 REQUESTS_SCHEMA.md 참고.
  *
  * `import "server-only";` 이므로 클라이언트 번들에 포함될 수 없다. 호출부(서버
  * 액션)는 반드시 requireAdmin()으로 권한을 먼저 확인해야 한다.
  * 타입은 ./requests-types (순수 타입 모듈)에 정의되어 클라이언트에서도 안전하게 사용 가능.
  */
 
-const COLUMNS = "id, created_at, type, video_title, link, request_type, category, generation, description, status";
+const COLUMNS = "id, created_at, type, video_title, link, request_type, category, generation, description, status, content_id";
 
 export interface ListRequestsFilter {
   status?: RequestStatus;

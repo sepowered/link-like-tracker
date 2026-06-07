@@ -1,8 +1,9 @@
 # `requests` 테이블 스키마 (백오피스 참고)
 
-이 테이블은 **프로덕션에 이미 존재**하며 repo의 마이그레이션에 없다. 절대
-`CREATE TABLE` / 재생성하지 말 것. 사용자는 `src/app/actions/requests.ts`를 통해
-INSERT 한다. 백오피스는 **status만** 관리한다(카탈로그 자동 승격 없음).
+> **갱신(2026-06-07):** 이 테이블은 이제 **`007a_requests_content_id.sql` / `007b_requests_rls_hardening.sql`** 가 단일 출처다(멱등 *제자리 강화*). 과거 "마이그레이션에 없음/재생성 금지" 메모는 폐기 — 단, **파괴적 `DROP`/재생성은 여전히 금지**하고 멱등 보강만 한다(`007a/007b`에 DROP 없음).
+> 추가된 것: `content_id`(→`contents.id`, `on delete set null`) 연결, RLS(익명 INSERT-only) + 공개-INSERT 보호 트리거(공개 롤의 `content_id`→null·`status`→'pending' 강등), **D2 편집요청 검증 RPC `submit_edit_request`**(익명이 보낸 `content_id`를 서버 검증 후 보존).
+
+사용자는 `src/app/actions/requests.ts`를 통해 제출한다 — **add = 직접 INSERT**(content_id 없음), **edit = `submit_edit_request` RPC**(content_id 함께, D2). 백오피스는 **status + content_id 연결**을 관리한다(카탈로그 자동 승격 없음).
 
 ## 라이브 스키마 조회 방법
 

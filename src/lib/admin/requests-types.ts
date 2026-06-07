@@ -18,4 +18,5 @@ export interface RequestRow {
   generation: string | null;
   description: string | null;
   status: string | null;
+  content_id: string | null;
 }
