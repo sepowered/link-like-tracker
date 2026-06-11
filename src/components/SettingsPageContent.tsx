@@ -106,7 +106,8 @@ export default function SettingsPageContent() {
     setHidePrivateVideos,
   } = useSettings();
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  // 익명(게스트) 세션은 계정 UI에서 비로그인으로 취급한다 — isMember 사용.
+  const { user, isMember, signOut } = useAuth();
   const adapter = useSnackbarAdapter();
   const [themeSheetOpen, setThemeSheetOpen] = useState(false);
   const [progressSheetOpen, setProgressSheetOpen] = useState(false);
@@ -271,7 +272,7 @@ export default function SettingsPageContent() {
         <VStack>
           <ListHeader as="h2">계정 및 동기화</ListHeader>
           <List>
-            {user ? (
+            {isMember && user ? (
               <>
                 <ListItem
                   title={user.user_metadata?.full_name ?? user.email ?? "연결됨"}

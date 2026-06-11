@@ -357,6 +357,12 @@ export function mergeLatest(
   return merged;
 }
 
+// Conflict = the SAME id has a different status on both sides — the only case
+// where merging must pick a loser. Mere set differences (one side has entries
+// the other lacks) are NOT conflicts: mergeLatest resolves them additively
+// without discarding anything, so callers reconcile silently instead of
+// prompting. (Previously any count mismatch — e.g. one new local mark whose
+// upload hadn't landed yet — popped the conflict sheet.)
 export function hasConflict(
   local: LocalProgressStore,
   remote: RemoteEntry[],
@@ -366,9 +372,25 @@ export function hasConflict(
     if (!localEntry) continue;
     if (localEntry.status !== remoteEntry.status) return true;
   }
-  // Check if local has entries remote doesn't (and vice versa count differs)
-  return (
-    Object.keys(local.entries).length !== remote.length ||
-    remote.some((r) => !local.entries[r.videoId])
-  );
+  return false;
+}
+
+// True when the two sides hold different entry sets/timestamps — i.e. a silent
+// additive reconcile (mergeLatest + upload) would change something. Used by the
+// auto-sync path to know when to persist without prompting.
+export function needsReconcile(
+  local: LocalProgressStore,
+  remote: RemoteEntry[],
+): boolean {
+  for (const remoteEntry of remote) {
+    const localEntry = local.entries[remoteEntry.videoId];
+    if (!localEntry) return true;
+    if (
+      localEntry.status !== remoteEntry.status ||
+      localEntry.updatedAt !== remoteEntry.updatedAt
+    ) {
+      return true;
+    }
+  }
+  return Object.keys(local.entries).length !== remote.length;
 }

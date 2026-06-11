@@ -88,6 +88,7 @@ export default function EditRequestForm({
     setIsSubmitting(true);
     try {
       await submitEditRequest({
+        content_id: content.id,
         video_title: displayTitle,
         request_type: requestType,
         category,

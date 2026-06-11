@@ -448,3 +448,35 @@ body {
     width: 40px;
   }
 }
+
+/* ── 백오피스 관리자 셸 반응형 ────────────────────────────────────────── */
+
+/* lg(≥1024px): 사이드바 표시, 모바일 상단바 숨김 */
+@media (min-width: 1024px) {
+  .admin-sidebar {
+    display: flex;
+  }
+  .admin-mobile-topbar {
+    display: none !important;
+  }
+}
+
+/* md(768–1023px): 사이드바 표시(자동 접힘은 SideNavRoot useEffect가 담당), 모바일 상단바 숨김 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-sidebar {
+    display: flex;
+  }
+  .admin-mobile-topbar {
+    display: none !important;
+  }
+}
+
+/* sm(<768px): 사이드바 숨김, 모바일 상단바 표시 */
+@media (max-width: 767px) {
+  .admin-sidebar {
+    display: none;
+  }
+  .admin-mobile-topbar {
+    display: flex !important;
+  }
+}
