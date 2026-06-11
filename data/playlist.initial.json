@@ -2923,17 +2923,86 @@
           "title_jp": "夢を咲かせる物語",
           "contents": [
             {
-              "id": "B3Wn1z7RA78",
+              "id": "B3Wn1z7RA78_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~6",
+              "part_label": "Part 1",
               "legacy_video_id": "B3Wn1z7RA78",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=B3Wn1z7RA78&t=0s",
-                  "label": "원본",
-                  "timestamp_todo": true
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "B3Wn1z7RA78_p2",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 2",
+              "legacy_video_id": "B3Wn1z7RA78",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=B3Wn1z7RA78&t=975s",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "B3Wn1z7RA78_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "B3Wn1z7RA78",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=B3Wn1z7RA78&t=1905s",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "B3Wn1z7RA78_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "B3Wn1z7RA78",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=B3Wn1z7RA78&t=2680s",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "B3Wn1z7RA78_p5",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 5",
+              "legacy_video_id": "B3Wn1z7RA78",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=B3Wn1z7RA78&t=3458s",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "B3Wn1z7RA78_p6",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 6",
+              "legacy_video_id": "B3Wn1z7RA78",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=B3Wn1z7RA78&t=4241s",
+                  "label": "원본"
                 }
               ]
             },
@@ -3494,32 +3563,128 @@
               ]
             },
             {
-              "id": "nCPY9zQQzqM",
+              "id": "nCPY9zQQzqM_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~5",
+              "part_label": "Part 1",
               "legacy_video_id": "nCPY9zQQzqM",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=nCPY9zQQzqM&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
                 }
               ]
             },
             {
-              "id": "KiZ2rza8Mm4",
+              "id": "nCPY9zQQzqM_p2",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 6~9",
+              "part_label": "Part 2",
+              "legacy_video_id": "nCPY9zQQzqM",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=nCPY9zQQzqM&t=563s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "nCPY9zQQzqM_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "nCPY9zQQzqM",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=nCPY9zQQzqM&t=955s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "nCPY9zQQzqM_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "nCPY9zQQzqM",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=nCPY9zQQzqM&t=1510s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "nCPY9zQQzqM_p5",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 5",
+              "legacy_video_id": "nCPY9zQQzqM",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=nCPY9zQQzqM&t=1962s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "KiZ2rza8Mm4_p6",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 6",
               "legacy_video_id": "KiZ2rza8Mm4",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=KiZ2rza8Mm4&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "KiZ2rza8Mm4_p7",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 7",
+              "legacy_video_id": "KiZ2rza8Mm4",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=KiZ2rza8Mm4&t=385s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "KiZ2rza8Mm4_p8",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 8",
+              "legacy_video_id": "KiZ2rza8Mm4",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=KiZ2rza8Mm4&t=989s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "KiZ2rza8Mm4_p9",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 9",
+              "legacy_video_id": "KiZ2rza8Mm4",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=KiZ2rza8Mm4&t=1515s",
+                  "label": "자막본"
                 }
               ]
             },
@@ -3672,32 +3837,114 @@
           "title_jp": "Dream Match！",
           "contents": [
             {
-              "id": "lLZl7VH9k8o",
+              "id": "lLZl7VH9k8o_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~5",
+              "part_label": "Part 1",
               "legacy_video_id": "lLZl7VH9k8o",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=lLZl7VH9k8o&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
                 }
               ]
             },
             {
-              "id": "tWTffL80fI4",
+              "id": "lLZl7VH9k8o_p2",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 6~8",
+              "part_label": "Part 2",
+              "legacy_video_id": "lLZl7VH9k8o",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=lLZl7VH9k8o&t=801s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "lLZl7VH9k8o_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "lLZl7VH9k8o",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=lLZl7VH9k8o&t=1428s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "lLZl7VH9k8o_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "lLZl7VH9k8o",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=lLZl7VH9k8o&t=2197s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "lLZl7VH9k8o_p5",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 5",
+              "legacy_video_id": "lLZl7VH9k8o",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=lLZl7VH9k8o&t=2848s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "tWTffL80fI4_p6",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 6",
               "legacy_video_id": "tWTffL80fI4",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=tWTffL80fI4&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "tWTffL80fI4_p7",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 7",
+              "legacy_video_id": "tWTffL80fI4",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=tWTffL80fI4&t=613s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "tWTffL80fI4_p8",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 8",
+              "legacy_video_id": "tWTffL80fI4",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=tWTffL80fI4&t=1155s",
+                  "label": "자막본"
                 }
               ]
             }
@@ -3710,32 +3957,114 @@
           "title_jp": "星に憧れて、花は舞う",
           "contents": [
             {
-              "id": "3kOADJ3yzKw",
+              "id": "3kOADJ3yzKw_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~5",
+              "part_label": "Part 1",
               "legacy_video_id": "3kOADJ3yzKw",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=3kOADJ3yzKw&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
                 }
               ]
             },
             {
-              "id": "0nRfO_001xU",
+              "id": "3kOADJ3yzKw_p2",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 6~8",
+              "part_label": "Part 2",
+              "legacy_video_id": "3kOADJ3yzKw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=3kOADJ3yzKw&t=694s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "3kOADJ3yzKw_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "3kOADJ3yzKw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=3kOADJ3yzKw&t=1499s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "3kOADJ3yzKw_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "3kOADJ3yzKw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=3kOADJ3yzKw&t=2213s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "3kOADJ3yzKw_p5",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 5",
+              "legacy_video_id": "3kOADJ3yzKw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=3kOADJ3yzKw&t=2829s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "0nRfO_001xU_p6",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 6",
               "legacy_video_id": "0nRfO_001xU",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=0nRfO_001xU&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "0nRfO_001xU_p7",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 7",
+              "legacy_video_id": "0nRfO_001xU",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=0nRfO_001xU&t=634s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "0nRfO_001xU_p8",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 8",
+              "legacy_video_id": "0nRfO_001xU",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=0nRfO_001xU&t=1523s",
+                  "label": "자막본"
                 }
               ]
             },
@@ -3790,32 +4119,128 @@
           "title_jp": "太陽を目指した背中",
           "contents": [
             {
-              "id": "mQOVFYBlNXw",
+              "id": "mQOVFYBlNXw_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~6",
+              "part_label": "Part 1",
               "legacy_video_id": "mQOVFYBlNXw",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=mQOVFYBlNXw&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
                 }
               ]
             },
             {
-              "id": "mzjd-Vt0i40",
+              "id": "mQOVFYBlNXw_p2",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 7~9",
+              "part_label": "Part 2",
+              "legacy_video_id": "mQOVFYBlNXw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=mQOVFYBlNXw&t=569s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "mQOVFYBlNXw_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "mQOVFYBlNXw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=mQOVFYBlNXw&t=1224s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "mQOVFYBlNXw_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "mQOVFYBlNXw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=mQOVFYBlNXw&t=2023s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "mQOVFYBlNXw_p5",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 5",
+              "legacy_video_id": "mQOVFYBlNXw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=mQOVFYBlNXw&t=2772s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "mQOVFYBlNXw_p6",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 6",
+              "legacy_video_id": "mQOVFYBlNXw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=mQOVFYBlNXw&t=3732s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "mzjd-Vt0i40_p7",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 7",
               "legacy_video_id": "mzjd-Vt0i40",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=mzjd-Vt0i40&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "mzjd-Vt0i40_p8",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 8",
+              "legacy_video_id": "mzjd-Vt0i40",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=mzjd-Vt0i40&t=818s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "mzjd-Vt0i40_p9",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 9",
+              "legacy_video_id": "mzjd-Vt0i40",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=mzjd-Vt0i40&t=1796s",
+                  "label": "자막본"
                 }
               ]
             }
@@ -3828,17 +4253,58 @@
           "title_jp": "眠れる海のお姫様！",
           "contents": [
             {
-              "id": "0N7-M47LafY",
+              "id": "0N7-M47LafY_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~4",
+              "part_label": "Part 1",
               "legacy_video_id": "0N7-M47LafY",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=0N7-M47LafY&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "0N7-M47LafY_p2",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 2",
+              "legacy_video_id": "0N7-M47LafY",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=0N7-M47LafY&t=898s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "0N7-M47LafY_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "0N7-M47LafY",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=0N7-M47LafY&t=1845s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "0N7-M47LafY_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "0N7-M47LafY",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=0N7-M47LafY&t=2557s",
+                  "label": "자막본"
                 }
               ]
             },
@@ -3871,17 +4337,30 @@
               ]
             },
             {
-              "id": "X1fnrf_Y2h8",
+              "id": "X1fnrf_Y2h8_p5",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 5~6",
+              "part_label": "Part 5",
               "legacy_video_id": "X1fnrf_Y2h8",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=X1fnrf_Y2h8&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "X1fnrf_Y2h8_p6",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 6",
+              "legacy_video_id": "X1fnrf_Y2h8",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=X1fnrf_Y2h8&t=790s",
+                  "label": "자막본"
                 }
               ]
             },
@@ -3992,32 +4471,128 @@
           "title_jp": "未来への花",
           "contents": [
             {
-              "id": "qE7KoAvPmqg",
+              "id": "qE7KoAvPmqg_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~4",
+              "part_label": "Part 1",
               "legacy_video_id": "qE7KoAvPmqg",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=qE7KoAvPmqg&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
                 }
               ]
             },
             {
-              "id": "jd-v40Ryu7s",
+              "id": "qE7KoAvPmqg_p2",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 5~9",
+              "part_label": "Part 2",
+              "legacy_video_id": "qE7KoAvPmqg",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=qE7KoAvPmqg&t=671s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "qE7KoAvPmqg_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "qE7KoAvPmqg",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=qE7KoAvPmqg&t=1273s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "qE7KoAvPmqg_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "qE7KoAvPmqg",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=qE7KoAvPmqg&t=1839s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "jd-v40Ryu7s_p5",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 5",
               "legacy_video_id": "jd-v40Ryu7s",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=jd-v40Ryu7s&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "jd-v40Ryu7s_p6",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 6",
+              "legacy_video_id": "jd-v40Ryu7s",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=jd-v40Ryu7s&t=785s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "jd-v40Ryu7s_p7",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 7",
+              "legacy_video_id": "jd-v40Ryu7s",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=jd-v40Ryu7s&t=1374s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "jd-v40Ryu7s_p8",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 8",
+              "legacy_video_id": "jd-v40Ryu7s",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=jd-v40Ryu7s&t=2302s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "jd-v40Ryu7s_p9",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 9",
+              "legacy_video_id": "jd-v40Ryu7s",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=jd-v40Ryu7s&t=2956s",
+                  "label": "자막본"
                 }
               ]
             },
@@ -4086,32 +4661,114 @@
               ]
             },
             {
-              "id": "imsTV6gexag",
+              "id": "imsTV6gexag_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~4",
+              "part_label": "Part 1",
               "legacy_video_id": "imsTV6gexag",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=imsTV6gexag&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
                 }
               ]
             },
             {
-              "id": "EMP7jXEW6hU",
+              "id": "imsTV6gexag_p2",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 5~8",
+              "part_label": "Part 2",
+              "legacy_video_id": "imsTV6gexag",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=imsTV6gexag&t=1065s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "imsTV6gexag_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "imsTV6gexag",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=imsTV6gexag&t=2050s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "imsTV6gexag_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "imsTV6gexag",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=imsTV6gexag&t=2829s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "EMP7jXEW6hU_p5",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 5",
               "legacy_video_id": "EMP7jXEW6hU",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=EMP7jXEW6hU&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "EMP7jXEW6hU_p6",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 6",
+              "legacy_video_id": "EMP7jXEW6hU",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=EMP7jXEW6hU&t=852s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "EMP7jXEW6hU_p7",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 7",
+              "legacy_video_id": "EMP7jXEW6hU",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=EMP7jXEW6hU&t=1743s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "EMP7jXEW6hU_p8",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 8",
+              "legacy_video_id": "EMP7jXEW6hU",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=EMP7jXEW6hU&t=2828s",
+                  "label": "자막본"
                 }
               ]
             },
@@ -4166,17 +4823,72 @@
           "title_jp": "今はまだ遥か幽かな光",
           "contents": [
             {
-              "id": "27pggt3-l6g",
+              "id": "27pggt3-l6g_p1",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1~5",
+              "part_label": "Part 1",
               "legacy_video_id": "27pggt3-l6g",
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=27pggt3-l6g&t=0s",
-                  "label": "자막본",
-                  "timestamp_todo": true
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "27pggt3-l6g_p2",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 2",
+              "legacy_video_id": "27pggt3-l6g",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=27pggt3-l6g&t=503s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "27pggt3-l6g_p3",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 3",
+              "legacy_video_id": "27pggt3-l6g",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=27pggt3-l6g&t=1528s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "27pggt3-l6g_p4",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 4",
+              "legacy_video_id": "27pggt3-l6g",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=27pggt3-l6g&t=2171s",
+                  "label": "자막본"
+                }
+              ]
+            },
+            {
+              "id": "27pggt3-l6g_p5",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "Part 5",
+              "legacy_video_id": "27pggt3-l6g",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=27pggt3-l6g&t=3166s",
+                  "label": "자막본"
                 }
               ]
             },

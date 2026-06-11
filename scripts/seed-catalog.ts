@@ -14,7 +14,7 @@ import { buildLegacyMap } from "@/lib/legacy-map";
 // --- 골든 픽스처 (canonical, ordered) — §0 ground truth ---
 const EXPECTED_SEASONS = 5;
 const EXPECTED_EPISODES = 47;
-const EXPECTED_CONTENTS = 309;
+const EXPECTED_CONTENTS = 361;
 const EXPECTED_DISTINCT_LEGACY = 273;
 const EXPECTED_SPLITS: Record<string, number> = {
   "3_bZr1vzepk": 5,
@@ -25,6 +25,24 @@ const EXPECTED_SPLITS: Record<string, number> = {
   "jodiWtjQf9o": 7,
   "rF1Y5mCuf5M": 5,
   "Ptt3JMom-ac": 7,
+  // 2026-06: 묶음(Part X~Y) story 분할 — blackdetect/silencedetect ×
+  // 스토리채널 챕터 보정 × 타오구피 目次 댓글 교차 검증
+  "B3Wn1z7RA78": 6,
+  "nCPY9zQQzqM": 5,
+  "KiZ2rza8Mm4": 4,
+  "lLZl7VH9k8o": 5,
+  "tWTffL80fI4": 3,
+  "3kOADJ3yzKw": 5,
+  "0nRfO_001xU": 3,
+  "mQOVFYBlNXw": 6,
+  "mzjd-Vt0i40": 3,
+  "0N7-M47LafY": 4,
+  "X1fnrf_Y2h8": 2,
+  "qE7KoAvPmqg": 4,
+  "jd-v40Ryu7s": 5,
+  "imsTV6gexag": 4,
+  "EMP7jXEW6hU": 4,
+  "27pggt3-l6g": 5,
 };
 
 const dryRun = process.argv.includes("--dry-run");
