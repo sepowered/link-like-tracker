@@ -49,6 +49,7 @@ import {
   type RemoteProgressRow,
 } from "@/lib/supabase-progress";
 import { getDeviceLabel } from "@/lib/device-info";
+import { pruneRedundantDevices } from "@/lib/device-prune";
 import {
   ActionButton,
   VStack,
@@ -476,6 +477,18 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
             writeLegacyKeys(Object.values(merged.entries));
             dispatchSyncEvent();
           }
+        }
+
+        // 동기화가 끝난 뒤에만 정리: 오래 미접속이고 기록이 현재 기기 원격
+        // 기록으로 완전히 커버되는 유령 기기를 삭제한다. 고유 데이터가 있는
+        // 기기는 isRowCovered가 걸러 보존하므로 실패해도 데이터 유실은 없다.
+        try {
+          await pruneRedundantDevices(
+            supabase, userId, devId, remoteToEntries,
+            (id) => expandLegacyId(id, LEGACY_MAP),
+          );
+        } catch (err) {
+          console.error("Device prune error:", err);
         }
 
         await doRefreshDevices(userId);

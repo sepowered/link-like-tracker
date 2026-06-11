@@ -23,7 +23,9 @@ import { getAuthCallbackUrl } from "@/lib/auth-redirect-url";
 import {
   fetchDeviceProgressStats,
   type DeviceProgressStats,
+  type DeviceRow,
 } from "@/lib/supabase-progress";
+import { isStaleDevice } from "@/lib/device-prune";
 import playlistData from "../../data/playlist.initial.json";
 
 const videoTitleMap = new Map<string, string>();
@@ -47,6 +49,10 @@ const GOOGLE_LOGO = (
 );
 
 const INITIAL_CONSENT = { privacy: false, overseasTransfer: false, ageOver14: false };
+
+// 오래된 기기 판정 기준 시각. 주 단위 임계값이라 페이지 로드 시각으로 충분하고,
+// 렌더 중 Date.now() 호출(순수성 위반)을 피한다.
+const staleReferenceTime = Date.now();
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
@@ -74,6 +80,7 @@ export default function SyncSettingsPageContent() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [adoptTarget, setAdoptTarget] = useState<{ deviceId: string; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ deviceId: string; name: string } | null>(null);
+  const [showStaleDevices, setShowStaleDevices] = useState(false);
 
   function handleLoginConsentChange(key: keyof typeof INITIAL_CONSENT, checked: boolean) {
     setLoginConsent((prev) => ({ ...prev, [key]: checked }));
@@ -152,6 +159,53 @@ export default function SyncSettingsPageContent() {
         render: () => <Snackbar variant="critical" message="기록을 맞추지 못했어요. 다시 시도해요." />,
       });
     }
+  }
+
+  // 자동 정리(device-prune)가 못 지운 — 고유 데이터가 남아 있는 — 오래된 기기만
+  // 여기 남으므로, 목록에서는 접어 두되 펼쳐서 확인·삭제할 수 있게 한다.
+  const activeDevices = devices.filter(
+    (d) => d.device_id === currentDeviceId || !isStaleDevice(d, staleReferenceTime),
+  );
+  const staleDevices = devices.filter(
+    (d) => d.device_id !== currentDeviceId && isStaleDevice(d, staleReferenceTime),
+  );
+
+  function renderDevice(device: DeviceRow) {
+    const isCurrent = device.device_id === currentDeviceId;
+    const name = getDeviceName(device.device_id, device.device_name);
+
+    return (
+      <ListItem
+        key={device.device_id}
+        alignItems="flex-start"
+        title={isCurrent ? `${name} (현재 기기)` : name}
+        detail={getDetailText(device.device_id)}
+        suffix={
+          <HStack gap="x1">
+            <ActionButton
+              variant="neutralWeak"
+              size="small"
+              disabled={syncing}
+              onClick={() => setAdoptTarget({ deviceId: device.device_id, name })}
+            >
+              이 기기로 맞추기
+            </ActionButton>
+            {!isCurrent && (
+              <ActionButton
+                variant="ghost"
+                size="small"
+                layout="iconOnly"
+                aria-label="기기 삭제"
+                disabled={syncing}
+                onClick={() => setDeleteTarget({ deviceId: device.device_id, name })}
+              >
+                <Icon svg={<IconTrashcanLine />} />
+              </ActionButton>
+            )}
+          </HStack>
+        }
+      />
+    );
   }
 
   async function handleDeleteConfirm() {
@@ -289,43 +343,21 @@ export default function SyncSettingsPageContent() {
                 detail="기록을 동기화하면 이곳에 기기가 표시돼요."
               />
             ) : (
-              devices.map((device) => {
-                const isCurrent = device.device_id === currentDeviceId;
-                const name = getDeviceName(device.device_id, device.device_name);
-
-                return (
-                  <ListItem
-                    key={device.device_id}
-                    alignItems="flex-start"
-                    title={isCurrent ? `${name} (현재 기기)` : name}
-                    detail={getDetailText(device.device_id)}
-                    suffix={
-                      <HStack gap="x1">
-                        <ActionButton
-                          variant="neutralWeak"
-                          size="small"
-                          disabled={syncing}
-                          onClick={() => setAdoptTarget({ deviceId: device.device_id, name })}
-                        >
-                          이 기기로 맞추기
-                        </ActionButton>
-                        {!isCurrent && (
-                          <ActionButton
-                            variant="ghost"
-                            size="small"
-                            layout="iconOnly"
-                            aria-label="기기 삭제"
-                            disabled={syncing}
-                            onClick={() => setDeleteTarget({ deviceId: device.device_id, name })}
-                          >
-                            <Icon svg={<IconTrashcanLine />} />
-                          </ActionButton>
-                        )}
-                      </HStack>
+              <>
+                {activeDevices.map(renderDevice)}
+                {staleDevices.length > 0 && (
+                  <ListButtonItem
+                    title={
+                      showStaleDevices
+                        ? "오래된 기기 숨기기"
+                        : `오래된 기기 ${staleDevices.length}개 보기`
                     }
+                    detail="한동안 접속하지 않은 기기예요."
+                    onClick={() => setShowStaleDevices((prev) => !prev)}
                   />
-                );
-              })
+                )}
+                {showStaleDevices && staleDevices.map(renderDevice)}
+              </>
             )}
           </List>
         </VStack>
