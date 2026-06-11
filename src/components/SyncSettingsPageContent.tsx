@@ -27,9 +27,10 @@ import {
 } from "@/lib/supabase-progress";
 import { isStaleDevice } from "@/lib/device-prune";
 import playlistData from "../../data/playlist.initial.json";
+import type { PlaylistData } from "@/types";
 
 const videoTitleMap = new Map<string, string>();
-for (const season of (playlistData as any).seasons) {
+for (const season of (playlistData as unknown as PlaylistData).seasons) {
   for (const episode of season.episodes) {
     for (const content of episode.contents) {
       const title = content.title_jp ?? content.title_ko ?? content.part_label ?? episode.title_ko ?? "";
@@ -76,8 +77,8 @@ export default function SyncSettingsPageContent() {
   } = useProgressSync();
   const adapter = useSnackbarAdapter();
 
-  const [stats, setStats] = useState<Map<string, DeviceProgressStats>>(new Map());
-  const [statsLoading, setStatsLoading] = useState(false);
+  // null = 아직 못 불러옴(로딩 표시). 재조회 중에는 직전 값을 그대로 보여준다.
+  const [stats, setStats] = useState<Map<string, DeviceProgressStats> | null>(null);
   const [adoptTarget, setAdoptTarget] = useState<{ deviceId: string; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ deviceId: string; name: string } | null>(null);
   const [showStaleDevices, setShowStaleDevices] = useState(false);
@@ -122,12 +123,10 @@ export default function SyncSettingsPageContent() {
 
   useEffect(() => {
     if (!user || devices.length === 0) return;
-    setStatsLoading(true);
     const supabase = getSupabaseBrowserClient();
     fetchDeviceProgressStats(supabase, user.id)
       .then(setStats)
-      .catch(console.error)
-      .finally(() => setStatsLoading(false));
+      .catch(console.error);
   }, [user, devices]);
 
   function getDeviceName(deviceId: string, deviceName: string | null): string {
@@ -135,7 +134,7 @@ export default function SyncSettingsPageContent() {
   }
 
   function getDetailText(deviceId: string): string {
-    if (statsLoading) return "기록을 불러오고 있어요.";
+    if (!stats) return "기록을 불러오고 있어요.";
     const s = stats.get(deviceId);
     const watched = s?.watchedCount ?? 0;
     if (!s || watched === 0) return `0 / ${totalVideos}개 시청 · 아직 시청 기록이 없어요.`;
