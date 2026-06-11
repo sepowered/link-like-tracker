@@ -80,6 +80,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initializing from localStorage on mount; intentional one-time sync
     setSettings(loadSettings());
     try {
       const stored = localStorage.getItem(THEME_KEY);
@@ -96,6 +97,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (!isInitialized || authLoading) return;
 
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting synced user on auth state change; intentional reactive update
       setSyncedUserId(null);
       return;
     }

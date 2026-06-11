@@ -31,6 +31,7 @@ export const Snackbar = forwardRef<HTMLDivElement, SnackbarProps>(
     </SeedSnackbar.Root>
   ),
 );
+Snackbar.displayName = "Snackbar";
 
 export interface SnackbarProviderProps {
   children: React.ReactNode;

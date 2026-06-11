@@ -11,9 +11,8 @@ import { Checkbox, RadioGroup } from "@seed-design/react/primitive";
 import { chip } from "@seed-design/css/recipes/chip";
 import * as React from "react";
 
-// Create a base props interface that doesn't include DOM attributes to avoid conflicts
-export interface ChipBaseProps
-  extends Omit<SeedChip.RootProps, keyof React.ButtonHTMLAttributes<HTMLButtonElement>> {}
+// Create a base props type that doesn't include DOM attributes to avoid conflicts
+export type ChipBaseProps = Omit<SeedChip.RootProps, keyof React.ButtonHTMLAttributes<HTMLButtonElement>>;
 
 export interface ToggleChipProps extends ChipBaseProps, Checkbox.RootProps {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
@@ -47,7 +46,7 @@ export interface ButtonChipProps extends ChipBaseProps, SeedChip.RootProps {}
  */
 export const ButtonChip = SeedChip.Root;
 
-export interface RadioChipRootProps extends RadioGroup.RootProps {}
+export type RadioChipRootProps = RadioGroup.RootProps;
 
 /**
  * @see https://seed-design.io/react/components/chip
@@ -79,28 +78,28 @@ export const RadioChipItem = React.forwardRef<HTMLInputElement, RadioChipItemPro
 );
 RadioChipItem.displayName = "Chip.RadioItem";
 
-export interface ChipLabelProps extends SeedChip.LabelProps {}
+export type ChipLabelProps = SeedChip.LabelProps;
 
 /**
  * @see https://seed-design.io/react/components/chip
  */
 export const ChipLabel = SeedChip.Label;
 
-export interface ChipPrefixIconProps extends SeedChip.PrefixIconProps {}
+export type ChipPrefixIconProps = SeedChip.PrefixIconProps;
 
 /**
  * @see https://seed-design.io/react/components/chip
  */
 export const ChipPrefixIcon = SeedChip.PrefixIcon;
 
-export interface ChipPrefixAvatarProps extends SeedChip.PrefixAvatarProps {}
+export type ChipPrefixAvatarProps = SeedChip.PrefixAvatarProps;
 
 /**
  * @see https://seed-design.io/react/components/chip
  */
 export const ChipPrefixAvatar = SeedChip.PrefixAvatar;
 
-export interface ChipSuffixIconProps extends SeedChip.SuffixIconProps {}
+export type ChipSuffixIconProps = SeedChip.SuffixIconProps;
 
 /**
  * @see https://seed-design.io/react/components/chip

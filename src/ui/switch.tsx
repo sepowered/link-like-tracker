@@ -33,7 +33,7 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
 );
 Switch.displayName = "Switch";
 
-export interface SwitchmarkProps extends SeedSwitch.ControlProps {}
+export type SwitchmarkProps = SeedSwitch.ControlProps;
 
 /**
  * @see https://seed-design.io/react/components/switch

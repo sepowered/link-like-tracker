@@ -62,7 +62,8 @@ export interface CreateSeasonInput {
 }
 
 export async function createSeason(input: CreateSeasonInput) {
-  const { sort_order: _ignored, ...rest } = input;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- sort_order is intentionally excluded from the spread; server recomputes it
+  const { sort_order: _sortOrder, ...rest } = input;
   const sort_order = await nextSortOrder("seasons");
   const { data, error } = await db()
     .from("seasons")
@@ -110,7 +111,8 @@ export interface CreateEpisodeInput {
 }
 
 export async function createEpisode(input: CreateEpisodeInput) {
-  const { sort_order: _ignored, ...rest } = input;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- sort_order is intentionally excluded from the spread; server recomputes it
+  const { sort_order: _sortOrder, ...rest } = input;
   const sort_order = await nextSortOrder("episodes", { col: "season_id", val: input.season_id });
   const { data, error } = await db()
     .from("episodes")
@@ -159,7 +161,8 @@ export interface CreateContentInput {
 }
 
 export async function createContent(input: CreateContentInput) {
-  const { sort_order: _ignored, ...rest } = input;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- sort_order is intentionally excluded from the spread; server recomputes it
+  const { sort_order: _sortOrder, ...rest } = input;
   const sort_order = await nextSortOrder("contents", { col: "episode_id", val: input.episode_id });
   const { data, error } = await db()
     .from("contents")
@@ -212,7 +215,8 @@ export interface CreateContentSourceInput {
 
 export async function createContentSource(input: CreateContentSourceInput) {
   assertHttpUrl(input.url); // 잘못된 스킴(javascript:/data: 등)이 저장되지 않게 막는다
-  const { sort_order: _ignored, ...rest } = input;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- sort_order is intentionally excluded from the spread; server recomputes it
+  const { sort_order: _sortOrder, ...rest } = input;
   const sort_order = await nextSortOrder("content_sources", {
     col: "content_id",
     val: input.content_id,

@@ -15,6 +15,7 @@ export default function ThemeToggle() {
   const [scheme, setScheme] = useState<ColorScheme>("light");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 서버 HTML("light")과 클라이언트 첫 렌더를 일치시킨 뒤 보정하는 하이드레이션 안전 패턴
     setScheme(getCurrentScheme());
   }, []);
 

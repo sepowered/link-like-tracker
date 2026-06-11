@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ActionButton, VStack, Icon, Portal } from "@seed-design/react";
+import { ActionButton, VStack, Portal, Icon } from "@seed-design/react";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { TextField, TextFieldTextarea } from "@/ui/text-field";
 import { FieldButton, FieldButtonValue, FieldButtonPlaceholder } from "@/ui/field-button";
@@ -12,7 +12,6 @@ import {
   BottomSheetRoot,
   BottomSheetContent,
   BottomSheetBody,
-  BottomSheetFooter,
 } from "@/ui/bottom-sheet";
 import Link from "next/link";
 import { IconArrowUpRightLine } from "@karrotmarket/react-monochrome-icon";
@@ -99,8 +98,8 @@ export default function EditRequestForm({
         render: () => <Snackbar message="수정 요청을 보냈어요." />,
       });
       router.back();
-    } catch (error: any) {
-      const errorMessage = error?.message || "요청 제출에 실패했어요. 다시 시도해 주세요.";
+    } catch (error: unknown) {
+      const errorMessage = (error instanceof Error ? error.message : null) || "요청 제출에 실패했어요. 다시 시도해 주세요.";
       adapter.create({
         render: () => <Snackbar message={errorMessage} />,
       });

@@ -49,6 +49,7 @@ export function createSlotRecipeContext<
       const className = classNames[slot as string];
       return jsx(ClassNamesProvider, {
         value: classNames,
+        // eslint-disable-next-line react-hooks/refs -- ref is forwarded to Component, not read during render
         children: jsx(Component, {
           ref,
           ...otherProps,
@@ -56,6 +57,7 @@ export function createSlotRecipeContext<
         }),
       });
     });
+    StyledComponent.displayName = `WithProvider(${String(slot)})`;
     return StyledComponent;
   };
 
@@ -66,28 +68,32 @@ export function createSlotRecipeContext<
     const StyledComponent = forwardRef<T, P>((props, ref) => {
       const classNames = useClassNames();
       const className = classNames[slot as string];
+      // eslint-disable-next-line react-hooks/refs -- ref is forwarded to Component, not read during render
       return jsx(Component, {
         ref,
         ...props,
         className: clsx(className, props.className),
       });
     });
+    StyledComponent.displayName = `WithContext(${String(slot)})`;
     return StyledComponent;
   };
 
   return { ClassNamesProvider, PropsProvider, useClassNames, useProps, withProvider, withContext };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic hook array; callers are typed
 export function createWithStateProps(useContexts: Array<(opts?: any) => { stateProps?: Record<string, unknown> } | null | undefined>) {
   return function withStateProps<T, P extends object>(Component: React.ElementType) {
     const Node = forwardRef<T, P>((props, ref) => {
       const stateProps: Record<string, unknown> = {};
       for (const useCtx of useContexts) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- useContexts array is fixed at creation time; hook call order is stable
         Object.assign(stateProps, useCtx({ strict: true })?.stateProps);
       }
       return jsx(Component, { ref, ...stateProps, ...props });
     });
+    Node.displayName = `WithStateProps`;
     return Node;
   };
 }

@@ -159,7 +159,7 @@ export const RadioSelectBoxItem = React.forwardRef<HTMLInputElement, RadioSelect
 );
 RadioSelectBoxItem.displayName = "RadioSelectBoxItem";
 
-export interface RadioSelectBoxRadiomarkProps extends RadiomarkProps {}
+export type RadioSelectBoxRadiomarkProps = RadiomarkProps;
 
 export const RadioSelectBoxRadiomark = React.forwardRef<
   HTMLDivElement,
@@ -190,7 +190,7 @@ export interface CheckSelectBoxGroupProps
   columns?: SeedCheckSelectBox.GroupProps["columns"];
 }
 
-export const CheckSelectBoxGroup = React.forwardRef<HTMLDivElement, CheckSelectBoxGroupProps>(
+const CheckSelectBoxGroupInner = React.forwardRef<HTMLDivElement, CheckSelectBoxGroupProps>(
   (
     {
       label,
@@ -258,6 +258,8 @@ export const CheckSelectBoxGroup = React.forwardRef<HTMLDivElement, CheckSelectB
     );
   },
 );
+CheckSelectBoxGroupInner.displayName = "CheckSelectBoxGroup";
+export const CheckSelectBoxGroup = CheckSelectBoxGroupInner;
 
 export interface CheckSelectBoxProps extends Omit<SeedCheckSelectBox.RootProps, "children"> {
   label: React.ReactNode;
@@ -298,7 +300,7 @@ export const CheckSelectBox = React.forwardRef<HTMLInputElement, CheckSelectBoxP
 );
 CheckSelectBox.displayName = "CheckSelectBox";
 
-export interface CheckSelectBoxCheckmarkProps extends SeedCheckSelectBox.CheckmarkControlProps {}
+export type CheckSelectBoxCheckmarkProps = SeedCheckSelectBox.CheckmarkControlProps;
 
 export const CheckSelectBoxCheckmark = React.forwardRef<
   HTMLDivElement,

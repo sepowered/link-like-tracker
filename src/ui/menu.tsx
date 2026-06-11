@@ -28,19 +28,14 @@ import { createSlotRecipeContext, createWithStateProps } from "@/lib/seed-design
 
 const {
   ClassNamesProvider,
-  PropsProvider,
-  withProvider: withMenuProvider,
   withContext: withMenuContext,
   useClassNames: useMenuClassNames,
-  useProps: useMenuProps,
 } = createSlotRecipeContext(menu);
 
 const {
   PropsProvider: ItemPropsProvider,
-  withProvider: withItemProvider,
   withContext: withItemContext,
   ClassNamesProvider: ItemClassNamesProvider,
-  useClassNames: useItemClassNames,
   useProps: useItemProps,
 } = createSlotRecipeContext(menuItem);
 
@@ -66,17 +61,17 @@ MenuRoot.displayName = "MenuRoot";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface MenuAnchorProps extends MenuPrimitive.AnchorProps {}
+export type MenuAnchorProps = MenuPrimitive.AnchorProps;
 export const MenuAnchor = MenuPrimitive.Anchor;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface MenuTriggerProps extends MenuPrimitive.TriggerProps {}
+export type MenuTriggerProps = MenuPrimitive.TriggerProps;
 export const MenuTrigger = MenuPrimitive.Trigger;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface MenuPositionerProps extends MenuPositionerPrimitiveProps {}
+export type MenuPositionerProps = MenuPositionerPrimitiveProps;
 
 export const MenuPositioner = React.forwardRef<HTMLDivElement, MenuPositionerProps>(
   ({ className, ...props }, ref) => {
@@ -104,7 +99,7 @@ MenuScrollArea.displayName = "MenuScrollArea";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface MenuContentBaseProps extends MenuContentPrimitiveProps {}
+export type MenuContentBaseProps = MenuContentPrimitiveProps;
 
 export const MenuContentBase = withMenuContext<HTMLDivElement, MenuContentBaseProps>(
   MenuPrimitive.Content,
@@ -132,7 +127,7 @@ MenuContent.displayName = "MenuContent";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface MenuGroupProps extends MenuGroupPrimitiveProps {}
+export type MenuGroupProps = MenuGroupPrimitiveProps;
 export const MenuGroup = withMenuContext<HTMLDivElement, MenuGroupProps>(
   MenuPrimitive.Group,
   "group",
@@ -141,7 +136,7 @@ MenuGroup.displayName = "MenuGroup";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface MenuGroupLabelProps extends MenuGroupLabelPrimitiveProps {}
+export type MenuGroupLabelProps = MenuGroupLabelPrimitiveProps;
 export const MenuGroupLabel = withMenuContext<HTMLDivElement, MenuGroupLabelProps>(
   MenuPrimitive.GroupLabel,
   "groupLabel",

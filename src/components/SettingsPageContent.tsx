@@ -279,6 +279,7 @@ export default function SettingsPageContent() {
                   detail={user.user_metadata?.full_name ? user.email : undefined}
                   prefix={
                     user.user_metadata?.avatar_url
+                      // eslint-disable-next-line @next/next/no-img-element -- external avatar URL from auth provider; remotePatterns config not set up
                       ? <img src={user.user_metadata.avatar_url} alt="" width={32} height={32} style={{ borderRadius: "50%", flexShrink: 0 }} />
                       : <Icon svg={<IconPersonCircleLine />} size="32px" />
                   }

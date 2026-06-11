@@ -66,14 +66,14 @@ export default function PlaylistView({ initialData }: Props) {
 
   const generationGroups = useMemo(() => {
     if (selectedGeneration !== "all") return null;
-    const groups = new Map<string, typeof data.seasons>();
+    const groups = new Map<string, PlaylistData["seasons"]>();
     for (const season of generationSeasons) {
       const gen = season.id.split("-")[0];
       if (!groups.has(gen)) groups.set(gen, []);
       groups.get(gen)!.push(season);
     }
     return [...groups.entries()];
-  }, [generationSeasons, selectedGeneration, data.seasons]);
+  }, [generationSeasons, selectedGeneration]);
 
   const lastScrollY = useRef(0);
   const [scrolled, setScrolled] = useState(false);
@@ -137,7 +137,7 @@ export default function PlaylistView({ initialData }: Props) {
     adapter.create({
       render: () => <Snackbar message={`${user.email} 계정으로 로그인했어요.`} />,
     });
-  }, [authLoading, user]);
+  }, [authLoading, user, adapter]);
 
   // Re-apply progress from localStorage when ProgressSyncProvider resolves a conflict
   useEffect(() => {
@@ -327,6 +327,7 @@ export default function PlaylistView({ initialData }: Props) {
             contents: ep.contents.map((c) => {
               if (c.id !== contentId) return c;
               if (categoryOverride === "auto") {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest 패턴으로 categoryOverride만 떼어내는 의도적 미사용
                 const { categoryOverride: _, ...rest } = c;
                 return rest;
               }

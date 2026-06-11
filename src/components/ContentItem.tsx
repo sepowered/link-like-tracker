@@ -66,8 +66,6 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
   const effectiveCategory =
     content.categoryOverride !== undefined ? content.categoryOverride : (content.type as VideoCategory | null);
   const categoryLabel = getVideoCategoryLabel(effectiveCategory as Exclude<VideoCategory, "all"> | null);
-  const isOverridden = content.categoryOverride !== undefined;
-
   const currentCategoryValue =
     content.categoryOverride === undefined
       ? "auto"
@@ -267,7 +265,6 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
 
 function CategorySheet({
   currentValue,
-  onClose,
   onConfirm,
 }: {
   currentValue: string;

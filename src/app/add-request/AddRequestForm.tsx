@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ActionButton, HStack, VStack, Icon, Portal } from "@seed-design/react";
+import { ActionButton, HStack, VStack, Portal } from "@seed-design/react";
 import { TextField, TextFieldInput, TextFieldTextarea } from "@/ui/text-field";
 import { FieldButton, FieldButtonValue, FieldButtonPlaceholder } from "@/ui/field-button";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
@@ -59,8 +59,8 @@ export default function AddRequestForm({ generations }: { generations: string[] 
         render: () => <Snackbar message="콘텐츠 추가 요청을 보냈어요." />,
       });
       router.back();
-    } catch (error: any) {
-      const errorMessage = error?.message || "요청 제출에 실패했어요. 다시 시도해 주세요.";
+    } catch (error: unknown) {
+      const errorMessage = (error instanceof Error ? error.message : null) || "요청 제출에 실패했어요. 다시 시도해 주세요.";
       adapter.create({
         render: () => <Snackbar message={errorMessage} />,
       });

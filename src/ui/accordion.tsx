@@ -44,7 +44,7 @@ export const Accordion = AccordionRoot;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface AccordionItemProps extends AccordionItemPrimitiveProps {}
+export type AccordionItemProps = AccordionItemPrimitiveProps;
 
 export const AccordionItem = withContext<HTMLDivElement, AccordionItemProps>(
   AccordionItemPrimitive,
@@ -54,7 +54,7 @@ AccordionItem.displayName = "AccordionItem";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface AccordionHeaderProps extends AccordionHeaderPrimitiveProps {}
+export type AccordionHeaderProps = AccordionHeaderPrimitiveProps;
 
 export const AccordionHeader = withContext<HTMLHeadingElement, AccordionHeaderProps>(
   AccordionHeaderPrimitive,
@@ -115,7 +115,7 @@ AccordionSuffixIcon.displayName = "AccordionSuffixIcon";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export interface AccordionContentProps extends AccordionContentPrimitiveProps {}
+export type AccordionContentProps = AccordionContentPrimitiveProps;
 
 export const AccordionContent = withContext<HTMLDivElement, AccordionContentProps>(
   AccordionContentPrimitive,

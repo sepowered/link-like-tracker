@@ -125,6 +125,7 @@ export const supabaseStorage: IPlaylistStorage = {
   },
 
   // watched 상태는 user_progress에서 관리 — 카탈로그 관심사 아님
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- stub implementation; param kept for interface compatibility
   async toggleWatched(_contentId: string): Promise<{ watched: boolean } | null> {
     return { watched: false };
   },

@@ -146,14 +146,14 @@ export const FieldButton = React.forwardRef<HTMLButtonElement, FieldButtonProps>
 );
 FieldButton.displayName = "FieldButton";
 
-export interface FieldButtonValueProps extends SeedFieldButton.ValueProps {}
+export type FieldButtonValueProps = SeedFieldButton.ValueProps;
 
 /**
  * @see https://seed-design.io/react/components/field-button
  */
 export const FieldButtonValue = SeedFieldButton.Value;
 
-export interface FieldButtonPlaceholderProps extends SeedFieldButton.PlaceholderProps {}
+export type FieldButtonPlaceholderProps = SeedFieldButton.PlaceholderProps;
 
 /**
  * @see https://seed-design.io/react/components/field-button
