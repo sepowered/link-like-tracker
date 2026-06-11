@@ -1,178 +1,96 @@
 "use client";
 
 /**
- * AdminShell — client component that renders the SideNavigation shell
- * around admin page content.
+ * AdminShell v2 — 백오피스 셸 (좌측 내비 + 콘텐츠 영역).
  *
- * Responsible for:
- * - Desktop sidebar (SideNavRoot) with collapse toggle
- * - Mobile top bar with drawer trigger
- * - Active-route highlighting via usePathname
+ * 데스크톱: 고정 사이드바. 모바일(≤860px): 상단 가로 스크롤 내비 바.
+ * 활성 표시는 usePathname, 스타일은 admin.css(.adm-nav-*)가 담당한다.
  */
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
-  IconDocumentLine,
+  IconArrowLeftLine,
+  IconDocumentCheckmarkLine,
   IconGridLine,
   IconHouseLine,
-  IconHorizline3VerticalLine,
 } from "@karrotmarket/react-monochrome-icon";
-import {
-  SideNavRoot,
-  SideNavCollapseToggle,
-  SideNavHeader,
-  SideNavContent,
-  SideNavGroup,
-  SideNavItem,
-  SideNavFooter,
-  SideNavDrawer,
-  SideNavDrawerItem,
-} from "@/ui/side-navigation";
 
 const NAV_ITEMS = [
-  {
-    href: "/admin/requests",
-    label: "요청 관리",
-    icon: <IconDocumentLine />,
-  },
-  {
-    href: "/admin/catalog",
-    label: "카탈로그",
-    icon: <IconGridLine />,
-  },
+  { href: "/admin", label: "대시보드", icon: <IconHouseLine />, exact: true },
+  { href: "/admin/requests", label: "요청", icon: <IconDocumentCheckmarkLine /> },
+  { href: "/admin/catalog", label: "카탈로그", icon: <IconGridLine /> },
 ] as const;
 
-interface AdminShellProps {
-  children: React.ReactNode;
+function NavItem({
+  href,
+  label,
+  icon,
+  exact,
+  count,
+}: {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  exact?: boolean;
+  count?: number;
+}) {
+  const pathname = usePathname();
+  const active = exact ? pathname === href : pathname.startsWith(href);
+  return (
+    <Link href={href} className="adm-nav-item" data-active={active}>
+      {icon}
+      {label}
+      {count !== undefined && count > 0 && <span className="adm-nav-count">{count}</span>}
+    </Link>
+  );
 }
 
-export default function AdminShell({ children }: AdminShellProps) {
+export default function AdminShell({
+  pendingCount,
+  children,
+}: {
+  /** 요청 내비 항목 옆에 표시할 대기 건수 (없으면 표시 안 함) */
+  pendingCount?: number;
+  children: React.ReactNode;
+}) {
+  const nav = NAV_ITEMS.map((item) => (
+    <NavItem
+      key={item.href}
+      href={item.href}
+      label={item.label}
+      icon={item.icon}
+      exact={"exact" in item ? item.exact : undefined}
+      count={item.href === "/admin/requests" ? pendingCount : undefined}
+    />
+  ));
+
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100dvh",
-        overflow: "hidden",
-        backgroundColor: "var(--seed-color-bg-layer-default)",
-      }}
-    >
-      {/* Desktop sidebar — hidden on small screens via CSS */}
-      <div className="admin-sidebar">
-        <SideNavRoot>
-          <SideNavCollapseToggle />
-          <SideNavHeader>
-            <Link
-              href="/admin"
-              style={{
-                fontSize: "16px",
-                fontWeight: 700,
-                color: "var(--seed-color-fg-neutral)",
-                textDecoration: "none",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              백오피스
-            </Link>
-          </SideNavHeader>
-          <SideNavContent>
-            <SideNavGroup>
-              {NAV_ITEMS.map((item) => (
-                <SideNavItem
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  icon={item.icon}
-                />
-              ))}
-            </SideNavGroup>
-          </SideNavContent>
-          <SideNavFooter>
-            <SideNavItem
-              href="/"
-              label="앱으로 돌아가기"
-              icon={<IconHouseLine />}
-              exact
-            />
-          </SideNavFooter>
-        </SideNavRoot>
-      </div>
-
-      {/* Main content area */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minWidth: 0,
-          minHeight: 0,
-          overflowX: "hidden",
-        }}
-      >
-        {/* Mobile top bar — visible only on small screens via CSS */}
-        <div
-          className="admin-mobile-topbar"
-          style={{
-            display: "none",
-            alignItems: "center",
-            gap: "8px",
-            padding: "12px 16px",
-            borderBottom: "1px solid var(--seed-color-stroke-neutral-subtle)",
-            backgroundColor: "var(--seed-color-bg-layer-default)",
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-          }}
-        >
-          <SideNavDrawer triggerIcon={<IconHorizline3VerticalLine />} triggerLabel="메뉴">
-            <div style={{ padding: "8px 0" }}>
-              {NAV_ITEMS.map((item) => (
-                <SideNavDrawerItem
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  icon={item.icon}
-                />
-              ))}
-              <div
-                style={{
-                  height: "1px",
-                  backgroundColor: "var(--seed-color-stroke-neutral-subtle)",
-                  margin: "8px 16px",
-                }}
-              />
-              <SideNavDrawerItem
-                href="/"
-                label="앱으로 돌아가기"
-                icon={<IconHouseLine />}
-                exact
-              />
-            </div>
-          </SideNavDrawer>
-          <span
-            style={{
-              fontSize: "17px",
-              fontWeight: 700,
-              color: "var(--seed-color-fg-neutral)",
-            }}
-          >
-            백오피스
-          </span>
+    <div className="adm-root adm-shell">
+      <nav className="adm-nav" aria-label="백오피스 메뉴">
+        <Link href="/admin" className="adm-nav-brand">
+          <strong>백오피스</strong>
+          <span>link-like</span>
+        </Link>
+        {nav}
+        <div className="adm-nav-foot">
+          <Link href="/" className="adm-nav-item">
+            <IconArrowLeftLine />
+            앱으로 돌아가기
+          </Link>
         </div>
+      </nav>
 
-        {/* Page content — data-tool: 페이지가 자체 패딩을 갖는 풀-블리드 영역.
-            <main>은 바운디드 높이만 내려주고, 내부 테이블 뷰포트가 스크롤을 맡는다. */}
-        <main
-          style={{
-            flex: 1,
-            minWidth: 0,
-            minHeight: 0,
-            overflow: "hidden",
-            backgroundColor: "var(--seed-color-bg-layer-default)",
-          }}
-        >
-          {children}
-        </main>
+      <div className="adm-main">
+        <div className="adm-mobile-bar" aria-label="백오피스 메뉴">
+          {nav}
+          <Link href="/" className="adm-nav-item">
+            <IconArrowLeftLine />
+            앱으로
+          </Link>
+        </div>
+        {children}
       </div>
     </div>
   );

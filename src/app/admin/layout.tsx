@@ -1,18 +1,20 @@
 import { redirect } from "next/navigation";
 import { checkAdmin } from "@/lib/admin/require-admin";
+import { countRequestsByStatus } from "@/lib/admin/requests-repo";
 import AdminShell from "./AdminShell";
 import AdminForbiddenPage from "./forbidden/page";
+import { ToastProvider } from "./ui/primitives";
+import "./admin.css";
 
 /**
  * 백오피스 게이트 레이아웃 (서버 컴포넌트).
  *
  * - 미로그인 → OAuth 로그인 페이지(/auth/connect)로 리다이렉트.
  * - 로그인했지만 비관리자 → 403 화면을 인라인으로 렌더(셸 없이).
- * - 관리자 → AdminShell 안에서 children 렌더.
- *
- * 비관리자를 /admin/forbidden 으로 redirect 하지 않는 이유: 그 경로 역시
- * 이 레이아웃의 보호 아래에 있어 redirect가 무한 루프를 만든다. 대신 동일한
- * 403 화면을 인라인으로 렌더해 루프 없이 동일한 UX를 제공한다.
+ *   (/admin/forbidden 으로 redirect 하면 그 경로도 이 레이아웃의 보호 아래라
+ *    무한 루프가 난다 — 인라인 렌더가 의도된 방식.)
+ * - 관리자 → AdminShell(v2) 안에서 children 렌더. 내비의 대기 요청 카운트는
+ *   revalidatePath("/admin/...") 시 함께 갱신된다.
  */
 export default async function AdminLayout({
   children,
@@ -28,5 +30,16 @@ export default async function AdminLayout({
     return <AdminForbiddenPage />;
   }
 
-  return <AdminShell>{children}</AdminShell>;
+  let pendingCount: number | undefined;
+  try {
+    pendingCount = (await countRequestsByStatus()).pending;
+  } catch {
+    pendingCount = undefined; // 카운트 실패가 백오피스 진입을 막으면 안 된다
+  }
+
+  return (
+    <ToastProvider>
+      <AdminShell pendingCount={pendingCount}>{children}</AdminShell>
+    </ToastProvider>
+  );
 }

@@ -89,3 +89,47 @@ export async function updateRequestStatus(id: string, status: RequestStatus): Pr
   if (error) throw new Error(`[requests-repo:updateRequestStatus] ${error.message}`);
   return data;
 }
+
+/**
+ * 요청 처리(resolve): 카탈로그 연결 + 상태를 한 번에 갱신한다.
+ * add 요청 승격(새 콘텐츠 생성 후 연결+완료), edit 요청 반영(수정 후 완료)에 쓴다.
+ * content_id는 호출부(서버 액션)가 콘텐츠 생성/수정 성공을 확인한 뒤 넘겨야 한다.
+ */
+export async function resolveRequest(
+  id: string,
+  patch: { status: RequestStatus; content_id?: string | null },
+): Promise<RequestRow> {
+  if (!isValidRequestStatus(patch.status)) {
+    throw new Error(`[requests-repo:resolveRequest] invalid status "${patch.status}"`);
+  }
+
+  const update: { status: RequestStatus; content_id?: string | null } = { status: patch.status };
+  if (patch.content_id !== undefined) update.content_id = patch.content_id;
+
+  const { data, error } = await getAdminClient()
+    .from("requests")
+    .update(update)
+    .eq("id", id)
+    .select(COLUMNS)
+    .single<RequestRow>();
+
+  if (error) throw new Error(`[requests-repo:resolveRequest] ${error.message}`);
+  return data;
+}
+
+/** 상태별 건수 — 대시보드/인박스 탭 카운트용. */
+export async function countRequestsByStatus(): Promise<Record<RequestStatus, number>> {
+  const supabase = getAdminClient();
+  const counts = { pending: 0, approved: 0, rejected: 0, done: 0 } as Record<RequestStatus, number>;
+
+  const { data, error } = await supabase
+    .from("requests")
+    .select("status")
+    .returns<{ status: string | null }[]>();
+  if (error) throw new Error(`[requests-repo:countRequestsByStatus] ${error.message}`);
+
+  for (const row of data ?? []) {
+    if (row.status && isValidRequestStatus(row.status)) counts[row.status]++;
+  }
+  return counts;
+}
