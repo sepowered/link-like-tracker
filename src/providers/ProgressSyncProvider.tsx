@@ -22,6 +22,7 @@ import {
   migrateFromV1,
   migrateLegacyEntries,
   saveConflictPolicy,
+  needsReconcile,
   saveLocalProgress,
   syncLegacyKeysToStore,
   type ConflictPolicyMode,
@@ -30,6 +31,8 @@ import {
   type ProgressStatus,
 } from "@/lib/progress-sync";
 import { buildLegacyMap, expandLegacyId } from "@/lib/legacy-map";
+import { ensureLegacyBackup } from "@/lib/legacy-backup";
+import { ensureAnonymousSession } from "@/lib/anon-auth";
 import type { PlaylistData } from "@/types";
 import playlistInitial from "../../data/playlist.initial.json";
 import type { CategoryOverrideValue } from "@/lib/storage";
@@ -37,6 +40,7 @@ import {
   deleteDeviceProgress,
   downloadProgress,
   deleteAllProgress,
+  deleteOtherDevicesProgress,
   fetchAllDevicesProgress,
   fetchDevices,
   uploadProgress,
@@ -77,15 +81,20 @@ export function dispatchSyncEvent() {
 // Upload fence (§4.4b): never upload a store whose legacy→content.id migration
 // has not completed. A not-yet-migrated store may still hold legacy ids; the
 // next loadSyncedLocalProgress will migrate it and upload then.
+//
+// Returns whether the upload actually ran. 호출부에서 '업로드 확인 후 삭제'
+// 같은 파괴적 후속 작업을 게이트하는 데 쓴다 — 펜스로 조용히 건너뛴 업로드를
+// 성공으로 착각하고 원격을 지우면 안 된다(하드 제약).
 async function fencedUpload(
   store: LocalProgressStore,
   supabase: ReturnType<typeof getSupabaseBrowserClient>,
   userId: string,
   devId: string,
   entries: ProgressEntry[],
-): Promise<void> {
-  if (store.migratedSchema !== CURRENT_MIGRATION) return;
+): Promise<boolean> {
+  if (store.migratedSchema !== CURRENT_MIGRATION) return false;
   await uploadProgress(supabase, userId, devId, entries);
+  return true;
 }
 
 // ── Context ──────────────────────────────────────────────────────────────────
@@ -105,6 +114,13 @@ interface ProgressSyncContextType {
   ) => Promise<void>;
   resetConflictPolicy: () => void;
   refreshDevices: () => Promise<void>;
+  /**
+   * 비로그인 유저의 새 시청 기록을 Supabase(content.id 방식)로도 저장하기 위한
+   * 진입점. localStorage 저장이 끝난 '뒤에' 호출해야 한다 — 익명 세션 생성이
+   * 실패해도 기록은 이미 로컬에 안전하다(legacy 폴백). 성공하면
+   * onAuthStateChange → 메인 동기화가 레거시 키를 흡수해 업로드한다.
+   */
+  requestAnonymousSync: () => void;
 }
 
 const ProgressSyncContext = createContext<ProgressSyncContextType>({
@@ -118,6 +134,7 @@ const ProgressSyncContext = createContext<ProgressSyncContextType>({
   saveVideoProgress: async () => {},
   resetConflictPolicy: () => {},
   refreshDevices: async () => {},
+  requestAnonymousSync: () => {},
 });
 
 export function useProgressSync() {
@@ -169,11 +186,35 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
   // ── Legacy key helpers ────────────────────────────────────────────────────
 
+  // 미러 재작성은 비파괴여야 한다(하드 제약): 카탈로그가 모르는(unknown) id가
+  // 기존 레거시 키에 있으면 — 카탈로그에서 삭제됐거나 아주 오래된 데이터 —
+  // entries에 없어도 버리지 않고 그대로 보존한다. 원본은 ensureLegacyBackup이
+  // 이미 떠 둔 상태지만, 미러 자체도 잃지 않는 편이 안전하다.
   function writeLegacyKeys(entries: ProgressEntry[]) {
+    ensureLegacyBackup();
     const watchedIds = entries.filter((e) => e.status === "watched").map((e) => e.videoId);
     const overrides: Record<string, string | null> = {};
     for (const e of entries) {
       if (e.categoryOverride !== undefined) overrides[e.videoId] = e.categoryOverride ?? null;
+    }
+    try {
+      const watchedSet = new Set(watchedIds);
+      const prevWatched: string[] = JSON.parse(localStorage.getItem("llt-watched") ?? "[]");
+      for (const id of prevWatched) {
+        if (expandLegacyId(id, LEGACY_MAP).length === 0 && !watchedSet.has(id)) {
+          watchedIds.push(id);
+        }
+      }
+      const prevOverrides: Record<string, string | null> = JSON.parse(
+        localStorage.getItem("llt-overrides") ?? "{}",
+      );
+      for (const [id, value] of Object.entries(prevOverrides)) {
+        if (expandLegacyId(id, LEGACY_MAP).length === 0 && !(id in overrides)) {
+          overrides[id] = value;
+        }
+      }
+    } catch {
+      // 기존 키가 손상돼 파싱이 안 되면 보존할 수 없지만, 원본은 백업에 남아 있다.
     }
     localStorage.setItem("llt-watched", JSON.stringify(watchedIds));
     localStorage.setItem("llt-overrides", JSON.stringify(overrides));
@@ -181,9 +222,13 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
 
   // Legacy-AWARE remote ingestion choke point (§4.5). Each remote row's
   // video_id is expanded through expandLegacyId: a legacy split id emits one
-  // entry per content.id (carrying the row's status/override/updated_at);
-  // status-union (watched wins, max updated_at) when two rows resolve to the
-  // same content.id. Unknown ids are kept 1:1 so nothing is dropped.
+  // entry per content.id (carrying the row's status/override/updated_at).
+  // Two rows resolving to the same content.id (frozen legacy parent row +
+  // post-migration content.id row) are settled by LAST-WRITE-WINS, with
+  // watched preferred on an exact timestamp tie (migration-time safety).
+  // NOT watched-union: a frozen legacy "watched" row would otherwise override
+  // a newer deliberate un-watch forever (resurrect + pseudo-conflict loop).
+  // Unknown ids are kept 1:1 so nothing is dropped.
   function remoteToEntries(remote: RemoteProgressRow[]): ProgressEntry[] {
     const byId = new Map<string, ProgressEntry>();
 
@@ -193,17 +238,24 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
         byId.set(entry.videoId, entry);
         return;
       }
-      const status: ProgressStatus =
-        existing.status === "watched" || entry.status === "watched"
-          ? "watched"
-          : "unwatched";
-      const updatedAt =
-        existing.updatedAt >= entry.updatedAt ? existing.updatedAt : entry.updatedAt;
+      let winner: ProgressEntry;
+      let loser: ProgressEntry;
+      if (existing.updatedAt === entry.updatedAt) {
+        // tie → watched 쪽 보존(하드 제약: 의심스러우면 시청 기록 유지)
+        winner = existing.status === "watched" ? existing : entry;
+        loser = winner === existing ? entry : existing;
+      } else if (existing.updatedAt > entry.updatedAt) {
+        winner = existing;
+        loser = entry;
+      } else {
+        winner = entry;
+        loser = existing;
+      }
       byId.set(entry.videoId, {
         videoId: entry.videoId,
-        status,
-        categoryOverride: entry.categoryOverride ?? existing.categoryOverride,
-        updatedAt,
+        status: winner.status,
+        categoryOverride: winner.categoryOverride ?? loser.categoryOverride,
+        updatedAt: winner.updatedAt,
       });
     };
 
@@ -235,6 +287,9 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const loadSyncedLocalProgress = useCallback((userId: string, devId: string) => {
+    // 마이그레이션/미러 재작성이 일어나기 전에 레거시 원본을 불변 백업해 둔다.
+    ensureLegacyBackup();
+
     let local = loadLocalProgress(userId, devId);
 
     if (!local) {
@@ -387,25 +442,41 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
             dispatchSyncEvent();
           } else {
             // Local has data, other devices also have data — check conflict
+            const remoteEntries = remoteToEntries(allRemote);
             const policy = loadConflictPolicy(userId);
-            if (!hasConflict(local, remoteToEntries(allRemote))) {
-              await fencedUpload(local, supabase, userId, devId, Object.values(local.entries));
+            if (!hasConflict(local, remoteEntries)) {
+              // 진짜 충돌(같은 id의 status 불일치) 없음 — 어느 쪽도 버리지 않는
+              // 합집합 병합 후 업로드. 프롬프트 없이 조용히 양방향 동기화.
+              const merged = mergeLatest(local, remoteEntries);
+              saveLocalProgress(merged);
+              await fencedUpload(merged, supabase, userId, devId, Object.values(merged.entries));
+              writeLegacyKeys(Object.values(merged.entries));
+              dispatchSyncEvent();
             } else if (policy.mode === "ask") {
               openConflictSheet(local, allRemote);
             } else {
               await applyResolution(policy.mode, userId, devId, local, allRemote);
             }
           }
-        } else if (hasConflict(local, remoteToEntries(remote))) {
-          // Same device has diverged local vs remote
-          const policy = loadConflictPolicy(userId);
-          if (policy.mode === "ask") {
-            openConflictSheet(local, remote);
-          } else {
-            await applyResolution(policy.mode, userId, devId, local, remote);
+        } else {
+          const remoteEntries = remoteToEntries(remote);
+          if (hasConflict(local, remoteEntries)) {
+            // Same device has diverged local vs remote (status mismatch)
+            const policy = loadConflictPolicy(userId);
+            if (policy.mode === "ask") {
+              openConflictSheet(local, remote);
+            } else {
+              await applyResolution(policy.mode, userId, devId, local, remote);
+            }
+          } else if (needsReconcile(local, remoteEntries)) {
+            // 불일치는 아니지만 양쪽 집합이 다름(예: 업로드 누락분) — 조용히 병합.
+            const merged = mergeLatest(local, remoteEntries);
+            saveLocalProgress(merged);
+            await fencedUpload(merged, supabase, userId, devId, Object.values(merged.entries));
+            writeLegacyKeys(Object.values(merged.entries));
+            dispatchSyncEvent();
           }
         }
-        // No conflict — already in sync
 
         await doRefreshDevices(userId);
       } catch (err) {
@@ -520,8 +591,16 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
           const raw = loadLocalProgress(userId, devId) ?? createEmptyStore(userId, devId);
           const migrated = migrateLegacyEntries(raw, LEGACY_MAP);
           const local = syncLegacyKeysToStore(migrated, LEGACY_MAP);
-          const merged = mergeLatest(local, remoteToEntries(allRemote));
+          const remoteEntries = remoteToEntries(allRemote);
 
+          // 달라진 게 없으면 업로드/미러 재작성/이벤트를 생략 — 포커스 복귀마다
+          // 전체 upsert가 나가 공유 DB에 불필요한 쓰기 트래픽을 만들지 않도록.
+          if (!needsReconcile(local, remoteEntries)) {
+            saveLocalProgress(local);
+            return;
+          }
+
+          const merged = mergeLatest(local, remoteEntries);
           saveLocalProgress(merged);
           await fencedUpload(merged, supabase, userId, devId, Object.values(merged.entries));
           writeLegacyKeys(Object.values(merged.entries));
@@ -572,9 +651,12 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
           ...local,
           entries: Object.fromEntries(finalEntries.map((entry) => [entry.videoId, entry])),
         };
-        await deleteAllProgress(supabase, user.id);
+        // 순서가 중요: 업로드가 '실제로 실행되고 성공한 뒤'에만 다른 기기 행을
+        // 지운다. (예전: 전체 삭제 → 업로드. 업로드가 실패하면 원격이 통째로
+        // 사라졌다.) 펜스로 업로드가 건너뛰어진 경우에도 삭제하지 않는다.
         saveLocalProgress(updated);
-        await fencedUpload(updated, supabase, user.id, devId, finalEntries);
+        const uploaded = await fencedUpload(updated, supabase, user.id, devId, finalEntries);
+        if (uploaded) await deleteOtherDevicesProgress(supabase, user.id, devId);
         writeLegacyKeys(finalEntries);
       } else if (mode === "remote") {
         finalEntries = remoteToEntries(allRemote);
@@ -624,13 +706,20 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       const freshDevices = await fetchDevices(supabase, user.id);
       const knownIds = new Set([...freshDevices.map((d) => d.device_id), devId]);
 
-      await deleteAllProgress(supabase, user.id);
-
       const raw = loadLocalProgress(user.id, devId) ?? createEmptyStore(user.id, devId);
       const updated = {
         ...migrateLegacyEntries(raw, LEGACY_MAP),
         entries: Object.fromEntries(entries.map((e) => [e.videoId, e])),
       };
+
+      // 쓰기 가능 여부를 현재 기기 업로드로 먼저 검증한 뒤에 삭제한다.
+      // (예전: 전체 삭제 → 업로드. 삭제 직후 업로드가 실패하면 원격 전체 유실.)
+      // 펜스로 업로드가 건너뛰어졌다면 삭제 자체를 중단한다(하드 제약).
+      const probeUploaded = await fencedUpload(updated, supabase, user.id, devId, entries);
+      if (!probeUploaded) {
+        throw new Error("adoptDeviceProgress: 업로드 펜스가 닫혀 있어 원격 보호를 위해 중단");
+      }
+      await deleteAllProgress(supabase, user.id);
 
       for (const did of knownIds) {
         await fencedUpload(updated, supabase, user.id, did, entries);
@@ -649,6 +738,21 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
     saveConflictPolicy(user.id, { mode: "ask", updatedAt: "" });
   }, [user]);
 
+  const requestAnonymousSync = useCallback(() => {
+    if (user) return; // 이미 세션이 있으면 일반 경로(saveVideoProgress)가 처리
+    ensureLegacyBackup(); // 익명 동기화가 레거시 키를 만지기 전에 원본 보존
+    void ensureAnonymousSession(getSupabaseBrowserClient());
+    // 성공 시 onAuthStateChange가 user를 채우고, 메인 동기화 effect가
+    // migrateFromV1/syncLegacyKeysToStore 경로로 현재 로컬 기록을 흡수해
+    // content.id 방식으로 업로드한다. 실패 시 아무 일도 안 함(로컬 저장 유지).
+    //
+    // 익명 → 정식 로그인 전환 시 데이터 경로: 모든 기록은 레거시 키 미러
+    // (llt-watched/llt-overrides)에도 항상 남으므로, 나중에 OAuth 로그인하면
+    // 회원 uid의 스토어가 migrateFromV1/syncLegacyKeysToStore로 같은 기록을
+    // 흡수해 회원 계정으로 업로드된다 — 기기에 한정해 데이터가 따라간다.
+    // 익명 uid 밑에 남은 원격 행은 고아가 되지만 유실은 아니다(정리는 운영 작업).
+  }, [user]);
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -663,6 +767,7 @@ export function ProgressSyncProvider({ children }: { children: React.ReactNode }
       saveVideoProgress,
       resetConflictPolicy,
       refreshDevices,
+      requestAnonymousSync,
     }}>
       {children}
 

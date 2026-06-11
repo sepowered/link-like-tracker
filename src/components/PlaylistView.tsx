@@ -11,6 +11,8 @@ import PlaylistProgress from "./PlaylistProgress";
 import AppBar from "./AppBar";
 import { useAuth } from "@/providers/AuthProvider";
 import { SYNC_EVENT, useProgressSync } from "@/providers/ProgressSyncProvider";
+import { ensureLegacyBackup } from "@/lib/legacy-backup";
+import type { CategoryOverrideValue } from "@/lib/storage";
 import { ActionButton, Icon, PullToRefresh, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import { ProgressCircle } from "@/ui/progress-circle";
 import { MenuRoot, MenuTrigger, MenuContent, MenuItem } from "@/ui/menu";
@@ -34,7 +36,7 @@ interface Props {
 
 export default function PlaylistView({ initialData }: Props) {
   const { user, loading: authLoading } = useAuth();
-  const { saveVideoProgress, mergeAllDevices, refreshDevices } = useProgressSync();
+  const { saveVideoProgress, mergeAllDevices, refreshDevices, requestAnonymousSync } = useProgressSync();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const adapter = useSnackbarAdapter();
   const sessionSnackbarShown = useRef(false);
@@ -85,6 +87,8 @@ export default function PlaylistView({ initialData }: Props) {
   // Load from localStorage on mount
   useEffect(() => {
     try {
+      // 어떤 코드 경로가 레거시 키를 재작성하기 전에 원본을 불변 백업해 둔다.
+      ensureLegacyBackup();
       const watchedIdsRaw = localStorage.getItem(STORAGE_KEY_WATCHED);
       const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
       const filtersRaw = localStorage.getItem(STORAGE_KEY_FILTERS);
@@ -105,7 +109,7 @@ export default function PlaylistView({ initialData }: Props) {
               return {
                 ...c,
                 watched: isWatched || c.watched,
-                ...(overrideVal !== undefined ? { categoryOverride: overrideVal as any } : {}),
+                ...(overrideVal !== undefined ? { categoryOverride: overrideVal as CategoryOverrideValue } : {}),
               };
             }),
           })),
@@ -152,9 +156,9 @@ export default function PlaylistView({ initialData }: Props) {
                 ...c,
                 watched: watchedIds.includes(c.id) || watchedIds.includes(c.legacy_video_id),
                 ...(overrides[c.id] !== undefined
-                  ? { categoryOverride: overrides[c.id] as any }
+                  ? { categoryOverride: overrides[c.id] as CategoryOverrideValue }
                   : overrides[c.legacy_video_id] !== undefined
-                    ? { categoryOverride: overrides[c.legacy_video_id] as any }
+                    ? { categoryOverride: overrides[c.legacy_video_id] as CategoryOverrideValue }
                     : {}),
               })),
             })),
@@ -198,13 +202,36 @@ export default function PlaylistView({ initialData }: Props) {
     return () => el.removeEventListener("scroll", handleScroll);
   }, [isInitialized]);
 
+  // 비파괴 재작성(하드 제약): 현재 카탈로그가 모르는 id(삭제된 콘텐츠, 아주 오래된
+  // 데이터)는 기존 키에서 그대로 보존한다. 카탈로그가 아는 id만 현재 화면 상태로
+  // 다시 쓴다. 원본은 ensureLegacyBackup이 이미 별도 키에 떠 둔 상태.
   const saveToLocalStorage = (nextData: PlaylistData) => {
+    ensureLegacyBackup();
     const allContents = nextData.seasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
+    const knownIds = new Set(allContents.flatMap((c) => [c.id, c.legacy_video_id]));
 
-    const watchedIds = allContents.filter((c) => c.watched).map((c) => c.id);
+    let preservedWatched: string[] = [];
+    let preservedOverrides: Record<string, string | null> = {};
+    try {
+      const prevWatched: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_WATCHED) ?? "[]");
+      preservedWatched = prevWatched.filter((id) => !knownIds.has(id));
+      const prevOverrides: Record<string, string | null> = JSON.parse(
+        localStorage.getItem(STORAGE_KEY_OVERRIDES) ?? "{}",
+      );
+      preservedOverrides = Object.fromEntries(
+        Object.entries(prevOverrides).filter(([id]) => !knownIds.has(id)),
+      );
+    } catch {
+      // 기존 키가 손상돼 있으면 보존할 수 없지만, 원본은 백업 키에 남아 있다.
+    }
+
+    const watchedIds = [
+      ...allContents.filter((c) => c.watched).map((c) => c.id),
+      ...preservedWatched,
+    ];
     localStorage.setItem(STORAGE_KEY_WATCHED, JSON.stringify(watchedIds));
 
-    const overrides: Record<string, any> = {};
+    const overrides: Record<string, string | null> = { ...preservedOverrides };
     allContents.forEach((c) => {
       if (c.categoryOverride !== undefined) overrides[c.id] = c.categoryOverride;
     });
@@ -274,7 +301,13 @@ export default function PlaylistView({ initialData }: Props) {
       return next;
     });
 
-    if (user) await saveVideoProgress(contentId, newStatus);
+    if (user) {
+      await saveVideoProgress(contentId, newStatus);
+    } else {
+      // 로컬 저장이 끝난 뒤 익명 세션을 만들어 Supabase(content.id)로도 저장.
+      // 실패해도 기록은 이미 localStorage에 있다(legacy 폴백).
+      requestAnonymousSync();
+    }
   }
 
   async function handleUpdateCategory(
@@ -306,7 +339,11 @@ export default function PlaylistView({ initialData }: Props) {
       return next;
     });
 
-    if (user) await saveVideoProgress(contentId, currentStatus, categoryOverride);
+    if (user) {
+      await saveVideoProgress(contentId, currentStatus, categoryOverride);
+    } else {
+      requestAnonymousSync();
+    }
   }
 
   async function handlePtrRefresh() {

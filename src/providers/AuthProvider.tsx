@@ -7,6 +7,8 @@ import { getSupabaseBrowserClient } from "@/lib/supabase";
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  /** 익명(게스트) 세션이 아닌 실제 로그인 회원일 때만 true. 계정 UI 게이팅에 사용. */
+  isMember: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -14,6 +16,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
+  isMember: false,
   loading: true,
   signOut: async () => {},
 });
@@ -70,8 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   }
 
+  const isMember = !!user && !user.is_anonymous;
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, isMember, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

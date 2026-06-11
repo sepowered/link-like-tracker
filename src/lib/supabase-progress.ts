@@ -106,6 +106,23 @@ export async function deleteDeviceProgress(
   if (e2) throw new Error(`deleteDeviceProgress(devices): ${e2.message}`);
 }
 
+// "이 기기 기록으로 맞추기"용: 현재 기기를 제외한 다른 기기들의 진행 행만 지운다.
+// 호출부는 반드시 현재 기기 업로드가 '성공한 뒤'에 이 함수를 불러야 한다 —
+// 업로드 실패 시 아무것도 지워지지 않아 원격 데이터가 보존된다(하드 제약).
+export async function deleteOtherDevicesProgress(
+  supabase: SupabaseClient,
+  userId: string,
+  keepDeviceId: string,
+): Promise<void> {
+  if (writeSuppressed("deleteOtherDevicesProgress")) return;
+  const { error } = await supabase
+    .from("user_progress")
+    .delete()
+    .eq("user_id", userId)
+    .neq("device_id", keepDeviceId);
+  if (error) throw new Error(`deleteOtherDevicesProgress: ${error.message}`);
+}
+
 export async function deleteAllProgress(
   supabase: SupabaseClient,
   userId: string,

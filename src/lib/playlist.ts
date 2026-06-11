@@ -10,8 +10,31 @@ import {
   type CatalogSource,
 } from "./catalog-source";
 
+// Supabase 카탈로그가 죽거나(네트워크/키 문제) 비어 있으면(시드 안 됨) 번들 JSON으로
+// 폴백한다 — 카탈로그 읽기는 앱의 생명선이라 단일 장애점이 되면 안 된다.
+function withJsonFallback(primary: IPlaylistStorage): IPlaylistStorage {
+  return {
+    async getPlaylist() {
+      try {
+        const data = await primary.getPlaylist();
+        if (data.seasons.length === 0) {
+          console.warn("[catalog] supabase 카탈로그가 비어 있음(시드 안 됨?) — 번들 JSON으로 폴백");
+          return jsonStorage.getPlaylist();
+        }
+        return data;
+      } catch (error) {
+        console.error("[catalog] supabase 카탈로그 읽기 실패 — 번들 JSON으로 폴백", error);
+        return jsonStorage.getPlaylist();
+      }
+    },
+    setCategoryOverride: (contentId, categoryOverride) =>
+      primary.setCategoryOverride(contentId, categoryOverride),
+    toggleWatched: (contentId) => primary.toggleWatched(contentId),
+  };
+}
+
 export function getStorageForCatalogSource(source: CatalogSource): IPlaylistStorage {
-  return source === "supabase" ? supabaseStorage : jsonStorage;
+  return source === "supabase" ? withJsonFallback(supabaseStorage) : jsonStorage;
 }
 
 export async function getRequestCatalogSource(): Promise<CatalogSource> {

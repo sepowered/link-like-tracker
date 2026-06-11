@@ -53,7 +53,8 @@ function formatDate(iso: string): string {
 }
 
 export default function SyncSettingsPageContent() {
-  const { user } = useAuth();
+  // 익명(게스트) 세션은 비로그인으로 취급해 로그인 안내를 보여준다.
+  const { user, isMember } = useAuth();
   const { autoSync, setAutoSync } = useSettings();
   const [loginConsent, setLoginConsent] = useState(INITIAL_CONSENT);
   const [loginLoading, setLoginLoading] = useState(false);
@@ -169,7 +170,7 @@ export default function SyncSettingsPageContent() {
     }
   }
 
-  if (!user) {
+  if (!isMember) {
     return (
       <div style={{
         display: "flex",
@@ -250,7 +251,7 @@ export default function SyncSettingsPageContent() {
     <div className="settings-page">
       <PageHeader title="기기 및 동기화" borderBottom={false} />
 
-      {user && (
+      {isMember && (
         <VStack gap="x3">
           <ListHeader as="h2">동기화 설정</ListHeader>
           <List>
@@ -276,7 +277,7 @@ export default function SyncSettingsPageContent() {
         </VStack>
       )}
 
-      {user && (
+      {isMember && (
         <VStack gap="x3">
           <ListHeader as="h2">기기 목록</ListHeader>
           <List>
