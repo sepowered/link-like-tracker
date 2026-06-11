@@ -242,10 +242,10 @@ export function SideNavItem({ href, label, icon, exact = false }: SideNavItemPro
         fontSize: "14px",
         fontWeight: isActive ? 600 : 400,
         color: isActive
-          ? "var(--seed-color-fg-brand)"
-          : "var(--seed-color-fg-neutral)",
+          ? "var(--seed-color-fg-neutral)"
+          : "var(--seed-color-fg-neutral-subtle)",
         backgroundColor: isActive
-          ? "var(--seed-color-bg-brand-weak)"
+          ? "var(--seed-color-bg-neutral-weak)"
           : "transparent",
         transition: "background-color 0.1s ease, color 0.1s ease",
         whiteSpace: "nowrap",
@@ -342,8 +342,8 @@ export function SideNavDrawerItem({ href, label, icon, exact = false }: SideNavD
         textDecoration: "none",
         fontSize: "16px",
         fontWeight: isActive ? 600 : 400,
-        color: isActive ? "var(--seed-color-fg-brand)" : "var(--seed-color-fg-neutral)",
-        backgroundColor: isActive ? "var(--seed-color-bg-brand-weak)" : "transparent",
+        color: isActive ? "var(--seed-color-fg-neutral)" : "var(--seed-color-fg-neutral-subtle)",
+        backgroundColor: isActive ? "var(--seed-color-bg-neutral-weak)" : "transparent",
         borderRadius: "8px",
       }}
     >
