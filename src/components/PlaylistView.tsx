@@ -319,15 +319,12 @@ export default function PlaylistView({ initialData }: Props) {
     }
   }
 
-  function markUpdateSeen() {
+  // 닫기 버튼을 눌렀을 때만 '본 것'으로 기록 — 자세히 보기로 다녀와도 계속 뜬다.
+  function dismissUpdateBanner() {
+    setUpdateBannerVisible(false);
     try {
       localStorage.setItem(STORAGE_KEY_UPDATE_SEEN, UPDATE_POST_ID);
     } catch {}
-  }
-
-  function dismissUpdateBanner() {
-    setUpdateBannerVisible(false);
-    markUpdateSeen();
   }
 
   async function handlePtrRefresh() {
@@ -540,11 +537,7 @@ export default function PlaylistView({ initialData }: Props) {
             description="스토리 파트 구분, 자막 없는 영상, 새로 추가된 이야기까지 — 달라진 점을 확인해 보세요."
             linkProps={{
               asChild: true,
-              children: (
-                <Link href="/updates" onClick={markUpdateSeen}>
-                  자세히 보기
-                </Link>
-              ),
+              children: <Link href="/updates">자세히 보기</Link>,
             }}
             onDismiss={dismissUpdateBanner}
           />
