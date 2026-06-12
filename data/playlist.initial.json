@@ -6265,13 +6265,21 @@
                   "label": "원본"
                 }
               ]
-            },
+            }
+          ]
+        },
+        {
+          "id": "105-main-interlude-001",
+          "episode_number": 0,
+          "title_ko": "간주곡 Dream Interlude: Chapter.PERENNIAL",
+          "title_jp": "間章 Dream Interlude『Water the flowers』Chapter.PERENNIAL",
+          "contents": [
             {
               "id": "fg1YOOBrkh0",
-              "type": "music",
+              "type": "story",
               "title_ko": null,
-              "title_jp": "「Link! Like! ラブライブ！」間章・Dream Interlude『Water the flowers』PART1&2「リンクラ」「蓮ノ空女学院スクールアイドルクラブ」",
-              "part_label": null,
+              "title_jp": null,
+              "part_label": "간주곡 Part 1&2",
               "legacy_video_id": "fg1YOOBrkh0",
               "sources": [
                 {
@@ -6282,10 +6290,10 @@
             },
             {
               "id": "EUkilJORlYA",
-              "type": "music",
+              "type": "story",
               "title_ko": null,
-              "title_jp": "「Link! Like! ラブライブ！」間章・Dream Interlude『Water the flowers』PART3「リンクラ」「蓮ノ空女学院スクールアイドルクラブ」",
-              "part_label": null,
+              "title_jp": null,
+              "part_label": "간주곡 Part 3",
               "legacy_video_id": "EUkilJORlYA",
               "sources": [
                 {
@@ -6297,31 +6305,9 @@
           ]
         },
         {
-          "id": "105-main-interlude-001",
-          "episode_number": 0,
-          "title_ko": "간장 Dream Interlude: Chapter.PERENNIAL",
-          "title_jp": "間章 Dream Interlude『Water the flowers』Chapter.PERENNIAL",
-          "contents": [
-            {
-              "id": "4yeXqBisXxg",
-              "type": "story",
-              "title_ko": null,
-              "title_jp": "【活動記録】間章 Dream Interlude「Water the flowers」Chapter.PERENNIAL（蓮ノ空女学院スクールアイドルクラブ）",
-              "part_label": "간주곡",
-              "legacy_video_id": "4yeXqBisXxg",
-              "sources": [
-                {
-                  "url": "https://www.youtube.com/watch?v=4yeXqBisXxg",
-                  "label": "원본"
-                }
-              ]
-            }
-          ]
-        },
-        {
           "id": "105-main-interlude-002",
           "episode_number": 0,
-          "title_ko": "간장 Dream Interlude: Chapter.BRIGHT SEEDS",
+          "title_ko": "간주곡 Dream Interlude: Chapter.BRIGHT SEEDS",
           "title_jp": "間章 Dream Interlude『Be Cera-fish』Chapter.BRIGHT SEEDS",
           "contents": [
             {
