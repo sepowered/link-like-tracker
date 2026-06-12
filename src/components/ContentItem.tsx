@@ -32,11 +32,18 @@ function getSourceIcon(label: string | null | undefined) {
   return <IconArrowUpRightLine />;
 }
 
-// 표시용 소스 이름 — 데이터 라벨 '원본'은 비공식 재업로드라 공식을 암시하는
-// 표현을 피해 '일본어판'으로 보여준다(데이터는 그대로). 공식 소스 도입은 백로그.
+// 표시 체계는 '자막 유무' 축 — 데이터 라벨(자막본/원본)은 그대로 두고
+// 표시만 바꾼다. '원본'은 비공식 재업로드라 공식을 암시하는 표현을 피한다.
 function getSourceDisplayName(label: string | null | undefined): string {
-  if (label === "원본") return "일본어판";
+  if (label === "자막본") return "자막";
+  if (label === "원본") return "무자막";
   return label ?? "";
+}
+
+function getSourceMenuLabel(label: string | null | undefined): string {
+  if (label === "자막본") return "자막으로 보기";
+  if (label === "원본") return "자막 없이 보기";
+  return `${label}으로 보기`;
 }
 
 function getDisplayTitle(content: Content, language: "ko" | "jp"): string {
@@ -73,7 +80,7 @@ export default function ContentItem({ content, contextLabel, onToggle }: Props) 
     language === "ko" && !hasKo && hasJp
       ? "자막 없음"
       : language === "jp" && !hasJp && hasKo
-        ? "일본어판 없음"
+        ? "자막만 있음"
         : null;
 
   const displayTitle = getDisplayTitle(content, language);
@@ -187,7 +194,7 @@ export default function ContentItem({ content, contextLabel, onToggle }: Props) 
                     <MenuSheet.Item key={source.url} onClick={() => handleOpenSource(source.url)}>
                       <PrefixIcon svg={getSourceIcon(source.label)} />
                       <MenuSheet.ItemContent>
-                        <MenuSheet.ItemLabel>{getSourceDisplayName(source.label)}으로 보기</MenuSheet.ItemLabel>
+                        <MenuSheet.ItemLabel>{getSourceMenuLabel(source.label)}</MenuSheet.ItemLabel>
                       </MenuSheet.ItemContent>
                     </MenuSheet.Item>
                   ))}
