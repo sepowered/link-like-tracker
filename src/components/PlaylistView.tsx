@@ -27,9 +27,6 @@ type ScrollDirection = "up" | "down" | null;
 const STORAGE_KEY_WATCHED = "llt-watched";
 const STORAGE_KEY_OVERRIDES = "llt-overrides";
 const STORAGE_KEY_FILTERS = "llt-filters";
-// 업데이트 안내 배너: 글이 바뀌면 id를 올려 다시 노출한다.
-const STORAGE_KEY_UPDATE_SEEN = "llt-update-seen";
-const UPDATE_POST_ID = "2026-06";
 const STICKY_SCROLL_THRESHOLD = 60;
 const SCROLL_DIRECTION_DELTA = 6;
 
@@ -85,8 +82,8 @@ export default function PlaylistView({ initialData }: Props) {
   const compactSearchRef = useRef<HTMLInputElement>(null);
 
   const [isInitialized, setIsInitialized] = useState(false);
-  // SSR과 첫 클라이언트 렌더를 일치시키기 위해 숨김으로 시작, 마운트 후 판정
-  const [updateBannerVisible, setUpdateBannerVisible] = useState(false);
+  // 업데이트 안내 배너 — 닫기는 이번 화면에서만 숨김(저장 안 함, 새로고침하면 다시 표시)
+  const [updateBannerVisible, setUpdateBannerVisible] = useState(true);
   const { progressCategories, hidePrivateVideos, autoSync } = useSettings();
 
   // Load from localStorage on mount
@@ -126,10 +123,6 @@ export default function PlaylistView({ initialData }: Props) {
         if (saved.filter) setFilter(saved.filter);
         if (saved.categories) setCategories(saved.categories);
         if (saved.sortOrder) setSortOrder(saved.sortOrder);
-      }
-
-      if (localStorage.getItem(STORAGE_KEY_UPDATE_SEEN) !== UPDATE_POST_ID) {
-        setUpdateBannerVisible(true);
       }
     } catch (e) {
       console.error("Failed to load local storage", e);
@@ -319,12 +312,8 @@ export default function PlaylistView({ initialData }: Props) {
     }
   }
 
-  // 닫기 버튼을 눌렀을 때만 '본 것'으로 기록 — 자세히 보기로 다녀와도 계속 뜬다.
   function dismissUpdateBanner() {
     setUpdateBannerVisible(false);
-    try {
-      localStorage.setItem(STORAGE_KEY_UPDATE_SEEN, UPDATE_POST_ID);
-    } catch {}
   }
 
   async function handlePtrRefresh() {
