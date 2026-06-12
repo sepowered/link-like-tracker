@@ -14,7 +14,7 @@ import { buildLegacyMap } from "@/lib/legacy-map";
 // --- 골든 픽스처 (canonical, ordered) — §0 ground truth ---
 const EXPECTED_SEASONS = 5;
 const EXPECTED_EPISODES = 47;
-const EXPECTED_CONTENTS = 361;
+const EXPECTED_CONTENTS = 380;
 const EXPECTED_DISTINCT_LEGACY = 273;
 const EXPECTED_SPLITS: Record<string, number> = {
   "3_bZr1vzepk": 5,
@@ -43,6 +43,14 @@ const EXPECTED_SPLITS: Record<string, number> = {
   "imsTV6gexag": 4,
   "EMP7jXEW6hU": 4,
   "27pggt3-l6g": 5,
+  // 2026-06: 105기 8~12화 원본 묶음 분할
+  "y5uglKP3oyg": 4,
+  "Si9-csGDOZ8": 5,
+  "xmJr0Oj8318": 5,
+  "cRmvAOi4xaE": 3,
+  "flcUM4h8Mqs": 3,
+  "3giw9ELMAE8": 2,
+  "cdBweRBGYJc": 4,
 };
 
 const dryRun = process.argv.includes("--dry-run");
