@@ -13,7 +13,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { SYNC_EVENT, useProgressSync } from "@/providers/ProgressSyncProvider";
 import { ensureLegacyBackup } from "@/lib/legacy-backup";
 import type { CategoryOverrideValue } from "@/lib/storage";
-import { ActionButton, Icon, PullToRefresh, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
+import { ActionButton, Box, Icon, PullToRefresh, Text, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import { ProgressCircle } from "@/ui/progress-circle";
 import { MenuRoot, MenuTrigger, MenuContent, MenuItem } from "@/ui/menu";
 import { Callout, DismissibleCallout } from "@/ui/callout";
@@ -521,10 +521,10 @@ export default function PlaylistView({ initialData }: Props) {
 
       {/* 필터 결과 피드백 */}
       {isFiltered && (
-        <div className="filter-result-bar" role="status" aria-live="polite">
-          <span className="filter-result-count">{filteredCount}편</span>
-          <span className="filter-result-label"> 표시 중</span>
-        </div>
+        <Box px="spacingX.globalGutter" mb="x1" role="status" aria-live="polite">
+          <Text textStyle="t3Bold" color="fg.brand">{filteredCount}편</Text>
+          <Text textStyle="t3Regular" color="fg.placeholder"> 표시 중</Text>
+        </Box>
       )}
 
       {/* 업데이트 안내 배너 */}

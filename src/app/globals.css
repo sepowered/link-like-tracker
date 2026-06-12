@@ -237,23 +237,6 @@ body {
 }
 
 
-/* ─── 필터 결과 피드백 바 ─────────────────────────────────────── */
-
-.filter-result-bar {
-  padding: 6px var(--seed-dimension-spacing-x-global-gutter);
-  margin-bottom: 4px;
-  font-size: 12px;
-}
-
-.filter-result-count {
-  font-weight: 700;
-  color: var(--seed-color-fg-brand);
-}
-
-.filter-result-label {
-  color: var(--seed-color-fg-placeholder);
-}
-
 /* ─── 에러 메시지 ────────────────────────────────────────────── */
 
 .error-message {
