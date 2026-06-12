@@ -347,24 +347,6 @@
               ]
             },
             {
-              "id": "LHSnii0uk2g_p6",
-              "type": "story",
-              "title_ko": null,
-              "title_jp": null,
-              "part_label": "Part 6",
-              "legacy_video_id": "LHSnii0uk2g",
-              "sources": [
-                {
-                  "url": "https://www.youtube.com/watch?v=LHSnii0uk2g&t=3432s",
-                  "label": "자막본"
-                },
-                {
-                  "url": "https://www.youtube.com/watch?v=0Jj85Da_C08&t=3408s",
-                  "label": "원본"
-                }
-              ]
-            },
-            {
               "id": "JqrjeUPJ8AU",
               "type": "unavailable",
               "title_ko": null,
@@ -398,8 +380,12 @@
               "title_ko": "막간: 하로메구 채널!",
               "title_jp": "幕間『ハロめぐチャンネル！』",
               "part_label": "막간",
-              "legacy_video_id": "rvdurmx9Y88",
+              "legacy_video_id": "LHSnii0uk2g",
               "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=LHSnii0uk2g&t=3432s",
+                  "label": "자막본"
+                },
                 {
                   "url": "https://www.youtube.com/watch?v=rvdurmx9Y88",
                   "label": "원본"
@@ -729,24 +715,6 @@
               ]
             },
             {
-              "id": "jodiWtjQf9o_p7",
-              "type": "story",
-              "title_ko": null,
-              "title_jp": null,
-              "part_label": "Part 7",
-              "legacy_video_id": "jodiWtjQf9o",
-              "sources": [
-                {
-                  "url": "https://www.youtube.com/watch?v=jodiWtjQf9o&t=3970s",
-                  "label": "자막본"
-                },
-                {
-                  "url": "https://www.youtube.com/watch?v=f5ExrTGtE30&t=3935s",
-                  "label": "원본"
-                }
-              ]
-            },
-            {
               "id": "RiSVzGsyZaY",
               "type": "music",
               "title_ko": null,
@@ -836,8 +804,12 @@
               "title_ko": "막간: 즐거워 보이는데?",
               "title_jp": "幕間『楽しそうだぞぅ？』",
               "part_label": "막간",
-              "legacy_video_id": "fJ0wuKzXkxw",
+              "legacy_video_id": "jodiWtjQf9o",
               "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=jodiWtjQf9o&t=3970s",
+                  "label": "자막본"
+                },
                 {
                   "url": "https://www.youtube.com/watch?v=fJ0wuKzXkxw",
                   "label": "원본"
@@ -1822,8 +1794,12 @@
               "title_ko": "막간: 하스노 대삼각☆",
               "title_jp": "幕間『蓮ノ大三角☆』",
               "part_label": "막간",
-              "legacy_video_id": "Jc7ZEeopqCE",
+              "legacy_video_id": "KbzsKgCchjE",
               "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=KbzsKgCchjE&t=0s",
+                  "label": "자막본"
+                },
                 {
                   "url": "https://www.youtube.com/watch?v=Jc7ZEeopqCE",
                   "label": "원본"
@@ -1839,11 +1815,11 @@
               "legacy_video_id": "KbzsKgCchjE",
               "sources": [
                 {
-                  "url": "https://www.youtube.com/watch?v=KbzsKgCchjE&t=0s",
+                  "url": "https://www.youtube.com/watch?v=KbzsKgCchjE&t=791s",
                   "label": "자막본"
                 },
                 {
-                  "url": "https://www.youtube.com/watch?v=M39U1hTPv-A&t=0s",
+                  "url": "https://www.youtube.com/watch?v=M39U1hTPv-A&t=785s",
                   "label": "원본"
                 }
               ]

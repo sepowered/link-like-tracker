@@ -14,15 +14,17 @@ import { buildLegacyMap } from "@/lib/legacy-map";
 // --- 골든 픽스처 (canonical, ordered) — §0 ground truth ---
 const EXPECTED_SEASONS = 5;
 const EXPECTED_EPISODES = 49;
-const EXPECTED_CONTENTS = 519;
-const EXPECTED_DISTINCT_LEGACY = 280;
+const EXPECTED_CONTENTS = 517;
+const EXPECTED_DISTINCT_LEGACY = 277;
 const EXPECTED_SPLITS: Record<string, number> = {
   "3_bZr1vzepk": 5,
   "gP7f-YJWMgo": 5,
-  "LHSnii0uk2g": 6,
+  // 103기 3·6·12화: 묶음 영상에 막간이 통째로 포함돼 있어 막간 단독
+  // 콘텐츠(rvdurmx9Y88/fJ0wuKzXkxw/Jc7ZEeopqCE)가 같은 legacy 그룹에 속함
+  "LHSnii0uk2g": 6, // Part 1~5 + 막간
   "UgYYPg3ziF0": 4,
   "5LqHE1E1YiU": 5,
-  "jodiWtjQf9o": 7,
+  "jodiWtjQf9o": 7, // Part 1~6 + 막간
   "rF1Y5mCuf5M": 5,
   "Ptt3JMom-ac": 7,
   // 2026-06: 묶음(Part X~Y) story 분할 — blackdetect/silencedetect ×
@@ -56,7 +58,7 @@ const EXPECTED_SPLITS: Record<string, number> = {
   "STwoyYEhnZg": 6,
   "PGMXfX8XVEY": 8,
   "iL49zf19neg": 9,
-  "KbzsKgCchjE": 8,
+  "KbzsKgCchjE": 9, // Part 1~8 + 막간
   "7_s-cRi2wxY": 8,
   "wVVH0Ml-SP4": 9,
   "EEYt8ZqPCcI": 7,
