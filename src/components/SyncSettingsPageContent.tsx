@@ -5,7 +5,8 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useSettings } from "@/components/SettingsProvider";
 import { useProgressSync } from "@/providers/ProgressSyncProvider";
 import PageHeader from "@/components/PageHeader";
-import { ActionButton, HStack, Icon, VStack } from "@seed-design/react";
+import Link from "next/link";
+import { ActionButton, HStack, Icon, Text, VStack } from "@seed-design/react";
 import { List, ListItem, ListButtonItem, ListSwitchItem } from "@/ui/list";
 import { Switchmark } from "@/ui/switch";
 import { ListHeader } from "@/ui/list-header";
@@ -15,32 +16,56 @@ import {
   BottomSheetFooter,
   BottomSheetRoot,
 } from "@/ui/bottom-sheet";
-import {
-  IconPersonCircleLine,
-  IconTrashcanLine,
-} from "@karrotmarket/react-monochrome-icon";
+import { Checkbox, CheckboxGroup } from "@/ui/checkbox";
+import { IconTrashcanLine } from "@karrotmarket/react-monochrome-icon";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { getAuthCallbackUrl } from "@/lib/auth-redirect-url";
 import {
   fetchDeviceProgressStats,
   type DeviceProgressStats,
+  type DeviceRow,
 } from "@/lib/supabase-progress";
+import { isStaleDevice } from "@/lib/device-prune";
 import playlistData from "../../data/playlist.initial.json";
+import type { PlaylistData } from "@/types";
 
 const videoTitleMap = new Map<string, string>();
-for (const season of playlistData.seasons) {
-  for (const video of season.videos) {
-    videoTitleMap.set(video.id, video.title);
+for (const season of (playlistData as unknown as PlaylistData).seasons) {
+  for (const episode of season.episodes) {
+    for (const content of episode.contents) {
+      const title = content.title_jp ?? content.title_ko ?? content.part_label ?? episode.title_ko ?? "";
+      videoTitleMap.set(content.id, title);
+    }
   }
 }
 const totalVideos = videoTitleMap.size;
+
+const GOOGLE_LOGO = (
+  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style={{ flexShrink: 0 }}>
+    <path fill="#4285F4" d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" />
+    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" />
+    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" />
+    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58Z" />
+  </svg>
+);
+
+const INITIAL_CONSENT = { privacy: false, overseasTransfer: false, ageOver14: false };
+
+// 오래된 기기 판정 기준 시각. 주 단위 임계값이라 페이지 로드 시각으로 충분하고,
+// 렌더 중 Date.now() 호출(순수성 위반)을 피한다.
+const staleReferenceTime = Date.now();
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
 }
 
 export default function SyncSettingsPageContent() {
-  const { user } = useAuth();
+  // 익명(게스트) 세션은 비로그인으로 취급해 로그인 안내를 보여준다.
+  const { user, isMember } = useAuth();
   const { autoSync, setAutoSync } = useSettings();
+  const [loginConsent, setLoginConsent] = useState(INITIAL_CONSENT);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const allLoginConsentChecked = Object.values(loginConsent).every(Boolean);
   const {
     devices,
     devicesLoading,
@@ -52,10 +77,31 @@ export default function SyncSettingsPageContent() {
   } = useProgressSync();
   const adapter = useSnackbarAdapter();
 
-  const [stats, setStats] = useState<Map<string, DeviceProgressStats>>(new Map());
-  const [statsLoading, setStatsLoading] = useState(false);
+  // null = 아직 못 불러옴(로딩 표시). 재조회 중에는 직전 값을 그대로 보여준다.
+  const [stats, setStats] = useState<Map<string, DeviceProgressStats> | null>(null);
   const [adoptTarget, setAdoptTarget] = useState<{ deviceId: string; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ deviceId: string; name: string } | null>(null);
+  const [showStaleDevices, setShowStaleDevices] = useState(false);
+
+  function handleLoginConsentChange(key: keyof typeof INITIAL_CONSENT, checked: boolean) {
+    setLoginConsent((prev) => ({ ...prev, [key]: checked }));
+  }
+
+  async function handleGoogleSignIn() {
+    if (!allLoginConsentChecked || loginLoading) return;
+    setLoginLoading(true);
+    const supabase = getSupabaseBrowserClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: getAuthCallbackUrl() },
+    });
+    if (error) {
+      setLoginLoading(false);
+      adapter.create({
+        render: () => <Snackbar variant="critical" message="Google 로그인 연결에 실패했어요." />,
+      });
+    }
+  }
 
   async function handleManualSync() {
     try {
@@ -77,12 +123,10 @@ export default function SyncSettingsPageContent() {
 
   useEffect(() => {
     if (!user || devices.length === 0) return;
-    setStatsLoading(true);
     const supabase = getSupabaseBrowserClient();
     fetchDeviceProgressStats(supabase, user.id)
       .then(setStats)
-      .catch(console.error)
-      .finally(() => setStatsLoading(false));
+      .catch(console.error);
   }, [user, devices]);
 
   function getDeviceName(deviceId: string, deviceName: string | null): string {
@@ -90,7 +134,7 @@ export default function SyncSettingsPageContent() {
   }
 
   function getDetailText(deviceId: string): string {
-    if (statsLoading) return "기록을 불러오고 있어요.";
+    if (!stats) return "기록을 불러오고 있어요.";
     const s = stats.get(deviceId);
     const watched = s?.watchedCount ?? 0;
     if (!s || watched === 0) return `0 / ${totalVideos}개 시청 · 아직 시청 기록이 없어요.`;
@@ -116,6 +160,53 @@ export default function SyncSettingsPageContent() {
     }
   }
 
+  // 자동 정리(device-prune)가 못 지운 — 고유 데이터가 남아 있는 — 오래된 기기만
+  // 여기 남으므로, 목록에서는 접어 두되 펼쳐서 확인·삭제할 수 있게 한다.
+  const activeDevices = devices.filter(
+    (d) => d.device_id === currentDeviceId || !isStaleDevice(d, staleReferenceTime),
+  );
+  const staleDevices = devices.filter(
+    (d) => d.device_id !== currentDeviceId && isStaleDevice(d, staleReferenceTime),
+  );
+
+  function renderDevice(device: DeviceRow) {
+    const isCurrent = device.device_id === currentDeviceId;
+    const name = getDeviceName(device.device_id, device.device_name);
+
+    return (
+      <ListItem
+        key={device.device_id}
+        alignItems="flex-start"
+        title={isCurrent ? `${name} (현재 기기)` : name}
+        detail={getDetailText(device.device_id)}
+        suffix={
+          <HStack gap="x1">
+            <ActionButton
+              variant="neutralWeak"
+              size="small"
+              disabled={syncing}
+              onClick={() => setAdoptTarget({ deviceId: device.device_id, name })}
+            >
+              이 기기로 맞추기
+            </ActionButton>
+            {!isCurrent && (
+              <ActionButton
+                variant="ghost"
+                size="small"
+                layout="iconOnly"
+                aria-label="기기 삭제"
+                disabled={syncing}
+                onClick={() => setDeleteTarget({ deviceId: device.device_id, name })}
+              >
+                <Icon svg={<IconTrashcanLine />} />
+              </ActionButton>
+            )}
+          </HStack>
+        }
+      />
+    );
+  }
+
   async function handleDeleteConfirm() {
     if (!deleteTarget) return;
     const { deviceId } = deleteTarget;
@@ -132,11 +223,88 @@ export default function SyncSettingsPageContent() {
     }
   }
 
+  if (!isMember) {
+    return (
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100dvh",
+        backgroundColor: "var(--seed-color-bg-layer-default)",
+      }}>
+        <PageHeader title="" borderBottom={false} />
+        <div style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "var(--seed-dimension-x3) var(--seed-dimension-x5) calc(var(--seed-dimension-x8) + var(--seed-safe-area-bottom))",
+        }}>
+          <VStack gap="x3">
+            <Text textStyle="t8Bold" color="fg.neutral" whiteSpace="pre-line">
+              {"시청 기록을\n이어보려면 동의가 필요해요"}
+            </Text>
+            <Text textStyle="t5Regular" color="fg.neutralMuted">
+              Google 계정으로 로그인하고 스마트폰, 태블릿, 웹 어디서든 시청 기록을 동기화해요.
+            </Text>
+          </VStack>
+
+          <VStack gap="x4">
+            <CheckboxGroup
+              label="개인정보 동의"
+              indicator="필수"
+              description="Google 계정 정보는 로그인과 시청 기록 동기화에만 사용돼요."
+            >
+              <Checkbox
+                label={
+                  <>
+                    <Link href="/terms/privacy" onClick={(e) => e.stopPropagation()} className="settings-consent-link">
+                      개인정보 처리방침
+                    </Link>
+                    에 동의해요
+                  </>
+                }
+                tone="neutral"
+                size="large"
+                checked={loginConsent.privacy}
+                onCheckedChange={(checked) => handleLoginConsentChange("privacy", checked)}
+              />
+              <Checkbox
+                label="개인정보 국외 처리에 동의해요"
+                tone="neutral"
+                size="large"
+                checked={loginConsent.overseasTransfer}
+                onCheckedChange={(checked) => handleLoginConsentChange("overseasTransfer", checked)}
+              />
+              <Checkbox
+                label="만 14세 이상이에요"
+                tone="neutral"
+                size="large"
+                checked={loginConsent.ageOver14}
+                onCheckedChange={(checked) => handleLoginConsentChange("ageOver14", checked)}
+              />
+            </CheckboxGroup>
+            <ActionButton
+              variant="neutralSolid"
+              size="large"
+              onClick={handleGoogleSignIn}
+              disabled={!allLoginConsentChecked || loginLoading}
+              loading={loginLoading}
+              style={{ width: "100%", gap: "10px" }}
+            >
+              {GOOGLE_LOGO}
+              Google로 계속하기
+            </ActionButton>
+          </VStack>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="settings-page">
       <PageHeader title="기기 및 동기화" borderBottom={false} />
 
-      {user && (
+      {isMember && (
         <VStack gap="x3">
           <ListHeader as="h2">동기화 설정</ListHeader>
           <List>
@@ -162,18 +330,7 @@ export default function SyncSettingsPageContent() {
         </VStack>
       )}
 
-      {!user ? (
-        <VStack gap="x3">
-          <ListHeader as="h2">계정</ListHeader>
-          <List>
-            <ListItem
-              title="로그인이 필요해요."
-              detail="Google로 로그인하면 기기별 시청 기록을 동기화할 수 있어요."
-              prefix={<Icon svg={<IconPersonCircleLine />} size="32px" />}
-            />
-          </List>
-        </VStack>
-      ) : (
+      {isMember && (
         <VStack gap="x3">
           <ListHeader as="h2">기기 목록</ListHeader>
           <List>
@@ -185,43 +342,21 @@ export default function SyncSettingsPageContent() {
                 detail="기록을 동기화하면 이곳에 기기가 표시돼요."
               />
             ) : (
-              devices.map((device) => {
-                const isCurrent = device.device_id === currentDeviceId;
-                const name = getDeviceName(device.device_id, device.device_name);
-
-                return (
-                  <ListItem
-                    key={device.device_id}
-                    alignItems="flex-start"
-                    title={isCurrent ? `${name} (현재 기기)` : name}
-                    detail={getDetailText(device.device_id)}
-                    suffix={
-                      <HStack gap="x1">
-                        <ActionButton
-                          variant="neutralWeak"
-                          size="small"
-                          disabled={syncing}
-                          onClick={() => setAdoptTarget({ deviceId: device.device_id, name })}
-                        >
-                          이 기기로 맞추기
-                        </ActionButton>
-                        {!isCurrent && (
-                          <ActionButton
-                            variant="ghost"
-                            size="small"
-                            layout="iconOnly"
-                            aria-label="기기 삭제"
-                            disabled={syncing}
-                            onClick={() => setDeleteTarget({ deviceId: device.device_id, name })}
-                          >
-                            <Icon svg={<IconTrashcanLine />} />
-                          </ActionButton>
-                        )}
-                      </HStack>
+              <>
+                {activeDevices.map(renderDevice)}
+                {staleDevices.length > 0 && (
+                  <ListButtonItem
+                    title={
+                      showStaleDevices
+                        ? "오래된 기기 숨기기"
+                        : `오래된 기기 ${staleDevices.length}개 보기`
                     }
+                    detail="한동안 접속하지 않은 기기예요."
+                    onClick={() => setShowStaleDevices((prev) => !prev)}
                   />
-                );
-              })
+                )}
+                {showStaleDevices && staleDevices.map(renderDevice)}
+              </>
             )}
           </List>
         </VStack>

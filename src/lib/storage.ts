@@ -4,9 +4,9 @@ export type CategoryOverrideValue = "story" | "music" | "fesxlive" | "withxmeets
 
 export interface IPlaylistStorage {
   getPlaylist(): Promise<PlaylistData>;
-  toggleWatched(videoId: string): Promise<{ watched: boolean } | null>;
+  toggleWatched(contentId: string): Promise<{ watched: boolean } | null>;
   setCategoryOverride(
-    videoId: string,
+    contentId: string,
     categoryOverride: CategoryOverrideValue | "auto"
   ): Promise<{ categoryOverride: CategoryOverrideValue } | null>;
 }

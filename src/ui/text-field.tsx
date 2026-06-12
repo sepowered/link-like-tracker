@@ -150,14 +150,14 @@ export const TextField = React.forwardRef<HTMLDivElement, TextFieldProps>(
 );
 TextField.displayName = "TextField";
 
-export interface TextFieldInputProps extends SeedTextField.InputProps {}
+export type TextFieldInputProps = SeedTextField.InputProps;
 
 /**
  * @see https://seed-design.io/react/components/text-field-input
  */
 export const TextFieldInput = SeedTextField.Input;
 
-export interface TextFieldTextareaProps extends SeedTextField.TextareaProps {}
+export type TextFieldTextareaProps = SeedTextField.TextareaProps;
 
 /**
  * @see https://seed-design.io/react/components/text-field-textarea

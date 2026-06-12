@@ -25,6 +25,7 @@ export async function submitAddRequest(data: {
 }
 
 export async function submitEditRequest(data: {
+  content_id: string;
   video_title: string;
   request_type: string;
   category: string;
@@ -32,14 +33,15 @@ export async function submitEditRequest(data: {
   description: string;
 }) {
   const supabase = getSupabaseClient();
-  const { error } = await supabase.from("requests").insert({
-    type: "edit",
-    video_title: data.video_title,
-    request_type: data.request_type,
-    category: data.category,
-    generation: data.generation,
-    description: data.description,
-    status: "pending",
+  // D2: 편집 폼이 아는 content.id를 함께 보낸다. 익명이 직접 INSERT하면 트리거가
+  // content_id를 null로 강등하므로, 서버에서 검증·보존하는 submit_edit_request RPC로 보낸다.
+  const { error } = await supabase.rpc("submit_edit_request", {
+    p_content_id: data.content_id,
+    p_video_title: data.video_title,
+    p_request_type: data.request_type,
+    p_category: data.category,
+    p_generation: data.generation,
+    p_description: data.description,
   });
 
   if (error) {

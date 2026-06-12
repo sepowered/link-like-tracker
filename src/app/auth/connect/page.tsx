@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { getAuthCallbackUrl } from "@/lib/auth-redirect-url";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
-import { ActionButton, Icon, VStack } from "@seed-design/react";
-import { IconChevronLeftLine } from "@karrotmarket/react-monochrome-icon";
+import { ActionButton, Text, VStack } from "@seed-design/react";
 import { Checkbox, CheckboxGroup } from "@/ui/checkbox";
+import PageHeader from "@/components/PageHeader";
 
 const GOOGLE_LOGO = (
   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -17,13 +17,19 @@ const GOOGLE_LOGO = (
   </svg>
 );
 
+const INITIAL_CONSENT = { privacy: false, overseasTransfer: false, ageOver14: false };
+
 export default function AuthConnectPage() {
-  const router = useRouter();
-  const [agreed, setAgreed] = useState(false);
+  const [consent, setConsent] = useState(INITIAL_CONSENT);
   const [loading, setLoading] = useState(false);
+  const allChecked = Object.values(consent).every(Boolean);
+
+  function handleConsentChange(key: keyof typeof INITIAL_CONSENT, checked: boolean) {
+    setConsent((prev) => ({ ...prev, [key]: checked }));
+  }
 
   async function handleGoogleSignIn() {
-    if (!agreed) return;
+    if (!allChecked || loading) return;
     setLoading(true);
     const supabase = getSupabaseBrowserClient();
     await supabase.auth.signInWithOAuth({
@@ -34,88 +40,78 @@ export default function AuthConnectPage() {
 
   return (
     <div style={{
-      minHeight: "100dvh",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "space-between",
-      padding: "var(--seed-dimension-x12) var(--seed-dimension-x5) var(--seed-dimension-x8)",
+      height: "100dvh",
       backgroundColor: "var(--seed-color-bg-layer-default)",
-      position: "relative",
     }}>
-      <ActionButton
-        layout="iconOnly"
-        variant="ghost"
-        size="small"
-        aria-label="뒤로"
-        onClick={() => router.back()}
-        style={{ position: "absolute", top: "var(--seed-dimension-x3)", left: "var(--seed-dimension-x3)" }}
-      >
-        <Icon svg={<IconChevronLeftLine />} />
-      </ActionButton>
+      <PageHeader title="" borderBottom={false} />
 
-      <VStack gap="x2">
-        <p style={{
-          fontSize: "13px",
-          fontWeight: "600",
-          color: "var(--seed-color-fg-brand)",
-          margin: 0,
-          letterSpacing: "0.04em",
-          textTransform: "uppercase",
-        }}>
-          lltracker
-        </p>
-        <h1 style={{
-          fontSize: "26px",
-          fontWeight: "800",
-          color: "var(--seed-color-fg-neutral)",
-          letterSpacing: "-0.03em",
-          margin: 0,
-          lineHeight: 1.25,
-        }}>
-          시청 기록,<br />어디서든 이어가요
-        </h1>
-        <p style={{
-          fontSize: "14px",
-          color: "var(--seed-color-fg-neutral-subtle)",
-          margin: 0,
-          lineHeight: 1.6,
-          marginTop: "var(--seed-dimension-x1)",
-        }}>
-          Google로 로그인하면 스마트폰, 태블릿, 웹에서<br />시청 상태가 자동으로 동기화돼요.
-        </p>
-      </VStack>
+      <div style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: "var(--seed-dimension-x3) var(--seed-dimension-x5) calc(var(--seed-dimension-x8) + var(--seed-safe-area-bottom))",
+      }}>
+        <VStack gap="x3">
+          <Text textStyle="t8Bold" color="fg.neutral" whiteSpace="pre-line">
+            {"시청 기록을\n이어보려면 동의가 필요해요"}
+          </Text>
+          <Text textStyle="t5Regular" color="fg.neutralMuted">
+            Google 계정으로 로그인하고 스마트폰, 태블릿, 웹 어디서든 시청 기록을 동기화해요.
+          </Text>
+        </VStack>
 
-      <VStack gap="x3">
-        <CheckboxGroup indicator="필수" aria-label="개인정보 처리방침 동의">
-          <Checkbox
-            label="개인정보 처리방침에 동의해요"
-            tone="neutral"
-            checked={agreed}
-            onCheckedChange={setAgreed}
-          />
-        </CheckboxGroup>
+        <VStack gap="x4">
+          <CheckboxGroup
+            label="개인정보 동의"
+            indicator="필수"
+            description="Google 계정 정보는 로그인과 시청 기록 동기화에만 사용돼요."
+          >
+            <Checkbox
+              label={
+                <>
+                  <Link href="/terms/privacy" onClick={(e) => e.stopPropagation()} className="settings-consent-link">
+                    개인정보 처리방침
+                  </Link>
+                  에 동의해요
+                </>
+              }
+              tone="neutral"
+              size="large"
+              checked={consent.privacy}
+              onCheckedChange={(checked) => handleConsentChange("privacy", checked)}
+            />
+            <Checkbox
+              label="개인정보 국외 처리에 동의해요"
+              tone="neutral"
+              size="large"
+              checked={consent.overseasTransfer}
+              onCheckedChange={(checked) => handleConsentChange("overseasTransfer", checked)}
+            />
+            <Checkbox
+              label="만 14세 이상이에요"
+              tone="neutral"
+              size="large"
+              checked={consent.ageOver14}
+              onCheckedChange={(checked) => handleConsentChange("ageOver14", checked)}
+            />
+          </CheckboxGroup>
 
-        <ActionButton
-          variant="neutralSolid"
-          size="large"
-          onClick={handleGoogleSignIn}
-          disabled={!agreed || loading}
-          style={{ width: "100%", gap: "10px" }}
-        >
-          {GOOGLE_LOGO}
-          {loading ? "연결 중..." : "Google로 계속하기"}
-        </ActionButton>
-
-        <p style={{
-          fontSize: "12px",
-          color: "var(--seed-color-fg-placeholder)",
-          textAlign: "center",
-          margin: 0,
-          lineHeight: 1.6,
-        }}>
-          Google 계정 정보만 사용해요.
-        </p>
-      </VStack>
+          <ActionButton
+            variant="neutralSolid"
+            size="large"
+            onClick={handleGoogleSignIn}
+            disabled={!allChecked || loading}
+            loading={loading}
+            style={{ width: "100%", gap: "10px" }}
+          >
+            {GOOGLE_LOGO}
+            Google로 계속하기
+          </ActionButton>
+        </VStack>
+      </div>
     </div>
   );
 }

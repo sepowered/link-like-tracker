@@ -1,0 +1,230 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Content } from "@/types";
+import { VideoCategory, getVideoCategoryLabel } from "@/lib/video-category";
+import { Badge, Checkbox, PrefixIcon, MenuSheet } from "@seed-design/react";
+import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
+import {
+  IconCheckmarkLine,
+  IconArrowUpRightLine,
+  IconAndroidshareLine,
+  IconPaperclipLine,
+  IconPencilLine,
+  IconTranslationLine,
+  IconTriangleRightLine,
+} from "@karrotmarket/react-monochrome-icon";
+import { useSettings } from "./SettingsProvider";
+
+interface Props {
+  content: Content;
+  /** 상위 맥락(시즌 · 에피소드) — 모달에서 "Part 1"만으로 식별이 안 되는 문제 보완 */
+  contextLabel?: string;
+  onToggle: (contentId: string) => void;
+}
+
+// 소스 종류별 아이콘 — 자막본(번역)과 원본(영상 그대로)을 한눈에 구분.
+// 그 외 라벨은 외부 링크 화살표로 폴백.
+function getSourceIcon(label: string | null | undefined) {
+  if (label === "자막본") return <IconTranslationLine />;
+  if (label === "원본") return <IconTriangleRightLine />;
+  return <IconArrowUpRightLine />;
+}
+
+// 표시 체계는 '자막 유무' 축 — 데이터 라벨(자막본/원본)은 그대로 두고
+// 표시만 바꾼다. '원본'은 비공식 재업로드라 공식을 암시하는 표현을 피한다.
+function getSourceDisplayName(label: string | null | undefined): string {
+  if (label === "자막본") return "자막";
+  if (label === "원본") return "무자막";
+  return label ?? "";
+}
+
+function getSourceMenuLabel(label: string | null | undefined): string {
+  if (label === "자막본") return "자막으로 보기";
+  if (label === "원본") return "자막 없이 보기";
+  return `${label}으로 보기`;
+}
+
+function getDisplayTitle(content: Content, language: "ko" | "jp"): string {
+  if (content.type === "story") {
+    return content.part_label ?? "";
+  }
+  if (language === "jp") return content.title_jp ?? content.title_ko ?? "";
+  return content.title_ko ?? content.title_jp ?? "";
+}
+
+export default function ContentItem({ content, contextLabel, onToggle }: Props) {
+  const router = useRouter();
+  const { language } = useSettings();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const adapter = useSnackbarAdapter();
+
+  const effectiveCategory =
+    content.categoryOverride !== undefined ? content.categoryOverride : (content.type as VideoCategory | null);
+  const categoryLabel = getVideoCategoryLabel(effectiveCategory as Exclude<VideoCategory, "all"> | null);
+
+  const preferredLabel = language === "ko" ? "자막본" : "원본";
+  const primarySource =
+    content.sources.find((s) => s.label === preferredLabel) ?? content.sources[0];
+  // 메뉴에서도 선호 언어 소스가 먼저 보이도록 정렬(같은 라벨끼리는 원래 순서 유지)
+  const orderedSources = [...content.sources].sort(
+    (a, b) => Number(b.label === preferredLabel) - Number(a.label === preferredLabel),
+  );
+
+  const hasKo = content.sources.some((s) => s.label === "자막본");
+  const hasJp = content.sources.some((s) => s.label === "원본");
+  // 선택한 콘텐츠 언어의 영상이 없을 때만 '없는 것'을 알려준다 — 열기 전에
+  // 어떤 언어로 보게 될지 예상하게 하는 안내.
+  const sourceMismatchBadge: string | null =
+    language === "ko" && !hasKo && hasJp
+      ? "자막 없음"
+      : language === "jp" && !hasJp && hasKo
+        ? "자막만 있음"
+        : null;
+
+  const displayTitle = getDisplayTitle(content, language);
+
+  const handleToggleWatch = () => {
+    onToggle(content.id);
+    setSheetOpen(false);
+  };
+
+  const handleOpenSource = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+    setSheetOpen(false);
+  };
+
+  const handleShare = async () => {
+    if (!primarySource) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: [contextLabel, displayTitle || categoryLabel].filter(Boolean).join(" · "),
+          url: primarySource.url,
+        });
+      } catch (err) {
+        console.error("공유 실패:", err);
+      }
+    } else {
+      alert("이 브라우저에서는 공유 기능을 지원하지 않습니다.");
+    }
+    setSheetOpen(false);
+  };
+
+  const handleCopyLink = async () => {
+    if (!primarySource) return;
+    try {
+      await navigator.clipboard.writeText(primarySource.url);
+      adapter.create({ render: () => <Snackbar message="링크가 복사되었습니다." /> });
+    } catch (err) {
+      console.error("복사 실패:", err);
+    }
+    setSheetOpen(false);
+  };
+
+  const handleEditRequest = () => {
+    setSheetOpen(false);
+    router.push(`/edit-request/${content.id}`);
+  };
+
+  const menuTitle = displayTitle || `${categoryLabel} — ${content.sources.map((s) => getSourceDisplayName(s.label)).join(" / ")}`;
+
+  return (
+    <div id={`content-${content.id}`} className={`video-item${content.watched ? " watched" : ""}`}>
+      <Checkbox.Root
+        checked={content.watched}
+        onCheckedChange={() => onToggle(content.id)}
+        size="medium"
+        style={{ flexShrink: 0 }}
+      >
+        <Checkbox.HiddenInput aria-label={`${menuTitle} 시청 완료`} />
+        <Checkbox.Control>
+          <Checkbox.Indicator checked={<IconCheckmarkLine />} />
+        </Checkbox.Control>
+      </Checkbox.Root>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
+        {/* 언어 불일치 배지 — 선택한 콘텐츠 언어의 영상이 없는 행에만 표시 */}
+        {sourceMismatchBadge && (
+          <Badge tone="neutral" variant="weak" size="medium" style={{ flexShrink: 0 }}>
+            {sourceMismatchBadge}
+          </Badge>
+        )}
+
+        {/* 제목 + 소스 레이블 / 메뉴 트리거 */}
+        <MenuSheet.Root open={sheetOpen} onOpenChange={setSheetOpen}>
+          <MenuSheet.Trigger asChild>
+            <span
+              className="video-title"
+              style={{
+                cursor: "pointer",
+                flex: 1,
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {displayTitle || content.sources.map((s) => getSourceDisplayName(s.label)).join(" / ")}
+            </span>
+          </MenuSheet.Trigger>
+          <MenuSheet.Backdrop />
+          <MenuSheet.Positioner>
+            <MenuSheet.Content>
+              <MenuSheet.Header>
+                <MenuSheet.Title>{menuTitle}</MenuSheet.Title>
+                {contextLabel && (
+                  <MenuSheet.Description>{contextLabel}</MenuSheet.Description>
+                )}
+              </MenuSheet.Header>
+              <MenuSheet.List>
+                <MenuSheet.Group>
+                  <MenuSheet.Item onClick={handleToggleWatch}>
+                    <PrefixIcon svg={<IconCheckmarkLine />} />
+                    <MenuSheet.ItemContent>
+                      <MenuSheet.ItemLabel>
+                        {content.watched ? "시청 완료 취소" : "시청 완료 표시"}
+                      </MenuSheet.ItemLabel>
+                    </MenuSheet.ItemContent>
+                  </MenuSheet.Item>
+                </MenuSheet.Group>
+                <MenuSheet.Group>
+                  {orderedSources.map((source) => (
+                    <MenuSheet.Item key={source.url} onClick={() => handleOpenSource(source.url)}>
+                      <PrefixIcon svg={getSourceIcon(source.label)} />
+                      <MenuSheet.ItemContent>
+                        <MenuSheet.ItemLabel>{getSourceMenuLabel(source.label)}</MenuSheet.ItemLabel>
+                      </MenuSheet.ItemContent>
+                    </MenuSheet.Item>
+                  ))}
+                  <MenuSheet.Item onClick={handleShare}>
+                    <PrefixIcon svg={<IconAndroidshareLine />} />
+                    <MenuSheet.ItemContent>
+                      <MenuSheet.ItemLabel>공유하기</MenuSheet.ItemLabel>
+                    </MenuSheet.ItemContent>
+                  </MenuSheet.Item>
+                  <MenuSheet.Item onClick={handleCopyLink}>
+                    <PrefixIcon svg={<IconPaperclipLine />} />
+                    <MenuSheet.ItemContent>
+                      <MenuSheet.ItemLabel>링크 복사</MenuSheet.ItemLabel>
+                    </MenuSheet.ItemContent>
+                  </MenuSheet.Item>
+                </MenuSheet.Group>
+                <MenuSheet.Group>
+                  <MenuSheet.Item onClick={handleEditRequest}>
+                    <PrefixIcon svg={<IconPencilLine />} />
+                    <MenuSheet.ItemContent>
+                      <MenuSheet.ItemLabel>정보 수정 요청</MenuSheet.ItemLabel>
+                    </MenuSheet.ItemContent>
+                  </MenuSheet.Item>
+                </MenuSheet.Group>
+              </MenuSheet.List>
+            </MenuSheet.Content>
+          </MenuSheet.Positioner>
+        </MenuSheet.Root>
+      </div>
+    </div>
+  );
+}
+

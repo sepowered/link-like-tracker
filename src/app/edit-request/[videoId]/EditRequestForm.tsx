@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ActionButton, VStack, Icon, Portal } from "@seed-design/react";
+import { ActionButton, VStack, Portal, Icon } from "@seed-design/react";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { TextField, TextFieldTextarea } from "@/ui/text-field";
 import { FieldButton, FieldButtonValue, FieldButtonPlaceholder } from "@/ui/field-button";
@@ -12,11 +12,10 @@ import {
   BottomSheetRoot,
   BottomSheetContent,
   BottomSheetBody,
-  BottomSheetFooter,
 } from "@/ui/bottom-sheet";
 import Link from "next/link";
 import { IconArrowUpRightLine } from "@karrotmarket/react-monochrome-icon";
-import type { Video } from "@/types";
+import type { Content } from "@/types";
 import { submitEditRequest } from "@/app/actions/requests";
 import PageHeader from "@/components/PageHeader";
 
@@ -38,7 +37,24 @@ const CATEGORIES = [
   { value: "not-listed", label: "이 중에 없어요" },
 ];
 
-export default function EditRequestForm({ video, generations }: { video: Video; generations: string[] }) {
+function getDisplayTitle(content: Content, episodeTitle: string): string {
+  if (content.type === "story") {
+    return episodeTitle + (content.part_label ? ` (${content.part_label})` : "");
+  }
+  return content.title_ko ?? content.title_jp ?? "";
+}
+
+export default function EditRequestForm({
+  content,
+  episodeTitle,
+  generations,
+}: {
+  content: Content;
+  episodeTitle: string;
+  generations: string[];
+}) {
+  const displayTitle = getDisplayTitle(content, episodeTitle);
+  const primaryUrl = content.sources[0]?.url ?? "";
   const router = useRouter();
   const adapter = useSnackbarAdapter();
   const [requestType, setRequestType] = useState<string>("");
@@ -71,7 +87,8 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
     setIsSubmitting(true);
     try {
       await submitEditRequest({
-        video_title: video.title,
+        content_id: content.id,
+        video_title: displayTitle,
         request_type: requestType,
         category,
         generation,
@@ -81,8 +98,8 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
         render: () => <Snackbar message="수정 요청을 보냈어요." />,
       });
       router.back();
-    } catch (error: any) {
-      const errorMessage = error?.message || "요청 제출에 실패했어요. 다시 시도해 주세요.";
+    } catch (error: unknown) {
+      const errorMessage = (error instanceof Error ? error.message : null) || "요청 제출에 실패했어요. 다시 시도해 주세요.";
       adapter.create({
         render: () => <Snackbar message={errorMessage} />,
       });
@@ -138,13 +155,13 @@ export default function EditRequestForm({ video, generations }: { video: Video; 
                 overflowWrap: "break-word",
               }}
             >
-              {video.title}
+              {displayTitle}
             </span>
             <ActionButton
               size="small"
               variant="neutralWeak"
               style={{ alignSelf: "flex-start" }}
-              onClick={() => window.open(video.url, "_blank", "noopener,noreferrer")}
+              onClick={() => window.open(primaryUrl, "_blank", "noopener,noreferrer")}
             >
               유튜브에서 보기
               <Icon svg={<IconArrowUpRightLine />} size="14px" />

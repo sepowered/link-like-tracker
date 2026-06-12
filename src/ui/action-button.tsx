@@ -11,7 +11,7 @@ import {
 import * as React from "react";
 import { LoadingIndicator } from "./loading-indicator";
 
-export interface ActionButtonProps extends SeedActionButtonProps {}
+export type ActionButtonProps = SeedActionButtonProps;
 
 /**
  * @see https://seed-design.io/react/components/action-button

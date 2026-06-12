@@ -16,6 +16,7 @@ function IosSuccessPageContent() {
 
   useEffect(() => {
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- setting state based on URL param on mount; no cascading risk
       setShowManualButton(true);
       return;
     }

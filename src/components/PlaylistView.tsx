@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useSyncExternalStore } from "react";
 import { PlaylistData } from "@/types";
-import { VideoCategory, classifyVideoCategory } from "@/lib/video-category";
+import { VideoCategory } from "@/lib/video-category";
 import { useSettings } from "./SettingsProvider";
 import SeasonGroup from "./SeasonGroup";
 import FilterBar from "./FilterBar";
@@ -11,21 +11,34 @@ import PlaylistProgress from "./PlaylistProgress";
 import AppBar from "./AppBar";
 import { useAuth } from "@/providers/AuthProvider";
 import { SYNC_EVENT, useProgressSync } from "@/providers/ProgressSyncProvider";
-import { ActionButton, Icon, PullToRefresh, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
+import { ensureLegacyBackup } from "@/lib/legacy-backup";
+import type { CategoryOverrideValue } from "@/lib/storage";
+import { ActionButton, Box, Icon, PullToRefresh, Text, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import { ProgressCircle } from "@/ui/progress-circle";
-import {
-  BottomSheetRoot,
-  BottomSheetContent,
-  BottomSheetBody,
-  BottomSheetFooter,
-} from "@/ui/bottom-sheet";
-import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
-import { Callout } from "@/ui/callout";
+import { MenuRoot, MenuTrigger, MenuContent, MenuItem } from "@/ui/menu";
+import { Callout, DismissibleCallout } from "@/ui/callout";
+import type { AnnouncementBanner } from "@/lib/admin/announcements-types";
 import Link from "next/link";
-import { IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
+import { IconCheckmarkLine, IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconSparkle2Fill, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 
 type FilterType = "all" | "watched" | "unwatched";
+
+// 닫은 공지의 slug를 저장 — 새 공지(다른 slug)가 올라오면 배너가 다시 표시된다.
+const UPDATE_BANNER_DISMISS_KEY = "llt:update-banner-dismissed";
+
+function subscribeToBannerDismissal(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getDismissedBannerSlug() {
+  try {
+    return window.localStorage.getItem(UPDATE_BANNER_DISMISS_KEY);
+  } catch {
+    return null;
+  }
+}
 type ScrollDirection = "up" | "down" | null;
 
 const STORAGE_KEY_WATCHED = "llt-watched";
@@ -34,17 +47,15 @@ const STORAGE_KEY_FILTERS = "llt-filters";
 const STICKY_SCROLL_THRESHOLD = 60;
 const SCROLL_DIRECTION_DELTA = 6;
 
-function isUnavailableVideoTitle(title: string) {
-  return title === "[Private video]" || title === "[Deleted video]";
-}
-
 interface Props {
   initialData: PlaylistData;
+  /** 메인 배너에 노출할 최신 공지 (없으면 배너 미표시) */
+  latestUpdate?: AnnouncementBanner | null;
 }
 
-export default function PlaylistView({ initialData }: Props) {
+export default function PlaylistView({ initialData, latestUpdate }: Props) {
   const { user, loading: authLoading } = useAuth();
-  const { saveVideoProgress, mergeAllDevices, refreshDevices } = useProgressSync();
+  const { saveVideoProgress, mergeAllDevices, refreshDevices, requestAnonymousSync } = useProgressSync();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const adapter = useSnackbarAdapter();
   const sessionSnackbarShown = useRef(false);
@@ -65,65 +76,70 @@ export default function PlaylistView({ initialData }: Props) {
     return result;
   }, [data.seasons]);
 
-  const [generationSheetOpen, setGenerationSheetOpen] = useState(false);
-  const [selectedGeneration, setSelectedGeneration] = useState<string>(
-    () => {
-      const seen = new Set<string>();
-      for (const s of initialData.seasons) seen.add(s.id.split("-")[0]);
-      const arr = [...seen];
-      return arr[arr.length - 1] ?? "";
-    }
-  );
+  const [selectedGeneration, setSelectedGeneration] = useState<string>("all");
 
   const generationSeasons = useMemo(
     () => selectedGeneration === "all" ? data.seasons : data.seasons.filter((s) => s.id.startsWith(selectedGeneration + "-")),
     [data.seasons, selectedGeneration]
   );
 
-  const [pendingGeneration, setPendingGeneration] = useState<string>(selectedGeneration);
+  const generationGroups = useMemo(() => {
+    if (selectedGeneration !== "all") return null;
+    const groups = new Map<string, PlaylistData["seasons"]>();
+    for (const season of generationSeasons) {
+      const gen = season.id.split("-")[0];
+      if (!groups.has(gen)) groups.set(gen, []);
+      groups.get(gen)!.push(season);
+    }
+    return [...groups.entries()];
+  }, [generationSeasons, selectedGeneration]);
+
   const lastScrollY = useRef(0);
   const [scrolled, setScrolled] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<ScrollDirection>(null);
   const [compactSearchOpen, setCompactSearchOpen] = useState(false);
   const compactSearchRef = useRef<HTMLInputElement>(null);
 
-  function handleGenerationSheetOpenChange(open: boolean) {
-    if (open) setPendingGeneration(selectedGeneration);
-    setGenerationSheetOpen(open);
-  }
-
-  function handleGenerationSave() {
-    setSelectedGeneration(pendingGeneration);
-    setGenerationSheetOpen(false);
-  }
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-
+  // 업데이트 안내 배너 — 표준 닫기(X) 버튼을 누르면 localStorage에 slug를 남겨
+  // 해당 공지를 영구 숨김(새 공지가 올라오면 다시 표시).
+  const [updateBannerVisible, setUpdateBannerVisible] = useState(true);
+  const dismissedBannerSlug = useSyncExternalStore(
+    subscribeToBannerDismissal,
+    getDismissedBannerSlug,
+    () => null,
+  );
   const { progressCategories, hidePrivateVideos, autoSync } = useSettings();
 
   // Load from localStorage on mount
   useEffect(() => {
     try {
+      // 어떤 코드 경로가 레거시 키를 재작성하기 전에 원본을 불변 백업해 둔다.
+      ensureLegacyBackup();
       const watchedIdsRaw = localStorage.getItem(STORAGE_KEY_WATCHED);
       const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
       const filtersRaw = localStorage.getItem(STORAGE_KEY_FILTERS);
 
+      // Support both legacy YouTube IDs and new content IDs
       const watchedIds: string[] = watchedIdsRaw ? JSON.parse(watchedIdsRaw) : [];
       const overrides: Record<string, string | null> = overridesRaw ? JSON.parse(overridesRaw) : {};
 
       setData((prev) => ({
         seasons: prev.seasons.map((season) => ({
           ...season,
-          videos: season.videos.map((v) => {
-            const hasWatchedLocal = watchedIds.includes(v.id);
-            const overrideLocal = overrides[v.id];
-
-            return {
-              ...v,
-              watched: hasWatchedLocal || v.watched,
-              ...(overrideLocal !== undefined ? { categoryOverride: overrideLocal as any } : {}),
-            };
-          }),
+          episodes: season.episodes.map((ep) => ({
+            ...ep,
+            contents: ep.contents.map((c) => {
+              const isWatched =
+                watchedIds.includes(c.id) || watchedIds.includes(c.legacy_video_id);
+              const overrideVal = overrides[c.id] ?? overrides[c.legacy_video_id];
+              return {
+                ...c,
+                watched: isWatched || c.watched,
+                ...(overrideVal !== undefined ? { categoryOverride: overrideVal as CategoryOverrideValue } : {}),
+              };
+            }),
+          })),
         })),
       }));
 
@@ -148,7 +164,7 @@ export default function PlaylistView({ initialData }: Props) {
     adapter.create({
       render: () => <Snackbar message={`${user.email} 계정으로 로그인했어요.`} />,
     });
-  }, [authLoading, user]);
+  }, [authLoading, user, adapter]);
 
   // Re-apply progress from localStorage when ProgressSyncProvider resolves a conflict
   useEffect(() => {
@@ -161,10 +177,17 @@ export default function PlaylistView({ initialData }: Props) {
         setData((prev) => ({
           seasons: prev.seasons.map((season) => ({
             ...season,
-            videos: season.videos.map((v) => ({
-              ...v,
-              watched: watchedIds.includes(v.id),
-              ...(overrides[v.id] !== undefined ? { categoryOverride: overrides[v.id] as any } : {}),
+            episodes: season.episodes.map((ep) => ({
+              ...ep,
+              contents: ep.contents.map((c) => ({
+                ...c,
+                watched: watchedIds.includes(c.id) || watchedIds.includes(c.legacy_video_id),
+                ...(overrides[c.id] !== undefined
+                  ? { categoryOverride: overrides[c.id] as CategoryOverrideValue }
+                  : overrides[c.legacy_video_id] !== undefined
+                    ? { categoryOverride: overrides[c.legacy_video_id] as CategoryOverrideValue }
+                    : {}),
+              })),
             })),
           })),
         }));
@@ -186,22 +209,18 @@ export default function PlaylistView({ initialData }: Props) {
 
   useEffect(() => {
     if (!isInitialized) return;
-
     const el = scrollContainerRef.current;
     if (!el) return;
     const handleScroll = () => {
       const currentY = el.scrollTop;
-
       if (currentY <= STICKY_SCROLL_THRESHOLD) {
         lastScrollY.current = currentY;
         setScrolled(false);
         setScrollDirection(null);
         return;
       }
-
       const delta = currentY - lastScrollY.current;
       if (Math.abs(delta) < SCROLL_DIRECTION_DELTA) return;
-
       setScrolled(true);
       setScrollDirection(delta > 0 ? "down" : "up");
       lastScrollY.current = currentY;
@@ -210,112 +229,123 @@ export default function PlaylistView({ initialData }: Props) {
     return () => el.removeEventListener("scroll", handleScroll);
   }, [isInitialized]);
 
-  // Save changes to localStorage
+  // 비파괴 재작성(하드 제약): 현재 카탈로그가 모르는 id(삭제된 콘텐츠, 아주 오래된
+  // 데이터)는 기존 키에서 그대로 보존한다. 카탈로그가 아는 id만 현재 화면 상태로
+  // 다시 쓴다. 원본은 ensureLegacyBackup이 이미 별도 키에 떠 둔 상태.
   const saveToLocalStorage = (nextData: PlaylistData) => {
-    const allVideos = nextData.seasons.flatMap((s) => s.videos);
-    
-    // 1. Watched IDs (only those that are different from original or all watched)
-    // For simplicity, we save all currently watched IDs
-    const watchedIds = allVideos.filter((v) => v.watched).map((v) => v.id);
+    ensureLegacyBackup();
+    const allContents = nextData.seasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
+    const knownIds = new Set(allContents.flatMap((c) => [c.id, c.legacy_video_id]));
+
+    let preservedWatched: string[] = [];
+    let preservedOverrides: Record<string, string | null> = {};
+    try {
+      const prevWatched: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_WATCHED) ?? "[]");
+      preservedWatched = prevWatched.filter((id) => !knownIds.has(id));
+      const prevOverrides: Record<string, string | null> = JSON.parse(
+        localStorage.getItem(STORAGE_KEY_OVERRIDES) ?? "{}",
+      );
+      preservedOverrides = Object.fromEntries(
+        Object.entries(prevOverrides).filter(([id]) => !knownIds.has(id)),
+      );
+    } catch {
+      // 기존 키가 손상돼 있으면 보존할 수 없지만, 원본은 백업 키에 남아 있다.
+    }
+
+    const watchedIds = [
+      ...allContents.filter((c) => c.watched).map((c) => c.id),
+      ...preservedWatched,
+    ];
     localStorage.setItem(STORAGE_KEY_WATCHED, JSON.stringify(watchedIds));
 
-    // 2. Overrides
-    const overrides: Record<string, any> = {};
-    allVideos.forEach((v) => {
-      if (v.categoryOverride !== undefined) {
-        overrides[v.id] = v.categoryOverride;
-      }
+    const overrides: Record<string, string | null> = { ...preservedOverrides };
+    allContents.forEach((c) => {
+      if (c.categoryOverride !== undefined) overrides[c.id] = c.categoryOverride;
     });
     localStorage.setItem(STORAGE_KEY_OVERRIDES, JSON.stringify(overrides));
   };
 
   const stats = useMemo(() => {
-    const allVideos = generationSeasons.flatMap((s) => s.videos);
-    const targetVideos =
+    const allContents = generationSeasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
+    const targetContents =
       progressCategories.length === 0
-        ? allVideos
-        : allVideos.filter((v) => {
-            const effectiveCategory =
-              v.categoryOverride !== undefined
-                ? v.categoryOverride
-                : classifyVideoCategory(v.title);
+        ? allContents
+        : allContents.filter((c) => {
+            const effectiveCategory = c.categoryOverride !== undefined ? c.categoryOverride : c.type;
             return progressCategories.includes(effectiveCategory as VideoCategory);
           });
-    const total = targetVideos.length;
-    const watched = targetVideos.filter((v) => v.watched).length;
-    return { total, watched };
+    return {
+      total: targetContents.length,
+      watched: targetContents.filter((c) => c.watched).length,
+    };
   }, [generationSeasons, progressCategories]);
 
-  // 현재 필터 조건에 맞는 영상 수 계산
   const filteredCount = useMemo(() => {
     return generationSeasons.reduce((total, season) => {
-      const count = season.videos.filter((v) => {
-        const matchesFilter =
-          filter === "all" ||
-          (filter === "watched" && v.watched) ||
-          (filter === "unwatched" && !v.watched);
-        const matchesQuery =
-          !query || v.title.toLowerCase().includes(query.toLowerCase());
-        const matchesAvailability = !hidePrivateVideos || !isUnavailableVideoTitle(v.title);
-        
-        const effectiveCategory = v.categoryOverride !== undefined ? v.categoryOverride : classifyVideoCategory(v.title);
-        const matchesCategory =
-          categories.includes("all") || categories.includes(effectiveCategory as VideoCategory);
-
-        return matchesFilter && matchesQuery && matchesAvailability && matchesCategory;
-      }).length;
-      return total + count;
+      return total + season.episodes.reduce((epTotal, ep) => {
+        return epTotal + ep.contents.filter((c) => {
+          if (filter === "watched" && !c.watched) return false;
+          if (filter === "unwatched" && c.watched) return false;
+          if (hidePrivateVideos && c.type === "unavailable") return false;
+          if (query) {
+            const q = query.toLowerCase();
+            const inTitle =
+              (c.title_ko ?? "").toLowerCase().includes(q) ||
+              (c.title_jp ?? "").toLowerCase().includes(q) ||
+              (c.part_label ?? "").toLowerCase().includes(q);
+            if (!inTitle) return false;
+          }
+          if (!categories.includes("all")) {
+            const effectiveCategory = c.categoryOverride !== undefined ? c.categoryOverride : c.type;
+            if (!categories.includes(effectiveCategory as VideoCategory)) return false;
+          }
+          return true;
+        }).length;
+      }, 0);
     }, 0);
   }, [generationSeasons, filter, categories, query, hidePrivateVideos]);
 
   const isFiltered = filter !== "all" || !categories.includes("all") || query !== "";
 
-  async function handleToggle(videoId: string) {
-    const currentVideo = data.seasons.flatMap((s) => s.videos).find((v) => v.id === videoId);
-    const newStatus = currentVideo?.watched ? "unwatched" : "watched";
+  async function handleToggle(contentId: string) {
+    const allContents = data.seasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
+    const current = allContents.find((c) => c.id === contentId);
+    const newStatus = current?.watched ? "unwatched" : "watched";
 
     setData((prev) => {
-      const next = {
+      const next: PlaylistData = {
         seasons: prev.seasons.map((season) => ({
           ...season,
-          videos: season.videos.map((v) =>
-            v.id === videoId ? { ...v, watched: !v.watched } : v
-          ),
+          episodes: season.episodes.map((ep) => ({
+            ...ep,
+            contents: ep.contents.map((c) =>
+              c.id === contentId ? { ...c, watched: !c.watched } : c
+            ),
+          })),
         })),
       };
       if (!user) saveToLocalStorage(next);
       return next;
     });
 
-    if (user) await saveVideoProgress(videoId, newStatus);
+    if (user) {
+      await saveVideoProgress(contentId, newStatus);
+    } else {
+      // 로컬 저장이 끝난 뒤 익명 세션을 만들어 Supabase(content.id)로도 저장.
+      // 실패해도 기록은 이미 localStorage에 있다(legacy 폴백).
+      requestAnonymousSync();
+    }
   }
 
-  async function handleUpdateCategory(
-    videoId: string,
-    categoryOverride: "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto"
-  ) {
-    const currentVideo = data.seasons.flatMap((s) => s.videos).find((v) => v.id === videoId);
-    const currentStatus = currentVideo?.watched ? "watched" : "unwatched";
-
-    setData((prev) => {
-      const next = {
-        seasons: prev.seasons.map((season) => ({
-          ...season,
-          videos: season.videos.map((v) => {
-            if (v.id !== videoId) return v;
-            if (categoryOverride === "auto") {
-              const { categoryOverride: _, ...rest } = v;
-              return rest;
-            }
-            return { ...v, categoryOverride };
-          }),
-        })),
-      };
-      if (!user) saveToLocalStorage(next);
-      return next;
-    });
-
-    if (user) await saveVideoProgress(videoId, currentStatus, categoryOverride);
+  function dismissUpdateBannerForever() {
+    if (latestUpdate) {
+      try {
+        window.localStorage.setItem(UPDATE_BANNER_DISMISS_KEY, latestUpdate.slug);
+      } catch {
+        // 저장 불가 환경(시크릿 모드 등)에서는 세션 숨김으로만 동작
+      }
+    }
+    setUpdateBannerVisible(false);
   }
 
   async function handlePtrRefresh() {
@@ -340,8 +370,7 @@ export default function PlaylistView({ initialData }: Props) {
   const showCompactBar = showCompactHeader;
   const ptrEnabled = Boolean(user && autoSync);
 
-
-  if (!isInitialized) return null; // Prevent flash of original data before local storage load
+  if (!isInitialized) return null;
 
   return (
     <PullToRefresh.Root
@@ -368,47 +397,6 @@ export default function PlaylistView({ initialData }: Props) {
       ) : null}
 
       <PullToRefresh.Content>
-      {/* 기수 선택 시트 */}
-      {generations.length > 1 && (
-        <BottomSheetRoot
-          {...PullToRefresh.preventPull}
-          open={generationSheetOpen}
-          onOpenChange={handleGenerationSheetOpenChange}
-          closeOnEscape
-          closeOnInteractOutside
-        >
-          <BottomSheetContent
-            title="기수 선택"
-            showCloseButton
-            aria-describedby={undefined}
-            style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
-          >
-            <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x6)" }}>
-              <RadioGroup
-                aria-label="기수 선택"
-                value={pendingGeneration}
-                onValueChange={setPendingGeneration}
-              >
-                <RadioGroupItem value="all" label="전체" tone="neutral" size="large" />
-                {generations.map((gen) => (
-                  <RadioGroupItem key={gen} value={gen} label={`${gen}기`} tone="neutral" size="large" />
-                ))}
-              </RadioGroup>
-            </BottomSheetBody>
-            <BottomSheetFooter>
-              <ActionButton
-                size="large"
-                variant="neutralSolid"
-                style={{ width: "100%" }}
-                onClick={handleGenerationSave}
-              >
-                저장
-              </ActionButton>
-            </BottomSheetFooter>
-          </BottomSheetContent>
-        </BottomSheetRoot>
-      )}
-
       {/* 컴팩트 스티키 헤더 */}
       <div className={`compact-bar-wrapper${showCompactBar ? " compact-bar-wrapper--visible" : ""}`}>
         {showCompactHeader ? (
@@ -425,7 +413,7 @@ export default function PlaylistView({ initialData }: Props) {
                   <TextFieldInput
                     ref={compactSearchRef}
                     placeholder="제목 검색..."
-                    aria-label="영상 제목 검색"
+                    aria-label="콘텐츠 제목 검색"
                     onKeyDown={(e) => { if (e.key === "Escape") { setQuery(""); setCompactSearchOpen(false); } }}
                   />
                 </TextFieldRoot>
@@ -442,10 +430,29 @@ export default function PlaylistView({ initialData }: Props) {
             ) : (
               <>
                 {generations.length > 1 ? (
-                  <button className="generation-title-button compact-header-title" onClick={() => handleGenerationSheetOpenChange(true)}>
-                    {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
-                    <Icon svg={<IconChevronDownLine />} size="16px" />
-                  </button>
+                  <MenuRoot placement="bottom-start">
+                    <MenuTrigger asChild>
+                      <button className="generation-title-button compact-header-title">
+                        {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+                        <Icon svg={<IconChevronDownLine />} size="16px" />
+                      </button>
+                    </MenuTrigger>
+                    <MenuContent >
+                      <MenuItem
+                        label="전체"
+                        suffixIcon={selectedGeneration === "all" ? <IconCheckmarkLine /> : undefined}
+                        onClick={() => setSelectedGeneration("all")}
+                      />
+                      {generations.map((gen) => (
+                        <MenuItem
+                          key={gen}
+                          label={`${gen}기`}
+                          suffixIcon={selectedGeneration === gen ? <IconCheckmarkLine /> : undefined}
+                          onClick={() => setSelectedGeneration(gen)}
+                        />
+                      ))}
+                    </MenuContent>
+                  </MenuRoot>
                 ) : (
                   <span className="compact-header-title">
                     {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
@@ -490,17 +497,36 @@ export default function PlaylistView({ initialData }: Props) {
         title="lltracker"
         leftSlot={
           generations.length > 1 ? (
-            <button className="generation-title-button" onClick={() => handleGenerationSheetOpenChange(true)}>
-              {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
-              <Icon svg={<IconChevronDownLine />} size="18px" />
-            </button>
+            <MenuRoot placement="bottom-start">
+              <MenuTrigger asChild>
+                <button className="generation-title-button">
+                  {selectedGeneration === "all" ? "전체" : `${selectedGeneration}기`}
+                  <Icon svg={<IconChevronDownLine />} size="18px" />
+                </button>
+              </MenuTrigger>
+              <MenuContent>
+                <MenuItem
+                  label="전체"
+                  suffixIcon={selectedGeneration === "all" ? <IconCheckmarkLine /> : undefined}
+                  onClick={() => setSelectedGeneration("all")}
+                />
+                {generations.map((gen) => (
+                  <MenuItem
+                    key={gen}
+                    label={`${gen}기`}
+                    suffixIcon={selectedGeneration === gen ? <IconCheckmarkLine /> : undefined}
+                    onClick={() => setSelectedGeneration(gen)}
+                  />
+                ))}
+              </MenuContent>
+            </MenuRoot>
           ) : undefined
         }
         rightSlot={<SettingsLink />}
       />
 
       {/* 전체 진행률 */}
-      <PlaylistProgress watched={stats.watched} total={stats.total} />
+      <PlaylistProgress watched={stats.watched} total={stats.total} progressCategories={progressCategories} />
 
       {/* 필터 + 검색 */}
       <FilterBar
@@ -516,17 +542,30 @@ export default function PlaylistView({ initialData }: Props) {
 
       {/* 필터 결과 피드백 */}
       {isFiltered && (
-        <div className="filter-result-bar" role="status" aria-live="polite">
-          <span className="filter-result-count">{filteredCount}편</span>
-          <span className="filter-result-label"> 표시 중</span>
-        </div>
+        <Box px="spacingX.globalGutter" mb="spacingY.componentDefault" role="status" aria-live="polite">
+          <Text textStyle="t3Bold" color="fg.neutral">{filteredCount}편</Text>
+          <Text textStyle="t3Regular" color="fg.neutralSubtle"> 표시 중</Text>
+        </Box>
       )}
 
-      {errorMessage ? (
-        <p role="alert" className="error-message">
-          {errorMessage}
-        </p>
-      ) : null}
+      {/* 업데이트 안내 배너 */}
+      {updateBannerVisible && latestUpdate && dismissedBannerSlug !== latestUpdate.slug && (
+        <div style={{ padding: "0 var(--seed-dimension-spacing-x-global-gutter)", marginBottom: "8px" }}>
+          <DismissibleCallout
+            tone="magic"
+            prefixIcon={<IconSparkle2Fill />}
+            title={latestUpdate.bannerTitle ?? latestUpdate.title}
+            description={latestUpdate.summary}
+            linkProps={{
+              asChild: true,
+              children: (
+                <Link href={`/updates/${latestUpdate.slug}`}>자세히 보기</Link>
+              ),
+            }}
+            onDismiss={dismissUpdateBannerForever}
+          />
+        </div>
+      )}
 
       {/* 추가 요청 배너 */}
       <div style={{ padding: "0 var(--seed-dimension-spacing-x-global-gutter)", marginBottom: "8px" }}>
@@ -542,23 +581,42 @@ export default function PlaylistView({ initialData }: Props) {
       </div>
 
       {/* 시즌별 그룹 */}
-      {(sortOrder === "newest" ? [...generationSeasons].reverse() : generationSeasons).map((season) => (
-        <SeasonGroup
-          key={season.id}
-          season={season}
-          filter={filter}
-          categories={categories}
-          query={query}
-          sortOrder={sortOrder}
-          hidePrivateVideos={hidePrivateVideos}
-          isUnavailableVideoTitle={isUnavailableVideoTitle}
-          classifyVideoCategory={classifyVideoCategory}
-          onToggle={handleToggle}
-          onUpdateCategory={handleUpdateCategory}
-        />
-      ))}
-
-      {/* TODO: 다음 미시청 콘텐츠 이동 FAB — 연속성 기능 완성 후 활성화 */}
+      {selectedGeneration === "all"
+        ? (sortOrder === "newest" ? [...(generationGroups ?? [])].reverse() : (generationGroups ?? [])).map(([gen, seasons]) => {
+            const orderedSeasons = sortOrder === "newest" ? [...seasons].reverse() : seasons;
+            return (
+              <div key={gen}>
+                <h3 className="generation-heading">{gen}기</h3>
+                {orderedSeasons.map((season) => (
+                  <SeasonGroup
+                    key={season.id}
+                    season={season}
+                    filter={filter}
+                    categories={categories}
+                    query={query}
+                    sortOrder={sortOrder}
+                    hidePrivateVideos={hidePrivateVideos}
+                    onToggle={handleToggle}
+                    headingLevel={4}
+                  />
+                ))}
+              </div>
+            );
+          })
+        : (sortOrder === "newest" ? [...generationSeasons].reverse() : generationSeasons).map((season) => (
+            <SeasonGroup
+              key={season.id}
+              season={season}
+              filter={filter}
+              categories={categories}
+              query={query}
+              sortOrder={sortOrder}
+              hidePrivateVideos={hidePrivateVideos}
+              onToggle={handleToggle}
+              headingLevel={4}
+            />
+          ))
+      }
       </PullToRefresh.Content>
     </PullToRefresh.Root>
   );

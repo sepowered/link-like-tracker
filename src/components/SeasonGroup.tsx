@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { Season, Video } from "@/types";
+import { useState, useMemo } from "react";
+import { Season, Episode, Content } from "@/types";
 import { VideoCategory } from "@/lib/video-category";
-import VideoItem from "./VideoItem";
-import * as Progress from "@radix-ui/react-progress";
+import ContentItem from "./ContentItem";
+import { useSettings } from "./SettingsProvider";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/ui/accordion";
 
 type FilterType = "all" | "watched" | "unwatched";
-type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
 
 interface Props {
   season: Season;
@@ -16,20 +16,115 @@ interface Props {
   query: string;
   sortOrder: "newest" | "oldest";
   hidePrivateVideos: boolean;
-  isUnavailableVideoTitle: (title: string) => boolean;
-  classifyVideoCategory: (title: string) => Exclude<VideoCategory, "all"> | null;
-  onToggle: (videoId: string) => void;
-  onUpdateCategory: (videoId: string, categoryOverride: CategoryOverrideArg) => void;
-  scrollToVideoId?: string | null;
+  onToggle: (contentId: string) => void;
+  headingLevel?: 4 | 5;
 }
 
-function getEffectiveCategory(
-  video: Video,
-  classifyVideoCategory: (title: string) => Exclude<VideoCategory, "all"> | null
-) {
-  return video.categoryOverride !== undefined
-    ? video.categoryOverride
-    : classifyVideoCategory(video.title);
+function matchesFilters(
+  content: Content,
+  filter: FilterType,
+  categories: VideoCategory[],
+  query: string,
+  hidePrivateVideos: boolean
+): boolean {
+  if (filter === "watched" && !content.watched) return false;
+  if (filter === "unwatched" && content.watched) return false;
+  if (hidePrivateVideos && content.type === "unavailable") return false;
+
+  if (query) {
+    const q = query.toLowerCase();
+    const inTitle = (content.title_ko ?? "").toLowerCase().includes(q)
+      || (content.title_jp ?? "").toLowerCase().includes(q)
+      || (content.part_label ?? "").toLowerCase().includes(q);
+    if (!inTitle) return false;
+  }
+
+  if (!categories.includes("all")) {
+    const effectiveCategory = content.categoryOverride !== undefined ? content.categoryOverride : content.type;
+    if (!categories.includes(effectiveCategory as VideoCategory)) return false;
+  }
+
+  return true;
+}
+
+function EpisodeGroup({
+  episode,
+  seasonName,
+  filter,
+  categories,
+  query,
+  sortOrder,
+  hidePrivateVideos,
+  headingLevel = 4,
+  onToggle,
+}: {
+  episode: Episode;
+  seasonName: string;
+  filter: FilterType;
+  categories: VideoCategory[];
+  query: string;
+  sortOrder: "newest" | "oldest";
+  hidePrivateVideos: boolean;
+  headingLevel?: 4 | 5;
+  onToggle: (contentId: string) => void;
+}) {
+  const { language } = useSettings();
+  // null = 사용자가 아직 직접 토글하지 않음 → 파생 기본값(시청 중 여부)을 따른다.
+  // 시청 기록이 마운트 후 localStorage에서 합쳐져도 기본값이 따라 열리고,
+  // 사용자가 한 번 토글하면 그 선택이 우선한다.
+  const [userValues, setUserValues] = useState<string[] | null>(null);
+
+  const filteredContents = useMemo(() => {
+    const matched = episode.contents.filter((c) =>
+      matchesFilters(c, filter, categories, query, hidePrivateVideos)
+    );
+    return sortOrder === "newest" ? [...matched].reverse() : matched;
+  }, [episode.contents, filter, categories, query, sortOrder, hidePrivateVideos]);
+
+  if (filteredContents.length === 0) return null;
+
+  const watchedCount = episode.contents.filter((c) => c.watched).length;
+  const totalCount = episode.contents.length;
+  const episodeTitle = language === "jp" ? episode.title_jp : episode.title_ko;
+  const episodeLabel = episode.episode_number > 0
+    ? `${episode.episode_number}장 — ${episodeTitle}`
+    : episodeTitle;
+  // 모달 등에서 "Part 1"만으로는 무슨 영상인지 알 수 없어 상위 맥락을 함께
+  // 전달한다. 장 번호는 기수마다 반복되므로 시즌명까지 포함해야 식별된다.
+  const contextLabel = [seasonName, episodeLabel].filter(Boolean).join(" · ");
+
+  // 기본은 모두 접힘 — 시청 중(일부만 시청)인 에피소드만 열어둔다.
+  const inProgress = watchedCount > 0 && watchedCount < totalCount;
+  // 시청상태·카테고리 필터는 localStorage에 영구 저장되므로 강제 펼침에 쓰면
+  // 접기 버튼이 영영 안 먹는다 — 기본값만 펼침으로 하고 접기는 허용한다.
+  // 검색어는 일시적이니 입력 중에만 강제로 펼쳐 결과가 가려지지 않게 한다.
+  const searching = query.trim().length > 0;
+  const filteringActive = filter !== "all" || !categories.includes("all");
+  const values = searching
+    ? ["episode"]
+    : userValues ?? (inProgress || filteringActive ? ["episode"] : []);
+
+  return (
+    <Accordion values={values} onValuesChange={setUserValues}>
+      <AccordionItem value="episode">
+        <AccordionTrigger
+          title={episodeLabel}
+          description={`${watchedCount}/${totalCount}`}
+          headingLevel={headingLevel}
+        />
+        <AccordionContent>
+          {filteredContents.map((content) => (
+            <ContentItem
+              key={content.id}
+              content={content}
+              contextLabel={contextLabel}
+              onToggle={onToggle}
+            />
+          ))}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
 }
 
 export default function SeasonGroup({
@@ -39,76 +134,39 @@ export default function SeasonGroup({
   query,
   sortOrder,
   hidePrivateVideos,
-  isUnavailableVideoTitle,
-  classifyVideoCategory,
   onToggle,
-  onUpdateCategory,
-  scrollToVideoId,
+  headingLevel = 4,
 }: Props) {
-  const [open, setOpen] = useState(true);
+  const hasVisibleContents = useMemo(
+    () =>
+      season.episodes.some((ep) =>
+        ep.contents.some((c) => matchesFilters(c, filter, categories, query, hidePrivateVideos))
+      ),
+    [season.episodes, filter, categories, query, hidePrivateVideos]
+  );
 
-  useEffect(() => {
-    if (scrollToVideoId && season.videos.some((v) => v.id === scrollToVideoId)) {
-      setOpen(true);
-    }
-  }, [scrollToVideoId]);
+  if (!hasVisibleContents) return null;
 
-  const filteredVideos = useMemo(() => {
-    const vids = season.videos.filter((v) => {
-      const matchesFilter =
-        filter === "all" ||
-        (filter === "watched" && v.watched) ||
-        (filter === "unwatched" && !v.watched);
-      const matchesQuery =
-        !query || v.title.toLowerCase().includes(query.toLowerCase());
-      const matchesAvailability = !hidePrivateVideos || !isUnavailableVideoTitle(v.title);
-      const effectiveCategory = getEffectiveCategory(v, classifyVideoCategory);
-      const matchesCategory =
-        categories.includes("all") || categories.includes(effectiveCategory as VideoCategory);
-      return matchesFilter && matchesQuery && matchesAvailability && matchesCategory;
-    });
-    
-    return sortOrder === "newest" ? vids.reverse() : vids;
-  }, [season.videos, filter, categories, query, sortOrder, hidePrivateVideos, isUnavailableVideoTitle, classifyVideoCategory]);
-
-  if (filteredVideos.length === 0) return null;
-
-  const watchedCount = season.videos.filter((v) => v.watched).length;
-  const totalCount = season.videos.length;
-  const seasonPercent = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0;
+  const orderedEpisodes = sortOrder === "newest"
+    ? [...season.episodes].reverse()
+    : season.episodes;
 
   return (
-    <div className="season-group">
-      <button className="season-header" onClick={() => setOpen((o) => !o)}>
-        <div className="season-header-left">
-          <span className={`chevron ${open ? "open" : ""}`}>▼</span>
-          <span className="season-name">{season.name}</span>
-        </div>
-        <div className="season-header-right">
-          <Progress.Root className="season-mini-progress" value={seasonPercent}>
-            <Progress.Indicator
-              className="season-mini-progress-fill"
-              style={{ transform: `translateX(-${100 - seasonPercent}%)` }}
-            />
-          </Progress.Root>
-          <span className="season-progress-text">
-            {watchedCount}/{totalCount}
-          </span>
-        </div>
-      </button>
-      {open && (
-        <div className="season-videos">
-          {filteredVideos.map((video) => (
-            <VideoItem
-              key={video.id}
-              video={video}
-              category={classifyVideoCategory(video.title)}
-              onToggle={onToggle}
-              onUpdateCategory={onUpdateCategory}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    <>
+      {orderedEpisodes.map((episode) => (
+        <EpisodeGroup
+          key={episode.id}
+          episode={episode}
+          seasonName={season.name}
+          filter={filter}
+          categories={categories}
+          query={query}
+          sortOrder={sortOrder}
+          hidePrivateVideos={hidePrivateVideos}
+          headingLevel={headingLevel}
+          onToggle={onToggle}
+        />
+      ))}
+    </>
   );
 }

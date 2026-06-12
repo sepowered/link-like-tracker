@@ -10,10 +10,13 @@ import {
   CalloutTitle,
   CalloutDescription,
   CalloutLink,
+  CalloutCloseButton,
+  Icon,
   PrefixIcon,
   type CalloutRootProps,
   type CalloutLinkProps,
 } from "@seed-design/react";
+import { IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 import * as React from "react";
 
 export interface CalloutProps
@@ -43,6 +46,39 @@ export const Callout = React.forwardRef<
   );
 });
 Callout.displayName = "Callout";
+
+export interface DismissibleCalloutProps extends CalloutProps {
+  onDismiss?: () => void;
+}
+
+/**
+ * 닫기 버튼이 있는 Callout.
+ * @see https://seed-design.io/react/components/callout#dismissiblecallout
+ */
+export const DismissibleCallout = React.forwardRef<
+  React.ElementRef<typeof CalloutRoot>,
+  DismissibleCalloutProps
+>(
+  (
+    { title, description, linkProps, prefixIcon, onDismiss, ...otherProps },
+    ref,
+  ) => {
+    return (
+      <CalloutRoot ref={ref} {...otherProps}>
+        {prefixIcon && <PrefixIcon svg={prefixIcon} />}
+        <CalloutContent>
+          {title && <CalloutTitle>{title}</CalloutTitle>}
+          <CalloutDescription>{description}</CalloutDescription>
+          {linkProps && <CalloutLink {...linkProps} />}
+        </CalloutContent>
+        <CalloutCloseButton aria-label="닫기" onClick={onDismiss}>
+          <Icon svg={<IconXmarkLine />} size="16px" />
+        </CalloutCloseButton>
+      </CalloutRoot>
+    );
+  },
+);
+DismissibleCallout.displayName = "DismissibleCallout";
 
 /**
  * This file is a snippet from SEED Design, helping you get started quickly with @seed-design/* packages.

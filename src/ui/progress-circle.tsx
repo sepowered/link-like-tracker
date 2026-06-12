@@ -7,7 +7,7 @@
 import { ProgressCircle as SeedProgressCircle } from "@seed-design/react";
 import * as React from "react";
 
-export interface ProgressCircleProps extends SeedProgressCircle.RootProps {}
+export type ProgressCircleProps = SeedProgressCircle.RootProps;
 
 /**
  * @see https://seed-design.io/react/components/progress-circle

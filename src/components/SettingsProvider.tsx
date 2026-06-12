@@ -8,10 +8,15 @@ import type { SyncedSettings } from "@/lib/supabase-settings";
 import { useAuth } from "@/providers/AuthProvider";
 
 export type ColorScheme = "light" | "dark" | "system";
+export type Language = "ko" | "jp";
 
 interface SettingsContextValue extends SyncedSettings {
   colorScheme: ColorScheme;
   setColorScheme: (scheme: ColorScheme) => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  uiLanguage: Language;
+  setUiLanguage: (lang: Language) => void;
   setProgressCategories: (categories: VideoCategory[]) => void;
   setHidePrivateVideos: (hide: boolean) => void;
   setAutoSync: (autoSync: boolean) => void;
@@ -20,6 +25,8 @@ interface SettingsContextValue extends SyncedSettings {
 
 const STORAGE_KEY = "llt-settings";
 const THEME_KEY = "seed-color-scheme";
+const LANGUAGE_KEY = "llt-language";
+const UI_LANGUAGE_KEY = "llt-ui-language";
 
 const DEFAULT_SETTINGS: SyncedSettings = {
   progressCategories: [],
@@ -67,14 +74,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const [settings, setSettings] = useState<SyncedSettings>(DEFAULT_SETTINGS);
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>("light");
+  const [language, setLanguageState] = useState<Language>("ko");
+  const [uiLanguage, setUiLanguageState] = useState<Language>("ko");
   const [isInitialized, setIsInitialized] = useState(false);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initializing from localStorage on mount; intentional one-time sync
     setSettings(loadSettings());
     try {
       const stored = localStorage.getItem(THEME_KEY);
       setColorSchemeState(stored === "dark" ? "dark" : stored === "light" ? "light" : "system");
+      const storedLang = localStorage.getItem(LANGUAGE_KEY);
+      setLanguageState(storedLang === "jp" ? "jp" : "ko");
+      const storedUiLang = localStorage.getItem(UI_LANGUAGE_KEY);
+      setUiLanguageState(storedUiLang === "jp" ? "jp" : "ko");
     } catch {}
     setIsInitialized(true);
   }, []);
@@ -83,6 +97,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (!isInitialized || authLoading) return;
 
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting synced user on auth state change; intentional reactive update
       setSyncedUserId(null);
       return;
     }
@@ -144,12 +159,30 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setColorSchemeState(scheme);
   };
 
+  const setLanguage = (lang: Language) => {
+    try {
+      localStorage.setItem(LANGUAGE_KEY, lang);
+    } catch {}
+    setLanguageState(lang);
+  };
+
+  const setUiLanguage = (lang: Language) => {
+    try {
+      localStorage.setItem(UI_LANGUAGE_KEY, lang);
+    } catch {}
+    setUiLanguageState(lang);
+  };
+
   return (
     <SettingsContext.Provider
       value={{
         ...settings,
         colorScheme,
         setColorScheme,
+        language,
+        setLanguage,
+        uiLanguage,
+        setUiLanguage,
         isInitialized,
         setProgressCategories: (categories) => update({ progressCategories: categories }),
         setHidePrivateVideos: (hide) => update({ hidePrivateVideos: hide }),

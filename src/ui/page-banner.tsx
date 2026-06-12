@@ -45,7 +45,7 @@ export const PageBanner = React.forwardRef<
 });
 PageBanner.displayName = "PageBanner";
 
-export interface PageBannerButtonProps extends SeedPageBanner.ButtonProps {}
+export type PageBannerButtonProps = SeedPageBanner.ButtonProps;
 
 export const PageBannerButton = SeedPageBanner.Button;
 

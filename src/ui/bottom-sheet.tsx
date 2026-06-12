@@ -9,7 +9,7 @@ import { Icon, BottomSheet as SeedBottomSheet, VisuallyHidden } from "@seed-desi
 import type * as React from "react";
 import { forwardRef } from "react";
 
-export interface BottomSheetRootProps extends SeedBottomSheet.RootProps {}
+export type BottomSheetRootProps = SeedBottomSheet.RootProps;
 
 /**
  * @see https://seed-design.io/react/components/action-sheet
@@ -19,7 +19,7 @@ export const BottomSheetRoot = (props: BottomSheetRootProps) => {
   return <SeedBottomSheet.Root {...otherProps}>{children}</SeedBottomSheet.Root>;
 };
 
-export interface BottomSheetTriggerProps extends SeedBottomSheet.TriggerProps {}
+export type BottomSheetTriggerProps = SeedBottomSheet.TriggerProps;
 
 export const BottomSheetTrigger = SeedBottomSheet.Trigger;
 
@@ -98,12 +98,13 @@ export const BottomSheetContent = forwardRef<HTMLDivElement, BottomSheetContentP
     );
   },
 );
+BottomSheetContent.displayName = "BottomSheetContent";
 
-export interface BottomSheetBodyProps extends SeedBottomSheet.BodyProps {}
+export type BottomSheetBodyProps = SeedBottomSheet.BodyProps;
 
 export const BottomSheetBody = SeedBottomSheet.Body;
 
-export interface BottomSheetFooterProps extends SeedBottomSheet.FooterProps {}
+export type BottomSheetFooterProps = SeedBottomSheet.FooterProps;
 
 export const BottomSheetFooter = SeedBottomSheet.Footer;
 

@@ -131,7 +131,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 );
 Checkbox.displayName = "Checkbox";
 
-export interface CheckmarkProps extends SeedCheckbox.ControlProps {}
+export type CheckmarkProps = SeedCheckbox.ControlProps;
 
 export const Checkmark = React.forwardRef<HTMLDivElement, CheckmarkProps>((props, ref) => {
   return (

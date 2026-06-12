@@ -11,7 +11,7 @@ import {
   type ListHeaderProps as SeedListHeaderProps,
 } from "@seed-design/react";
 
-export interface ListHeaderProps extends SeedListHeaderProps {}
+export type ListHeaderProps = SeedListHeaderProps;
 
 /**
  * @see https://seed-design.io/react/components/list

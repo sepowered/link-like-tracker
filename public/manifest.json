@@ -1,7 +1,7 @@
 {
-  "name": "Oh-My-Hasu Tracker",
-  "short_name": "HasuTracker",
-  "description": "Oh-My-Hasu Video Watch Tracker",
+  "name": "lltracker",
+  "short_name": "lltracker",
+  "description": "link-like-tracker 🪷",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

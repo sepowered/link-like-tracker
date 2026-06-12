@@ -44,24 +44,25 @@ export const AlertDialogContent = forwardRef<HTMLDivElement, AlertDialogContentP
     );
   },
 );
+AlertDialogContent.displayName = "AlertDialogContent";
 
-export interface AlertDialogTriggerProps extends Dialog.TriggerProps {}
+export type AlertDialogTriggerProps = Dialog.TriggerProps;
 
 export const AlertDialogTrigger = Dialog.Trigger;
 
-export interface AlertDialogHeaderProps extends Dialog.HeaderProps {}
+export type AlertDialogHeaderProps = Dialog.HeaderProps;
 
 export const AlertDialogHeader = Dialog.Header;
 
-export interface AlertDialogTitleProps extends Dialog.TitleProps {}
+export type AlertDialogTitleProps = Dialog.TitleProps;
 
 export const AlertDialogTitle = Dialog.Title;
 
-export interface AlertDialogDescriptionProps extends Dialog.DescriptionProps {}
+export type AlertDialogDescriptionProps = Dialog.DescriptionProps;
 
 export const AlertDialogDescription = Dialog.Description;
 
-export interface AlertDialogFooterProps extends Dialog.FooterProps {}
+export type AlertDialogFooterProps = Dialog.FooterProps;
 
 export const AlertDialogFooter = Dialog.Footer;
 
@@ -78,6 +79,7 @@ export const AlertDialogAction = forwardRef<HTMLButtonElement, AlertDialogAction
     );
   },
 );
+AlertDialogAction.displayName = "AlertDialogAction";
 
 /**
  * This file is a snippet from SEED Design, helping you get started quickly with @seed-design/* packages.

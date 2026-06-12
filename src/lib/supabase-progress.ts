@@ -1,6 +1,23 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ProgressEntry, ProgressStatus } from "./progress-sync";
 import type { CategoryOverrideValue } from "./storage";
+import { isProgressWriteFrozen } from "./progress-write";
+
+// Single chokepoint for the read-only guard. Returns true when the write must be
+// suppressed (preview points at the production Supabase instance). Warns once so
+// testers see why nothing persisted, without spamming the console.
+let readonlyWarned = false;
+function writeSuppressed(op: string): boolean {
+  if (!isProgressWriteFrozen()) return false;
+  if (!readonlyWarned && typeof console !== "undefined") {
+    readonlyWarned = true;
+    console.warn(
+      `[progress] read-only mode active (NEXT_PUBLIC_PROGRESS_READONLY=enabled): ` +
+        `database writes are suppressed. First blocked write: ${op}.`,
+    );
+  }
+  return true;
+}
 
 export interface RemoteProgressRow {
   video_id: string;
@@ -22,6 +39,7 @@ export async function upsertDevice(
   deviceId: string,
   deviceName?: string,
 ): Promise<void> {
+  if (writeSuppressed("upsertDevice")) return;
   await supabase.from("user_devices").upsert(
     { user_id: userId, device_id: deviceId, device_name: deviceName ?? null, last_seen_at: new Date().toISOString() },
     { onConflict: "user_id,device_id" },
@@ -46,6 +64,7 @@ export async function uploadProgress(
   deviceId: string,
   entries: ProgressEntry[],
 ): Promise<void> {
+  if (writeSuppressed("uploadProgress")) return;
   if (entries.length === 0) return;
   const rows = entries.map((e) => ({
     user_id: userId,
@@ -80,16 +99,35 @@ export async function deleteDeviceProgress(
   userId: string,
   deviceId: string,
 ): Promise<void> {
+  if (writeSuppressed("deleteDeviceProgress")) return;
   const { error: e1 } = await supabase.from("user_progress").delete().eq("user_id", userId).eq("device_id", deviceId);
   if (e1) throw new Error(`deleteDeviceProgress(progress): ${e1.message}`);
   const { error: e2 } = await supabase.from("user_devices").delete().eq("user_id", userId).eq("device_id", deviceId);
   if (e2) throw new Error(`deleteDeviceProgress(devices): ${e2.message}`);
 }
 
+// "이 기기 기록으로 맞추기"용: 현재 기기를 제외한 다른 기기들의 진행 행만 지운다.
+// 호출부는 반드시 현재 기기 업로드가 '성공한 뒤'에 이 함수를 불러야 한다 —
+// 업로드 실패 시 아무것도 지워지지 않아 원격 데이터가 보존된다(하드 제약).
+export async function deleteOtherDevicesProgress(
+  supabase: SupabaseClient,
+  userId: string,
+  keepDeviceId: string,
+): Promise<void> {
+  if (writeSuppressed("deleteOtherDevicesProgress")) return;
+  const { error } = await supabase
+    .from("user_progress")
+    .delete()
+    .eq("user_id", userId)
+    .neq("device_id", keepDeviceId);
+  if (error) throw new Error(`deleteOtherDevicesProgress: ${error.message}`);
+}
+
 export async function deleteAllProgress(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<void> {
+  if (writeSuppressed("deleteAllProgress")) return;
   const { error } = await supabase.from("user_progress").delete().eq("user_id", userId);
   if (error) throw new Error(`deleteAllProgress: ${error.message}`);
 }

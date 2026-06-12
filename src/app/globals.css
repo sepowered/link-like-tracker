@@ -90,6 +90,17 @@ body {
   padding-top: 0;
 }
 
+/* ─── 기수 구분 헤더 (전체 보기) ──────────────────────────────── */
+
+.generation-heading {
+  margin: 0;
+  padding: 20px var(--seed-dimension-spacing-x-global-gutter) 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--seed-color-fg-neutral);
+  letter-spacing: -0.02em;
+}
+
 .generation-title-button {
   display: inline-flex;
   align-items: center;
@@ -116,7 +127,8 @@ body {
 /* ─── 전체 진행률 섹션 ─────────────────────────────────────── */
 
 .progress-section {
-  background-color: var(--seed-color-bg-layer-basement);
+  background-color: var(--seed-color-bg-layer-default);
+  border: 1px solid var(--seed-color-stroke-neutral-subtle);
   border-radius: 12px;
   padding: 14px 16px;
   margin: 0 var(--seed-dimension-spacing-x-global-gutter) 16px;
@@ -125,67 +137,54 @@ body {
 .progress-stats {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  gap: 6px;
   margin-bottom: 10px;
+  justify-content: space-between;
 }
 
-.progress-stat-main {
+.progress-stat-left {
   display: flex;
   align-items: baseline;
-  gap: 2px;
-  font-size: 13px;
-  color: var(--seed-color-fg-neutral-subtle);
+  gap: 6px;
 }
 
-.progress-stat-watched {
+.progress-stat-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.progress-stat-percent {
   font-size: 22px;
   font-weight: 700;
   color: var(--seed-color-fg-neutral);
   line-height: 1;
 }
 
-.progress-stat-sep {
-  font-size: 16px;
-  color: var(--seed-color-fg-disabled);
-  margin: 0 1px;
+.progress-stat-fraction {
+  font-size: 13px;
+  color: var(--seed-color-fg-neutral-subtle);
 }
 
-.progress-stat-total {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--seed-color-fg-neutral-muted);
-}
+/* ─── Progress Bar ─────────────────────────────────────────── */
 
-.progress-stat-unit {
-  font-size: 12px;
-  color: var(--seed-color-fg-placeholder);
-  margin-left: 4px;
-}
-
-.progress-stat-percent {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--seed-color-fg-neutral);
-}
-
-/* ─── Radix UI Progress ─────────────────────────────────────── */
-
-.progress-root {
-  position: relative;
-  overflow: hidden;
-  background: var(--seed-color-stroke-neutral-weak);
-  border-radius: 999px;
+.progress-track {
   width: 100%;
-  height: 12px; /* 6px -> 12px로 두껍게 변경 */
+  height: 4px;
+  border-radius: 9999px;
+  background-color: var(--seed-color-palette-gray-200);
   /* Fix overflow clipping in Safari/iOS */
   transform: translateZ(0);
+  overflow: hidden;
 }
 
-.progress-indicator {
-  background-color: var(--seed-color-bg-neutral-solid);
-  width: 100%;
+.progress-fill {
   height: 100%;
-  transition: transform 660ms cubic-bezier(0.65, 0, 0.35, 1);
+  border-radius: 9999px;
+  background-color: var(--seed-color-palette-gray-1000);
+  transition: width 300ms cubic-bezier(0, 0, 0.15, 1);
 }
 
 /* ─── 필터 바 ────────────────────────────────────────────────── */
@@ -237,23 +236,6 @@ body {
   border-radius: 4px !important;
 }
 
-
-/* ─── 필터 결과 피드백 바 ─────────────────────────────────────── */
-
-.filter-result-bar {
-  padding: 6px var(--seed-dimension-spacing-x-global-gutter);
-  margin-bottom: 4px;
-  font-size: 12px;
-}
-
-.filter-result-count {
-  font-weight: 700;
-  color: var(--seed-color-fg-brand);
-}
-
-.filter-result-label {
-  color: var(--seed-color-fg-placeholder);
-}
 
 /* ─── 에러 메시지 ────────────────────────────────────────────── */
 
@@ -358,6 +340,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 9px var(--seed-dimension-spacing-x-global-gutter);
+  transition: background-color 0.2s;
 }
 
 .video-title {
@@ -368,9 +351,12 @@ body {
   line-height: 1.45;
 }
 
-.video-title:hover {
-  color: var(--seed-color-fg-brand);
-  text-decoration: underline;
+/* seed는 상호작용 상태를 밑줄이 아니라 레이어 배경 변화로 표현한다.
+   터치 기기에서 hover 잔상이 남지 않도록 hover 지원 환경에만 적용. */
+@media (hover: hover) {
+  .video-item:hover {
+    background-color: var(--seed-color-bg-layer-default-pressed);
+  }
 }
 
 .video-item.watched .video-title {
@@ -402,11 +388,62 @@ body {
   margin: 0 0 12px 0;
 }
 
+
+.settings-catalog-risk-ack {
+  margin-top: var(--seed-dimension-x4);
+}
+
 .settings-consent-link {
   color: var(--seed-color-fg-neutral);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* ─── 공지 목록 ───────────────────────────────────────────────── */
+
+.updates-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.updates-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px var(--seed-dimension-spacing-x-global-gutter);
+  text-decoration: none;
+  border-bottom: 1px solid var(--seed-color-stroke-neutral-weak);
+  transition: background-color 0.2s;
+}
+
+@media (hover: hover) {
+  .updates-list-item:hover {
+    background-color: var(--seed-color-bg-layer-default-pressed);
+  }
+}
+
+.updates-list-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--seed-color-fg-neutral);
+}
+
+.updates-list-summary {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--seed-color-fg-neutral-subtle);
+}
+
+.updates-list-date {
+  font-size: 12px;
+  color: var(--seed-color-fg-placeholder);
+}
+
+.updates-empty {
+  margin: 24px var(--seed-dimension-spacing-x-global-gutter);
+  font-size: 14px;
+  color: var(--seed-color-fg-neutral-subtle);
 }
 
 .terms-page {
@@ -442,5 +479,37 @@ body {
 
   .season-mini-progress {
     width: 40px;
+  }
+}
+
+/* ── 백오피스 관리자 셸 반응형 ────────────────────────────────────────── */
+
+/* lg(≥1024px): 사이드바 표시, 모바일 상단바 숨김 */
+@media (min-width: 1024px) {
+  .admin-sidebar {
+    display: flex;
+  }
+  .admin-mobile-topbar {
+    display: none !important;
+  }
+}
+
+/* md(768–1023px): 사이드바 표시(자동 접힘은 SideNavRoot useEffect가 담당), 모바일 상단바 숨김 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-sidebar {
+    display: flex;
+  }
+  .admin-mobile-topbar {
+    display: none !important;
+  }
+}
+
+/* sm(<768px): 사이드바 숨김, 모바일 상단바 표시 */
+@media (max-width: 767px) {
+  .admin-sidebar {
+    display: none;
+  }
+  .admin-mobile-topbar {
+    display: flex !important;
   }
 }

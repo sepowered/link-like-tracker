@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
@@ -28,6 +28,7 @@ import {
   BottomSheetFooter,
 } from "@/ui/bottom-sheet";
 import { Checkbox, CheckboxGroup } from "@/ui/checkbox";
+import { Callout } from "@/ui/callout";
 import {
   AlertDialogRoot,
   AlertDialogContent,
@@ -42,6 +43,7 @@ import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 import {
   IconCheckmarkFatFill,
   IconChevronRightLine,
+  IconExclamationmarkCircleFill,
   IconPersonCircleLine,
 } from "@karrotmarket/react-monochrome-icon";
 
@@ -77,6 +79,23 @@ const LIST_VALUE_SUFFIX_STYLE = {
   lineHeight: 1,
 } as const;
 
+type CatalogSource = "json" | "supabase";
+
+type CatalogSourceState = {
+  labEnabled: boolean;
+  defaultSource: CatalogSource;
+  currentSource: CatalogSource;
+  sources: CatalogSource[];
+};
+
+const CATALOG_SOURCE_LABELS: Record<CatalogSource, string> = {
+  json: "JSON",
+  supabase: "Supabase",
+};
+
+const CATALOG_SOURCE_RISK_ACKNOWLEDGEMENT =
+  "데이터 손실 가능성을 이해했고, 테스트 계정/preview 환경에서만 사용합니다.";
+
 export default function SettingsPageContent() {
   const {
     colorScheme,
@@ -87,20 +106,58 @@ export default function SettingsPageContent() {
     setHidePrivateVideos,
   } = useSettings();
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  // 익명(게스트) 세션은 계정 UI에서 비로그인으로 취급한다 — isMember 사용.
+  const { user, isMember, signOut } = useAuth();
   const adapter = useSnackbarAdapter();
   const [themeSheetOpen, setThemeSheetOpen] = useState(false);
   const [progressSheetOpen, setProgressSheetOpen] = useState(false);
   const [loginSheetOpen, setLoginSheetOpen] = useState(false);
   const [logoutSheetOpen, setLogoutSheetOpen] = useState(false);
+  const [catalogSourceSheetOpen, setCatalogSourceSheetOpen] = useState(false);
+  const [catalogSourceState, setCatalogSourceState] = useState<CatalogSourceState | null>(null);
+  const [pendingCatalogSource, setPendingCatalogSource] = useState<CatalogSource>("json");
+  const [catalogSourceSaving, setCatalogSourceSaving] = useState(false);
+  const [catalogRiskAcknowledged, setCatalogRiskAcknowledged] = useState(false);
   const [loginConsent, setLoginConsent] = useState(REQUIRED_LOGIN_CONSENT);
   const [loginLoading, setLoginLoading] = useState(false);
   const [pendingCategories, setPendingCategories] = useState<VideoCategory[]>(progressCategories);
   const allLoginConsentChecked = Object.values(loginConsent).every(Boolean);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCatalogSource() {
+      try {
+        const response = await fetch("/api/catalog-source", { cache: "no-store" });
+        if (!response.ok) return;
+        const state = (await response.json()) as CatalogSourceState;
+        if (cancelled) return;
+        setCatalogSourceState(state);
+        setPendingCatalogSource(state.currentSource);
+      } catch (error) {
+        console.error("Failed to load catalog source state", error);
+      }
+    }
+
+    loadCatalogSource();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function handleProgressSheetOpenChange(open: boolean) {
     if (open) setPendingCategories(progressCategories);
     setProgressSheetOpen(open);
+  }
+
+  function handleCatalogSourceSheetOpenChange(open: boolean) {
+    if (open && catalogSourceState) {
+      setPendingCatalogSource(catalogSourceState.currentSource);
+      setCatalogRiskAcknowledged(catalogSourceState.currentSource === "json");
+    }
+    if (!open) setCatalogRiskAcknowledged(false);
+    setCatalogSourceSheetOpen(open);
   }
 
   function handleLoginSheetOpenChange(open: boolean) {
@@ -151,6 +208,49 @@ export default function SettingsPageContent() {
     });
   }
 
+  async function handleCatalogSourceSave() {
+    if (!catalogSourceState?.labEnabled || catalogSourceSaving) return;
+
+    if (pendingCatalogSource === "supabase" && !catalogRiskAcknowledged) {
+      adapter.create({
+        render: () => <Snackbar variant="critical" message="주의 사항을 확인해야 Supabase 읽기를 켤 수 있어요." />,
+      });
+      return;
+    }
+
+    setCatalogSourceSaving(true);
+
+    try {
+      const response = await fetch("/api/catalog-source", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: pendingCatalogSource }),
+      });
+
+      if (!response.ok) throw new Error("catalog source update failed");
+
+      const nextState = (await response.json()) as CatalogSourceState;
+      setCatalogSourceState(nextState);
+      setCatalogSourceSheetOpen(false);
+      router.refresh();
+      adapter.create({
+        render: () => (
+          <Snackbar
+            variant="positive"
+            message={`카탈로그 읽기 소스를 ${CATALOG_SOURCE_LABELS[pendingCatalogSource]}로 바꿨어요.`}
+          />
+        ),
+      });
+    } catch (error) {
+      console.error("Failed to save catalog source", error);
+      adapter.create({
+        render: () => <Snackbar variant="critical" message="카탈로그 읽기 소스 변경에 실패했어요." />,
+      });
+    } finally {
+      setCatalogSourceSaving(false);
+    }
+  }
+
   const progressLabel =
     progressCategories.length === 0
       ? "전체"
@@ -160,22 +260,26 @@ export default function SettingsPageContent() {
 
   const colorSchemeLabel =
     colorScheme === "dark" ? "다크" : colorScheme === "light" ? "라이트" : "시스템";
+  const catalogSourceLabel = catalogSourceState
+    ? CATALOG_SOURCE_LABELS[catalogSourceState.currentSource]
+    : "확인 중";
 
   return (
     <div className="settings-page">
       <PageHeader title="설정" borderBottom={false} />
 
       <VStack gap="x6">
-        <VStack gap="x3">
+        <VStack>
           <ListHeader as="h2">계정 및 동기화</ListHeader>
           <List>
-            {user ? (
+            {isMember && user ? (
               <>
                 <ListItem
                   title={user.user_metadata?.full_name ?? user.email ?? "연결됨"}
                   detail={user.user_metadata?.full_name ? user.email : undefined}
                   prefix={
                     user.user_metadata?.avatar_url
+                      // eslint-disable-next-line @next/next/no-img-element -- external avatar URL from auth provider; remotePatterns config not set up
                       ? <img src={user.user_metadata.avatar_url} alt="" width={32} height={32} style={{ borderRadius: "50%", flexShrink: 0 }} />
                       : <Icon svg={<IconPersonCircleLine />} size="32px" />
                   }
@@ -236,6 +340,19 @@ export default function SettingsPageContent() {
         <Divider />
 
         <VStack>
+          <ListHeader as="h2">언어</ListHeader>
+          <List>
+            <ListButtonItem
+              title="표시 언어"
+              onClick={() => router.push("/settings/language")}
+              suffix={<Icon svg={<IconChevronRightLine />} size="16px" color="fg.neutralSubtle" />}
+            />
+          </List>
+        </VStack>
+
+        <Divider />
+
+        <VStack>
           <ListHeader as="h2">보기 옵션</ListHeader>
           <List>
             <ListSwitchItem
@@ -251,6 +368,30 @@ export default function SettingsPageContent() {
                 <span style={LIST_VALUE_SUFFIX_STYLE}>
                   {progressLabel}
                   <Icon svg={<IconChevronRightLine />} size="16px" />
+                </span>
+              }
+            />
+          </List>
+        </VStack>
+
+        <Divider />
+
+        <VStack>
+          <ListHeader as="h2">실험실</ListHeader>
+          <List>
+            <ListButtonItem
+              title="카탈로그 읽기 소스"
+              detail={
+                catalogSourceState?.labEnabled
+                  ? "데이터 손실 방지가 아직 완전히 검증되지 않은 실험 기능이에요."
+                  : "운영에서는 기본 소스만 사용해요."
+              }
+              onClick={() => handleCatalogSourceSheetOpenChange(true)}
+              disabled={!catalogSourceState?.labEnabled}
+              suffix={
+                <span style={LIST_VALUE_SUFFIX_STYLE}>
+                  {catalogSourceLabel}
+                  {catalogSourceState?.labEnabled ? <Icon svg={<IconChevronRightLine />} size="16px" /> : null}
                 </span>
               }
             />
@@ -409,6 +550,78 @@ export default function SettingsPageContent() {
               onClick={handleSave}
             >
               설정 저장
+            </ActionButton>
+          </BottomSheetFooter>
+        </BottomSheetContent>
+      </BottomSheetRoot>
+
+      <BottomSheetRoot
+        open={catalogSourceSheetOpen}
+        onOpenChange={handleCatalogSourceSheetOpenChange}
+        closeOnEscape
+        closeOnInteractOutside
+      >
+        <BottomSheetContent
+          title="카탈로그 읽기 소스"
+          description="Preview/local 검증용 설정이에요. Supabase 선택은 데이터 손실 방지가 완전히 검증되기 전까지 테스트 계정에서만 사용하세요."
+          showCloseButton
+          style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
+        >
+          <BottomSheetBody style={{ paddingBottom: "var(--seed-dimension-x4)" }}>
+            <Callout
+              tone="critical"
+              title="데이터 손실 미검증 경고"
+              prefixIcon={<IconExclamationmarkCircleFill />}
+              description={
+                <>
+                  이 스위치는 #12 마이그레이션 검증용입니다. catalog 읽기 전환 자체는 시청 기록을
+                  쓰지 않도록 설계됐지만, 로그인/동기화/토글 등 실제 사용 흐름에서 기존 사용자
+                  시청기록 손실이 없다는 점은 아직 충분히 검증되지 않았습니다. Supabase 선택은
+                  테스트 계정과 preview/local 환경에서만 사용하고, 운영 데이터 손실에 대한 보증으로
+                  간주하지 마세요.
+                </>
+              }
+            />
+            <RadioGroup
+              aria-label="카탈로그 읽기 소스"
+              value={pendingCatalogSource}
+              onValueChange={(value) => setPendingCatalogSource(value as CatalogSource)}
+            >
+              <RadioGroupItem
+                value="json"
+                label="JSON — 운영 기본값"
+                tone="neutral"
+                size="large"
+              />
+              <RadioGroupItem
+                value="supabase"
+                label="Supabase — #12 preview 검증"
+                tone="neutral"
+                size="large"
+              />
+            </RadioGroup>
+            {pendingCatalogSource === "supabase" ? (
+              <div className="settings-catalog-risk-ack">
+                <Checkbox
+                  label={CATALOG_SOURCE_RISK_ACKNOWLEDGEMENT}
+                  tone="neutral"
+                  size="large"
+                  checked={catalogRiskAcknowledged}
+                  onCheckedChange={setCatalogRiskAcknowledged}
+                />
+              </div>
+            ) : null}
+          </BottomSheetBody>
+          <BottomSheetFooter>
+            <ActionButton
+              variant="neutralSolid"
+              size="large"
+              style={{ width: "100%" }}
+              loading={catalogSourceSaving}
+              disabled={!catalogSourceState?.labEnabled || (pendingCatalogSource === "supabase" && !catalogRiskAcknowledged)}
+              onClick={handleCatalogSourceSave}
+            >
+              읽기 소스 저장
             </ActionButton>
           </BottomSheetFooter>
         </BottomSheetContent>

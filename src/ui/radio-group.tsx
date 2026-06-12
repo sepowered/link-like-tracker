@@ -134,7 +134,7 @@ export const RadioGroupItem = React.forwardRef<HTMLInputElement, RadioGroupItemP
 );
 RadioGroupItem.displayName = "RadioGroupItem";
 
-export interface RadiomarkProps extends SeedRadioGroup.ItemControlProps {}
+export type RadiomarkProps = SeedRadioGroup.ItemControlProps;
 
 /**
  * @see https://seed-design.io/react/components/radio-group
