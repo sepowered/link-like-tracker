@@ -73,7 +73,23 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
         ? "none"
         : content.categoryOverride;
 
-  const primarySource = content.sources[0];
+  const preferredLabel = language === "ko" ? "자막본" : "원본";
+  const primarySource =
+    content.sources.find((s) => s.label === preferredLabel) ?? content.sources[0];
+  // 메뉴에서도 선호 언어 소스가 먼저 보이도록 정렬(같은 라벨끼리는 원래 순서 유지)
+  const orderedSources = [...content.sources].sort(
+    (a, b) => Number(b.label === preferredLabel) - Number(a.label === preferredLabel),
+  );
+
+  const hasKo = content.sources.some((s) => s.label === "자막본");
+  const hasJp = content.sources.some((s) => s.label === "원본");
+  const sourceMismatchBadge: string | null =
+    language === "ko" && !hasKo && hasJp
+      ? "원본만"
+      : language === "jp" && !hasJp && hasKo
+        ? "자막본만"
+        : null;
+
   const displayTitle = getDisplayTitle(content, language);
 
   const handleToggleWatch = () => {
@@ -190,6 +206,18 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
           </Portal>
         </BottomSheetRoot>
 
+        {/* 언어 불일치 배지 */}
+        {sourceMismatchBadge && (
+          <Chip.Button
+            variant="outlineWeak"
+            size="small"
+            style={{ flexShrink: 0, pointerEvents: "none" }}
+            aria-label={`${sourceMismatchBadge} 소스만 있음`}
+          >
+            <Chip.Label>{sourceMismatchBadge}</Chip.Label>
+          </Chip.Button>
+        )}
+
         {/* 제목 + 소스 레이블 / 메뉴 트리거 */}
         <MenuSheet.Root open={sheetOpen} onOpenChange={setSheetOpen}>
           <MenuSheet.Trigger asChild>
@@ -225,7 +253,7 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
                   </MenuSheet.Item>
                 </MenuSheet.Group>
                 <MenuSheet.Group>
-                  {content.sources.map((source) => (
+                  {orderedSources.map((source) => (
                     <MenuSheet.Item key={source.url} onClick={() => handleOpenSource(source.url)}>
                       <PrefixIcon svg={<IconArrowUpRightLine />} />
                       <MenuSheet.ItemContent>
