@@ -17,6 +17,7 @@ import { ActionButton, Box, Icon, PullToRefresh, Text, TextFieldInput, TextField
 import { ProgressCircle } from "@/ui/progress-circle";
 import { MenuRoot, MenuTrigger, MenuContent, MenuItem } from "@/ui/menu";
 import { Callout, DismissibleCallout } from "@/ui/callout";
+import { latestUpdate } from "@/content/updates/registry";
 import Link from "next/link";
 import { IconCheckmarkLine, IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconSparkle2Fill, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
@@ -510,9 +511,9 @@ export default function PlaylistView({ initialData }: Props) {
 
       {/* 필터 결과 피드백 */}
       {isFiltered && (
-        <Box px="spacingX.globalGutter" mb="x1" role="status" aria-live="polite">
-          <Text textStyle="t3Bold" color="fg.brand">{filteredCount}편</Text>
-          <Text textStyle="t3Regular" color="fg.placeholder"> 표시 중</Text>
+        <Box px="spacingX.globalGutter" mb="spacingY.componentDefault" role="status" aria-live="polite">
+          <Text textStyle="t3Bold" color="fg.neutral">{filteredCount}편</Text>
+          <Text textStyle="t3Regular" color="fg.neutralSubtle"> 표시 중</Text>
         </Box>
       )}
 
@@ -522,11 +523,13 @@ export default function PlaylistView({ initialData }: Props) {
           <DismissibleCallout
             tone="magic"
             prefixIcon={<IconSparkle2Fill />}
-            title="llt V2 업데이트"
-            description="시청 경험을 다듬고, 새로운 이야기들을 추가했어요."
+            title={latestUpdate.bannerTitle ?? latestUpdate.title}
+            description={latestUpdate.summary}
             linkProps={{
               asChild: true,
-              children: <Link href="/updates">자세히 보기</Link>,
+              children: (
+                <Link href={`/updates/${latestUpdate.slug}`}>자세히 보기</Link>
+              ),
             }}
             onDismiss={dismissUpdateBanner}
           />

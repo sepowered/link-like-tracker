@@ -340,6 +340,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 9px var(--seed-dimension-spacing-x-global-gutter);
+  transition: background-color 0.2s;
 }
 
 .video-title {
@@ -350,9 +351,12 @@ body {
   line-height: 1.45;
 }
 
-.video-title:hover {
-  color: var(--seed-color-fg-brand);
-  text-decoration: underline;
+/* seed는 상호작용 상태를 밑줄이 아니라 레이어 배경 변화로 표현한다.
+   터치 기기에서 hover 잔상이 남지 않도록 hover 지원 환경에만 적용. */
+@media (hover: hover) {
+  .video-item:hover {
+    background-color: var(--seed-color-bg-layer-default-pressed);
+  }
 }
 
 .video-item.watched .video-title {
@@ -394,6 +398,46 @@ body {
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* ─── 공지 목록 ───────────────────────────────────────────────── */
+
+.updates-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.updates-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px var(--seed-dimension-spacing-x-global-gutter);
+  text-decoration: none;
+  border-bottom: 1px solid var(--seed-color-stroke-neutral-weak);
+  transition: background-color 0.2s;
+}
+
+@media (hover: hover) {
+  .updates-list-item:hover {
+    background-color: var(--seed-color-bg-layer-default-pressed);
+  }
+}
+
+.updates-list-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--seed-color-fg-neutral);
+}
+
+.updates-list-summary {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--seed-color-fg-neutral-subtle);
+}
+
+.updates-list-date {
+  font-size: 12px;
+  color: var(--seed-color-fg-placeholder);
 }
 
 .terms-page {
