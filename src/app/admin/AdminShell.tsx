@@ -15,12 +15,14 @@ import {
   IconDocumentCheckmarkLine,
   IconGridLine,
   IconHouseLine,
+  IconMegaphoneLine,
 } from "@karrotmarket/react-monochrome-icon";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "대시보드", icon: <IconHouseLine />, exact: true },
   { href: "/admin/requests", label: "요청", icon: <IconDocumentCheckmarkLine /> },
   { href: "/admin/catalog", label: "카탈로그", icon: <IconGridLine /> },
+  { href: "/admin/announcements", label: "공지", icon: <IconMegaphoneLine /> },
 ] as const;
 
 function NavItem({

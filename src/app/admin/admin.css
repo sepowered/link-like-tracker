@@ -290,11 +290,16 @@
   width: 5px; height: 5px; border-radius: 50%;
   background: currentColor;
 }
-.adm-badge--pending  { background: var(--seed-color-bg-warning-weak);     color: var(--seed-color-fg-warning); }
-.adm-badge--approved { background: var(--seed-color-bg-informative-weak); color: var(--seed-color-fg-informative); }
-.adm-badge--rejected { background: var(--seed-color-bg-critical-weak);    color: var(--seed-color-fg-critical); }
-.adm-badge--done     { background: var(--seed-color-bg-positive-weak);    color: var(--seed-color-fg-positive); }
+.adm-badge--pending    { background: var(--seed-color-bg-warning-weak);     color: var(--seed-color-fg-warning); }
+.adm-badge--approved   { background: var(--seed-color-bg-informative-weak); color: var(--seed-color-fg-informative); }
+.adm-badge--rejected   { background: var(--seed-color-bg-critical-weak);    color: var(--seed-color-fg-critical); }
+.adm-badge--done       { background: var(--seed-color-bg-positive-weak);    color: var(--seed-color-fg-positive); }
 .adm-badge--plain::before { display: none; }
+/* 공지 게시 상태 배지 */
+.adm-badge--published  { background: var(--seed-color-bg-positive-weak);    color: var(--seed-color-fg-positive); }
+.adm-badge--draft      { background: var(--adm-bg-raised);                  color: var(--adm-fg-subtle); }
+/* 공지 본문 textarea */
+.adm-ann-body { min-height: 320px; font-family: var(--adm-mono); font-size: var(--adm-fs-sm); }
 
 /* ── 탭 ─────────────────────────────────────────────────────── */
 

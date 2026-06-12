@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import TermsPageHeader from "@/components/TermsPageHeader";
-import { UPDATE_POSTS } from "@/content/updates/registry";
-import { POST_COMPONENTS } from "@/content/updates/posts";
+import { getPublishedAnnouncement } from "@/lib/announcements";
 
-export function generateStaticParams() {
-  return UPDATE_POSTS.map((post) => ({ slug: post.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -13,7 +12,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = UPDATE_POSTS.find((p) => p.slug === slug);
+  const post = await getPublishedAnnouncement(slug);
   if (!post) return {};
   return { title: `${post.title} — link-like-tracker` };
 }
@@ -24,16 +23,27 @@ export default async function UpdatePostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = UPDATE_POSTS.find((p) => p.slug === slug);
-  const Body = POST_COMPONENTS[slug];
-  if (!post || !Body) notFound();
+  const post = await getPublishedAnnouncement(slug);
+  if (!post) notFound();
 
   return (
     <main>
       <div className="settings-page">
         <TermsPageHeader title={post.title} />
         <article className="terms-page">
-          <Body />
+          <ReactMarkdown
+            remarkPlugins={[remarkBreaks]}
+            components={{
+              // 외부 링크는 새 탭으로 — 시청 흐름(메인 SPA 상태)을 잃지 않게
+              a: ({ children, ...props }) => (
+                <a {...props} target="_blank" rel="noreferrer">
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {post.body_md}
+          </ReactMarkdown>
         </article>
       </div>
     </main>

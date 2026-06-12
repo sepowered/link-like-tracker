@@ -17,7 +17,7 @@ import { ActionButton, Box, Icon, PullToRefresh, Text, TextFieldInput, TextField
 import { ProgressCircle } from "@/ui/progress-circle";
 import { MenuRoot, MenuTrigger, MenuContent, MenuItem } from "@/ui/menu";
 import { Callout, DismissibleCallout } from "@/ui/callout";
-import { latestUpdate } from "@/content/updates/registry";
+import type { AnnouncementBanner } from "@/lib/admin/announcements-types";
 import Link from "next/link";
 import { IconCheckmarkLine, IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconSparkle2Fill, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
@@ -33,9 +33,11 @@ const SCROLL_DIRECTION_DELTA = 6;
 
 interface Props {
   initialData: PlaylistData;
+  /** 메인 배너에 노출할 최신 공지 (없으면 배너 미표시) */
+  latestUpdate?: AnnouncementBanner | null;
 }
 
-export default function PlaylistView({ initialData }: Props) {
+export default function PlaylistView({ initialData, latestUpdate }: Props) {
   const { user, loading: authLoading } = useAuth();
   const { saveVideoProgress, mergeAllDevices, refreshDevices, requestAnonymousSync } = useProgressSync();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -518,7 +520,7 @@ export default function PlaylistView({ initialData }: Props) {
       )}
 
       {/* 업데이트 안내 배너 */}
-      {updateBannerVisible && (
+      {updateBannerVisible && latestUpdate && (
         <div style={{ padding: "0 var(--seed-dimension-spacing-x-global-gutter)", marginBottom: "8px" }}>
           <DismissibleCallout
             tone="magic"
