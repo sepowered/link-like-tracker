@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useSyncExternalStore } from "react";
 import { PlaylistData } from "@/types";
 import { VideoCategory } from "@/lib/video-category";
 import { useSettings } from "./SettingsProvider";
@@ -23,6 +23,22 @@ import { IconCheckmarkLine, IconChevronDownLine, IconExclamationmarkCircleFill, 
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 
 type FilterType = "all" | "watched" | "unwatched";
+
+// 닫은 공지의 slug를 저장 — 새 공지(다른 slug)가 올라오면 배너가 다시 표시된다.
+const UPDATE_BANNER_DISMISS_KEY = "llt:update-banner-dismissed";
+
+function subscribeToBannerDismissal(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getDismissedBannerSlug() {
+  try {
+    return window.localStorage.getItem(UPDATE_BANNER_DISMISS_KEY);
+  } catch {
+    return null;
+  }
+}
 type ScrollDirection = "up" | "down" | null;
 
 const STORAGE_KEY_WATCHED = "llt-watched";
@@ -85,8 +101,14 @@ export default function PlaylistView({ initialData, latestUpdate }: Props) {
   const compactSearchRef = useRef<HTMLInputElement>(null);
 
   const [isInitialized, setIsInitialized] = useState(false);
-  // 업데이트 안내 배너 — 닫기는 이번 화면에서만 숨김(저장 안 함, 새로고침하면 다시 표시)
+  // 업데이트 안내 배너 — 표준 닫기(X) 버튼을 누르면 localStorage에 slug를 남겨
+  // 해당 공지를 영구 숨김(새 공지가 올라오면 다시 표시).
   const [updateBannerVisible, setUpdateBannerVisible] = useState(true);
+  const dismissedBannerSlug = useSyncExternalStore(
+    subscribeToBannerDismissal,
+    getDismissedBannerSlug,
+    () => null,
+  );
   const { progressCategories, hidePrivateVideos, autoSync } = useSettings();
 
   // Load from localStorage on mount
@@ -315,7 +337,14 @@ export default function PlaylistView({ initialData, latestUpdate }: Props) {
     }
   }
 
-  function dismissUpdateBanner() {
+  function dismissUpdateBannerForever() {
+    if (latestUpdate) {
+      try {
+        window.localStorage.setItem(UPDATE_BANNER_DISMISS_KEY, latestUpdate.slug);
+      } catch {
+        // 저장 불가 환경(시크릿 모드 등)에서는 세션 숨김으로만 동작
+      }
+    }
     setUpdateBannerVisible(false);
   }
 
@@ -520,7 +549,7 @@ export default function PlaylistView({ initialData, latestUpdate }: Props) {
       )}
 
       {/* 업데이트 안내 배너 */}
-      {updateBannerVisible && latestUpdate && (
+      {updateBannerVisible && latestUpdate && dismissedBannerSlug !== latestUpdate.slug && (
         <div style={{ padding: "0 var(--seed-dimension-spacing-x-global-gutter)", marginBottom: "8px" }}>
           <DismissibleCallout
             tone="magic"
@@ -533,7 +562,7 @@ export default function PlaylistView({ initialData, latestUpdate }: Props) {
                 <Link href={`/updates/${latestUpdate.slug}`}>자세히 보기</Link>
               ),
             }}
-            onDismiss={dismissUpdateBanner}
+            onDismiss={dismissUpdateBannerForever}
           />
         </div>
       )}

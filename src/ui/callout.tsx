@@ -11,10 +11,12 @@ import {
   CalloutDescription,
   CalloutLink,
   CalloutCloseButton,
+  Icon,
   PrefixIcon,
   type CalloutRootProps,
   type CalloutLinkProps,
 } from "@seed-design/react";
+import { IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 import * as React from "react";
 
 export interface CalloutProps
@@ -56,19 +58,26 @@ export interface DismissibleCalloutProps extends CalloutProps {
 export const DismissibleCallout = React.forwardRef<
   React.ElementRef<typeof CalloutRoot>,
   DismissibleCalloutProps
->(({ title, description, linkProps, prefixIcon, onDismiss, ...otherProps }, ref) => {
-  return (
-    <CalloutRoot ref={ref} {...otherProps}>
-      {prefixIcon && <PrefixIcon svg={prefixIcon} />}
-      <CalloutContent>
-        {title && <CalloutTitle>{title}</CalloutTitle>}
-        <CalloutDescription>{description}</CalloutDescription>
-        {linkProps && <CalloutLink {...linkProps} />}
-      </CalloutContent>
-      <CalloutCloseButton aria-label="닫기" onClick={onDismiss} />
-    </CalloutRoot>
-  );
-});
+>(
+  (
+    { title, description, linkProps, prefixIcon, onDismiss, ...otherProps },
+    ref,
+  ) => {
+    return (
+      <CalloutRoot ref={ref} {...otherProps}>
+        {prefixIcon && <PrefixIcon svg={prefixIcon} />}
+        <CalloutContent>
+          {title && <CalloutTitle>{title}</CalloutTitle>}
+          <CalloutDescription>{description}</CalloutDescription>
+          {linkProps && <CalloutLink {...linkProps} />}
+        </CalloutContent>
+        <CalloutCloseButton aria-label="닫기" onClick={onDismiss}>
+          <Icon svg={<IconXmarkLine />} size="16px" />
+        </CalloutCloseButton>
+      </CalloutRoot>
+    );
+  },
+);
 DismissibleCallout.displayName = "DismissibleCallout";
 
 /**
