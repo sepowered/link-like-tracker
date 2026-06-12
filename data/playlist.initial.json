@@ -1447,7 +1447,15 @@
                   "label": "원본"
                 }
               ]
-            },
+            }
+          ]
+        },
+        {
+          "id": "103-main-ep-012",
+          "episode_number": 12,
+          "title_ko": "기대가 크다!",
+          "title_jp": "期待はおもい！",
+          "contents": [
             {
               "id": "Jc7ZEeopqCE",
               "type": "story",
@@ -1461,15 +1469,7 @@
                   "label": "원본"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "id": "103-main-ep-012",
-          "episode_number": 12,
-          "title_ko": "기대가 크다!",
-          "title_jp": "期待はおもい！",
-          "contents": [
+            },
             {
               "id": "KbzsKgCchjE",
               "type": "story",
@@ -6271,15 +6271,15 @@
         {
           "id": "105-main-interlude-001",
           "episode_number": 0,
-          "title_ko": "사이 이야기 Dream Interlude: Chapter.PERENNIAL",
-          "title_jp": "間章 Dream Interlude『Water the flowers』Chapter.PERENNIAL",
+          "title_ko": "Dream Interlude — Water the flowers",
+          "title_jp": "間章 Dream Interlude『Water the flowers』",
           "contents": [
             {
               "id": "fg1YOOBrkh0",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "Part 1&2",
+              "part_label": "Part 1~2",
               "legacy_video_id": "fg1YOOBrkh0",
               "sources": [
                 {
@@ -6307,15 +6307,15 @@
         {
           "id": "105-main-interlude-002",
           "episode_number": 0,
-          "title_ko": "사이 이야기 Dream Interlude: Chapter.BRIGHT SEEDS",
-          "title_jp": "間章 Dream Interlude『Be Cera-fish』Chapter.BRIGHT SEEDS",
+          "title_ko": "Dream Interlude — Be Cera-fish",
+          "title_jp": "間章 Dream Interlude『Be Cera-fish』",
           "contents": [
             {
               "id": "r74eouvh6Sk",
               "type": "story",
               "title_ko": null,
               "title_jp": "間章・Dream Interlude『Be Cera-fish』PART1&2（リンクラ）",
-              "part_label": "Part 1&2",
+              "part_label": "Part 1~2",
               "legacy_video_id": "r74eouvh6Sk",
               "sources": [
                 {
