@@ -12,6 +12,8 @@ import {
   IconAndroidshareLine,
   IconPaperclipLine,
   IconPencilLine,
+  IconTranslationLine,
+  IconTriangleRightLine,
 } from "@karrotmarket/react-monochrome-icon";
 import { useSettings } from "./SettingsProvider";
 
@@ -20,6 +22,14 @@ interface Props {
   /** 상위 맥락(시즌 · 에피소드) — 모달에서 "Part 1"만으로 식별이 안 되는 문제 보완 */
   contextLabel?: string;
   onToggle: (contentId: string) => void;
+}
+
+// 소스 종류별 아이콘 — 자막본(번역)과 원본(영상 그대로)을 한눈에 구분.
+// 그 외 라벨은 외부 링크 화살표로 폴백.
+function getSourceIcon(label: string | null | undefined) {
+  if (label === "자막본") return <IconTranslationLine />;
+  if (label === "원본") return <IconTriangleRightLine />;
+  return <IconArrowUpRightLine />;
 }
 
 function getDisplayTitle(content: Content, language: "ko" | "jp"): string {
@@ -168,7 +178,7 @@ export default function ContentItem({ content, contextLabel, onToggle }: Props) 
                 <MenuSheet.Group>
                   {orderedSources.map((source) => (
                     <MenuSheet.Item key={source.url} onClick={() => handleOpenSource(source.url)}>
-                      <PrefixIcon svg={<IconArrowUpRightLine />} />
+                      <PrefixIcon svg={getSourceIcon(source.label)} />
                       <MenuSheet.ItemContent>
                         <MenuSheet.ItemLabel>{source.label}으로 보기</MenuSheet.ItemLabel>
                       </MenuSheet.ItemContent>
