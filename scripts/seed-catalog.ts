@@ -14,8 +14,8 @@ import { buildLegacyMap } from "@/lib/legacy-map";
 // --- 골든 픽스처 (canonical, ordered) — §0 ground truth ---
 const EXPECTED_SEASONS = 5;
 const EXPECTED_EPISODES = 49;
-const EXPECTED_CONTENTS = 386;
-const EXPECTED_DISTINCT_LEGACY = 279;
+const EXPECTED_CONTENTS = 387;
+const EXPECTED_DISTINCT_LEGACY = 280;
 const EXPECTED_SPLITS: Record<string, number> = {
   "3_bZr1vzepk": 5,
   "gP7f-YJWMgo": 5,

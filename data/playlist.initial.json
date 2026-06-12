@@ -1187,7 +1187,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "STwoyYEhnZg",
               "sources": [
                 {
@@ -1269,7 +1269,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "PGMXfX8XVEY",
               "sources": [
                 {
@@ -1351,7 +1351,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "iL49zf19neg",
               "sources": [
                 {
@@ -1475,7 +1475,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "KbzsKgCchjE",
               "sources": [
                 {
@@ -1599,7 +1599,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "7_s-cRi2wxY",
               "sources": [
                 {
@@ -1653,7 +1653,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "wVVH0Ml-SP4",
               "sources": [
                 {
@@ -1763,7 +1763,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "EEYt8ZqPCcI",
               "sources": [
                 {
@@ -1817,7 +1817,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "ecrkNgZi81U",
               "sources": [
                 {
@@ -1941,7 +1941,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "RhrWgN2dq7I",
               "sources": [
                 {
@@ -2079,7 +2079,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "felsp-UlV5A",
               "sources": [
                 {
@@ -2685,7 +2685,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "에필로그",
               "legacy_video_id": "0EjND6ycbNk",
               "sources": [
                 {
@@ -2867,7 +2867,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "_OHUwHThX6U",
               "sources": [
                 {
@@ -3147,7 +3147,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "clHmKESdRLc",
               "sources": [
                 {
@@ -3201,7 +3201,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "kipxBa38Qs4",
               "sources": [
                 {
@@ -3349,7 +3349,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "WISH 1",
               "legacy_video_id": "2-6gSnG2Tto",
               "sources": [
                 {
@@ -3405,7 +3405,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "WISH 2",
               "legacy_video_id": "J-4smTt4GGQ",
               "sources": [
                 {
@@ -3433,7 +3433,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "ED",
+              "part_label": "ED 1",
               "legacy_video_id": "ezW_NVijAWo",
               "sources": [
                 {
@@ -3475,7 +3475,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "ED",
+              "part_label": "ED 2",
               "legacy_video_id": "diu3w3sXazk",
               "sources": [
                 {
@@ -3539,7 +3539,7 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "본편",
               "legacy_video_id": "BVMgOXdpe5g",
               "sources": [
                 {
@@ -3781,15 +3781,29 @@
               ]
             },
             {
+              "id": "SmxLJie9jpw",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": null,
+              "part_label": "WILL",
+              "legacy_video_id": "SmxLJie9jpw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=SmxLJie9jpw",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
               "id": "MYjXn86ZJEQ",
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": "ED",
+              "part_label": "ED 1",
               "legacy_video_id": "MYjXn86ZJEQ",
               "sources": [
                 {
-                  "url": "https://www.youtube.com/watch?v=MYjXn86ZJEQ",
+                  "url": "https://www.youtube.com/watch?v=YvGMUKKh0os",
                   "label": "원본"
                 }
               ]
@@ -3813,11 +3827,11 @@
               "type": "story",
               "title_ko": null,
               "title_jp": null,
-              "part_label": null,
+              "part_label": "ED 2·FINE",
               "legacy_video_id": "esp91oFab20",
               "sources": [
                 {
-                  "url": "https://www.youtube.com/watch?v=esp91oFab20",
+                  "url": "https://www.youtube.com/watch?v=I_oEJ_6dBwA",
                   "label": "원본"
                 }
               ]
