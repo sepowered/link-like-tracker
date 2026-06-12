@@ -71,7 +71,10 @@ function EpisodeGroup({
   onUpdateCategory: (contentId: string, categoryOverride: CategoryOverrideArg) => void;
 }) {
   const { language } = useSettings();
-  const [values, setValues] = useState<string[]>(["episode"]);
+  // null = 사용자가 아직 직접 토글하지 않음 → 파생 기본값(시청 중 여부)을 따른다.
+  // 시청 기록이 마운트 후 localStorage에서 합쳐져도 기본값이 따라 열리고,
+  // 사용자가 한 번 토글하면 그 선택이 우선한다.
+  const [userValues, setUserValues] = useState<string[] | null>(null);
 
   const filteredContents = useMemo(() => {
     const matched = episode.contents.filter((c) =>
@@ -89,8 +92,17 @@ function EpisodeGroup({
     ? `${episode.episode_number}장 — ${episodeTitle}`
     : episodeTitle;
 
+  // 기본은 모두 접힘 — 시청 중(일부만 시청)인 에피소드만 열어둔다.
+  const inProgress = watchedCount > 0 && watchedCount < totalCount;
+  // 검색·필터 중에는 결과가 접힌 그룹에 가려지지 않게 강제로 펼친다.
+  const filteringActive =
+    query.trim().length > 0 || filter !== "all" || !categories.includes("all");
+  const values = filteringActive
+    ? ["episode"]
+    : userValues ?? (inProgress ? ["episode"] : []);
+
   return (
-    <Accordion values={values} onValuesChange={setValues}>
+    <Accordion values={values} onValuesChange={setUserValues}>
       <AccordionItem value="episode">
         <AccordionTrigger
           title={episodeLabel}
