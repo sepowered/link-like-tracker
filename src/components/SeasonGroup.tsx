@@ -49,6 +49,7 @@ function matchesFilters(
 
 function EpisodeGroup({
   episode,
+  seasonName,
   filter,
   categories,
   query,
@@ -58,6 +59,7 @@ function EpisodeGroup({
   onToggle,
 }: {
   episode: Episode;
+  seasonName: string;
   filter: FilterType;
   categories: VideoCategory[];
   query: string;
@@ -87,6 +89,9 @@ function EpisodeGroup({
   const episodeLabel = episode.episode_number > 0
     ? `${episode.episode_number}장 — ${episodeTitle}`
     : episodeTitle;
+  // 모달 등에서 "Part 1"만으로는 무슨 영상인지 알 수 없어 상위 맥락을 함께
+  // 전달한다. 장 번호는 기수마다 반복되므로 시즌명까지 포함해야 식별된다.
+  const contextLabel = [seasonName, episodeLabel].filter(Boolean).join(" · ");
 
   // 기본은 모두 접힘 — 시청 중(일부만 시청)인 에피소드만 열어둔다.
   const inProgress = watchedCount > 0 && watchedCount < totalCount;
@@ -112,6 +117,7 @@ function EpisodeGroup({
             <ContentItem
               key={content.id}
               content={content}
+              contextLabel={contextLabel}
               onToggle={onToggle}
             />
           ))}
@@ -151,6 +157,7 @@ export default function SeasonGroup({
         <EpisodeGroup
           key={episode.id}
           episode={episode}
+          seasonName={season.name}
           filter={filter}
           categories={categories}
           query={query}

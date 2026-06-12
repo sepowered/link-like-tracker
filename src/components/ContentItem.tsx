@@ -17,6 +17,8 @@ import { useSettings } from "./SettingsProvider";
 
 interface Props {
   content: Content;
+  /** 상위 맥락(시즌 · 에피소드) — 모달에서 "Part 1"만으로 식별이 안 되는 문제 보완 */
+  contextLabel?: string;
   onToggle: (contentId: string) => void;
 }
 
@@ -28,7 +30,7 @@ function getDisplayTitle(content: Content, language: "ko" | "jp"): string {
   return content.title_ko ?? content.title_jp ?? "";
 }
 
-export default function ContentItem({ content, onToggle }: Props) {
+export default function ContentItem({ content, contextLabel, onToggle }: Props) {
   const router = useRouter();
   const { language } = useSettings();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -73,7 +75,10 @@ export default function ContentItem({ content, onToggle }: Props) {
     if (!primarySource) return;
     if (navigator.share) {
       try {
-        await navigator.share({ title: displayTitle || categoryLabel, url: primarySource.url });
+        await navigator.share({
+          title: [contextLabel, displayTitle || categoryLabel].filter(Boolean).join(" · "),
+          url: primarySource.url,
+        });
       } catch (err) {
         console.error("공유 실패:", err);
       }
@@ -145,6 +150,9 @@ export default function ContentItem({ content, onToggle }: Props) {
             <MenuSheet.Content>
               <MenuSheet.Header>
                 <MenuSheet.Title>{menuTitle}</MenuSheet.Title>
+                {contextLabel && (
+                  <MenuSheet.Description>{contextLabel}</MenuSheet.Description>
+                )}
               </MenuSheet.Header>
               <MenuSheet.List>
                 <MenuSheet.Group>
