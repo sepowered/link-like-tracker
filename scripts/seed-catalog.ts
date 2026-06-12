@@ -14,7 +14,7 @@ import { buildLegacyMap } from "@/lib/legacy-map";
 // --- 골든 픽스처 (canonical, ordered) — §0 ground truth ---
 const EXPECTED_SEASONS = 5;
 const EXPECTED_EPISODES = 49;
-const EXPECTED_CONTENTS = 387;
+const EXPECTED_CONTENTS = 519;
 const EXPECTED_DISTINCT_LEGACY = 280;
 const EXPECTED_SPLITS: Record<string, number> = {
   "3_bZr1vzepk": 5,
@@ -51,6 +51,33 @@ const EXPECTED_SPLITS: Record<string, number> = {
   "flcUM4h8Mqs": 3,
   "3giw9ELMAE8": 2,
   "cdBweRBGYJc": 4,
+  // 2026-06: 103기 9~16화 + 전환기 1~2화 / 104기 / 105기 CODA
+  // 유튜브 디스크립션 챕터 및 目次 댓글 기반 묶음 story 분할
+  "STwoyYEhnZg": 6,
+  "PGMXfX8XVEY": 8,
+  "iL49zf19neg": 9,
+  "KbzsKgCchjE": 8,
+  "7_s-cRi2wxY": 8,
+  "wVVH0Ml-SP4": 9,
+  "EEYt8ZqPCcI": 7,
+  "ecrkNgZi81U": 3,
+  "RhrWgN2dq7I": 9,
+  "felsp-UlV5A": 10,
+  "NPd8IYb3mpI": 12,
+  "RhNVbdxdWTw": 6,
+  "yL6osWcnUVg": 4,
+  "Cp3cKjMv4GQ": 4,
+  "4c3G0WrcFpE": 5,
+  "8nKNaY02RGw": 3,
+  "VGW0RDr3TXY": 5,
+  "vabeRo8U1D4": 4,
+  "4YNdIee5EfU": 3,
+  "nVzysPwh2eA": 5,
+  "_OHUwHThX6U": 8,
+  "clHmKESdRLc": 9,
+  "ilV91c19cvQ": 5,
+  "2yu-_LmaU6g": 4,
+  "sXvMkR8FCEM": 3,
 };
 
 const dryRun = process.argv.includes("--dry-run");
