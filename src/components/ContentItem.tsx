@@ -32,6 +32,13 @@ function getSourceIcon(label: string | null | undefined) {
   return <IconArrowUpRightLine />;
 }
 
+// 표시용 소스 이름 — 데이터 라벨 '원본'은 비공식 재업로드라 공식을 암시하는
+// 표현을 피해 '일본어판'으로 보여준다(데이터는 그대로). 공식 소스 도입은 백로그.
+function getSourceDisplayName(label: string | null | undefined): string {
+  if (label === "원본") return "일본어판";
+  return label ?? "";
+}
+
 function getDisplayTitle(content: Content, language: "ko" | "jp"): string {
   if (content.type === "story") {
     return content.part_label ?? "";
@@ -66,7 +73,7 @@ export default function ContentItem({ content, contextLabel, onToggle }: Props) 
     language === "ko" && !hasKo && hasJp
       ? "자막 없음"
       : language === "jp" && !hasJp && hasKo
-        ? "원본 없음"
+        ? "일본어판 없음"
         : null;
 
   const displayTitle = getDisplayTitle(content, language);
@@ -114,7 +121,7 @@ export default function ContentItem({ content, contextLabel, onToggle }: Props) 
     router.push(`/edit-request/${content.id}`);
   };
 
-  const menuTitle = displayTitle || `${categoryLabel} — ${content.sources.map((s) => s.label).join(" / ")}`;
+  const menuTitle = displayTitle || `${categoryLabel} — ${content.sources.map((s) => getSourceDisplayName(s.label)).join(" / ")}`;
 
   return (
     <div id={`content-${content.id}`} className={`video-item${content.watched ? " watched" : ""}`}>
@@ -152,7 +159,7 @@ export default function ContentItem({ content, contextLabel, onToggle }: Props) 
                 whiteSpace: "nowrap",
               }}
             >
-              {displayTitle || content.sources.map((s) => s.label).join(" / ")}
+              {displayTitle || content.sources.map((s) => getSourceDisplayName(s.label)).join(" / ")}
             </span>
           </MenuSheet.Trigger>
           <MenuSheet.Backdrop />
@@ -180,7 +187,7 @@ export default function ContentItem({ content, contextLabel, onToggle }: Props) 
                     <MenuSheet.Item key={source.url} onClick={() => handleOpenSource(source.url)}>
                       <PrefixIcon svg={getSourceIcon(source.label)} />
                       <MenuSheet.ItemContent>
-                        <MenuSheet.ItemLabel>{source.label}으로 보기</MenuSheet.ItemLabel>
+                        <MenuSheet.ItemLabel>{getSourceDisplayName(source.label)}으로 보기</MenuSheet.ItemLabel>
                       </MenuSheet.ItemContent>
                     </MenuSheet.Item>
                   ))}
