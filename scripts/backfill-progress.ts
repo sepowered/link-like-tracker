@@ -39,6 +39,15 @@ interface DesiredRow {
 
 const dryRun = process.argv.includes("--dry-run");
 
+/**
+ * 카탈로그에서 의도적으로 제거됐지만 user_progress 에 기록이 남은 고아 id.
+ * 2026-06-13 막간 중복 정리: 103기 3·6화의 막간이 Part 6/Part 7 로 중복
+ * 수록돼 있어 해당 파트 행을 제거 — 시청 의미는 막간 콘텐츠
+ * (rvdurmx9Y88/fJ0wuKzXkxw)가 같은 legacy 그룹에 속해 확장으로 흡수된다.
+ * 여기 등록된 id 는 UNKNOWN hard-abort 대상에서 제외(행은 보존, 백필만 무시).
+ */
+const ABSORBED_ORPHANS = new Set(["LHSnii0uk2g_p6", "jodiWtjQf9o_p7"]);
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -164,10 +173,12 @@ async function main(): Promise<void> {
     const { kind, targets } = classify(row.video_id);
 
     if (kind === "unknown") {
-      unknownCounts.set(
-        row.video_id,
-        (unknownCounts.get(row.video_id) ?? 0) + 1
-      );
+      if (!ABSORBED_ORPHANS.has(row.video_id)) {
+        unknownCounts.set(
+          row.video_id,
+          (unknownCounts.get(row.video_id) ?? 0) + 1
+        );
+      }
       continue; // desired state 에 기여하지 않음
     }
 
@@ -279,11 +290,16 @@ async function main(): Promise<void> {
   console.log(`  desired content.id 행 총: ${desired.size}`);
 
   // 7. 유저별 watched 카운트 BEFORE vs AFTER + 단조성 ASSERT
-  const beforeWatched = new Map<string, Set<string>>(); // user → distinct watched video_id
+  // BEFORE 도 동일한 확장(classify)을 거쳐 content.id 공간에서 비교한다 —
+  // 원시 video_id 공간과 비교하면 '레거시 부모 1개 → 파트 N개' 대체가
+  // 감소로 잘못 집계된다 (2026-06-13 dry-run 가짜 회귀의 원인).
+  const beforeWatched = new Map<string, Set<string>>(); // user → distinct watched content.id
   for (const row of progress) {
     if (row.status !== "watched") continue;
+    const { targets } = classify(row.video_id);
+    if (targets.length === 0) continue; // unknown/흡수 고아 — AFTER 와 동일하게 제외
     const set = beforeWatched.get(row.user_id) ?? new Set<string>();
-    set.add(row.video_id);
+    for (const contentId of targets) set.add(contentId);
     beforeWatched.set(row.user_id, set);
   }
   const afterWatched = new Map<string, Set<string>>(); // user → distinct watched content.id

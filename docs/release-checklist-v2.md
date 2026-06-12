@@ -15,19 +15,29 @@
 
 ## 1. 배포 직전 (롤백 기준선)
 
-- [ ] **user_progress 백업**: 아래 명령으로 덤프를 떠서 보관 — 문제가 생겼을 때의 복구 기준선.
+- [x] **user_progress 백업** (06-13 완료): `backup-user-data-20260612/` — user_progress 1,394행
+  + user_devices 16 + user_settings 3 + auth_users 8 (CSV, gitignore 대상).
+  로컬 pg_dump가 16이라 서버 17과 불일치 → psql `\copy` CSV 방식 사용. 재실행:
   ```sh
   export $(grep -E '^POSTGRES_URL_NON_POOLING=' .env.local | sed 's/"//g')
-  pg_dump "$POSTGRES_URL_NON_POOLING" -t user_progress -t user_devices -t user_settings \
-    -f backup-user-data-$(date +%Y%m%d).sql
+  D=backup-user-data-$(date +%Y%m%d); mkdir -p "$D"
+  for t in user_progress user_devices user_settings; do
+    psql "$POSTGRES_URL_NON_POOLING" -c "\copy $t TO '$D/$t.csv' WITH (FORMAT csv, HEADER true)"
+  done
   ```
 - [ ] **Vercel 프로덕션 환경변수 확인** (Settings → Environment Variables, Production 스코프):
   - `NEXT_PUBLIC_PROGRESS_READONLY` — **없어야 함** (preview 스코프에만 유지)
   - `CATALOG_SOURCE=supabase`
   - `NEXT_PUBLIC_ANON_SYNC` — 미설정(=기본 활성) 또는 의도한 값
   - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` 존재
-- [ ] **백필 dry-run**: `npx tsx --env-file .env.local scripts/backfill-progress.ts --dry-run`
-  출력(대상 행 수·변환 내역)을 훑어보고 이상 없으면 실제 실행. 실측치(1,394행)와 크게 어긋나면 중단하고 원인 확인.
+- [x] **백필 dry-run** (06-13 완료): INSERT 2,617 / UPDATE 0 / 기존 1,394행 무변경,
+  유저 5명 전원 watched 회귀 없음(content.id 공간 BEFORE=AFTER).
+  첫 실행에서 가드 2개가 가짜 경보를 냈고 스크립트를 보정함:
+  ① 막간 정리 고아 2종(`LHSnii0uk2g_p6`/`jodiWtjQf9o_p7`)을 ABSORBED_ORPHANS
+  허용목록으로 — 의미는 막간 행이 legacy 확장으로 흡수, 행은 보존.
+  ② 단조성 가드를 content.id 공간 비교로 수정 (레거시 부모 1→N 대체가
+  감소로 오집계되던 문제). **실제 실행은 머지 직후 1회**:
+  `npx tsx --env-file .env.local scripts/backfill-progress.ts`
 - [ ] preview 배포에서 마지막 육안 점검: 메인 목록 / 104기 7~12화 자막 표시 / 공지 배너·/updates
 
 ## 2. 배포
