@@ -522,8 +522,8 @@ export default function PlaylistView({ initialData }: Props) {
           <DismissibleCallout
             tone="magic"
             prefixIcon={<IconSparkle2Fill />}
-            title="6월 업데이트"
-            description="스토리 파트 구분, 자막 없는 영상, 새로 추가된 이야기까지 — 달라진 점을 확인해 보세요."
+            title="llt V2 업데이트"
+            description="시청 경험을 다듬고, 새로운 이야기들을 추가했어요."
             linkProps={{
               asChild: true,
               children: <Link href="/updates">자세히 보기</Link>,
