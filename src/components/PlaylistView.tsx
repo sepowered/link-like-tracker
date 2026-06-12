@@ -310,43 +310,6 @@ export default function PlaylistView({ initialData }: Props) {
     }
   }
 
-  async function handleUpdateCategory(
-    contentId: string,
-    categoryOverride: "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto"
-  ) {
-    const allContents = data.seasons.flatMap((s) => s.episodes.flatMap((ep) => ep.contents));
-    const current = allContents.find((c) => c.id === contentId);
-    const currentStatus = current?.watched ? "watched" : "unwatched";
-
-    setData((prev) => {
-      const next: PlaylistData = {
-        seasons: prev.seasons.map((season) => ({
-          ...season,
-          episodes: season.episodes.map((ep) => ({
-            ...ep,
-            contents: ep.contents.map((c) => {
-              if (c.id !== contentId) return c;
-              if (categoryOverride === "auto") {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest 패턴으로 categoryOverride만 떼어내는 의도적 미사용
-                const { categoryOverride: _, ...rest } = c;
-                return rest;
-              }
-              return { ...c, categoryOverride };
-            }),
-          })),
-        })),
-      };
-      if (!user) saveToLocalStorage(next);
-      return next;
-    });
-
-    if (user) {
-      await saveVideoProgress(contentId, currentStatus, categoryOverride);
-    } else {
-      requestAnonymousSync();
-    }
-  }
-
   async function handlePtrRefresh() {
     try {
       const changed = await mergeAllDevices("latest");
@@ -577,7 +540,6 @@ export default function PlaylistView({ initialData }: Props) {
                     sortOrder={sortOrder}
                     hidePrivateVideos={hidePrivateVideos}
                     onToggle={handleToggle}
-                    onUpdateCategory={handleUpdateCategory}
                     headingLevel={4}
                   />
                 ))}
@@ -594,7 +556,6 @@ export default function PlaylistView({ initialData }: Props) {
               sortOrder={sortOrder}
               hidePrivateVideos={hidePrivateVideos}
               onToggle={handleToggle}
-              onUpdateCategory={handleUpdateCategory}
               headingLevel={4}
             />
           ))

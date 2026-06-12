@@ -4,16 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Content } from "@/types";
 import { VideoCategory, getVideoCategoryLabel } from "@/lib/video-category";
-import { Checkbox, PrefixIcon, MenuSheet, ActionButton, HStack, Portal } from "@seed-design/react";
-import { Chip } from "@/ui/chip";
+import { Badge, Checkbox, PrefixIcon, MenuSheet } from "@seed-design/react";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
-import {
-  BottomSheetRoot,
-  BottomSheetTrigger,
-  BottomSheetContent,
-  BottomSheetBody,
-  BottomSheetFooter,
-} from "@/ui/bottom-sheet";
 import {
   IconCheckmarkLine,
   IconArrowUpRightLine,
@@ -23,29 +15,9 @@ import {
 } from "@karrotmarket/react-monochrome-icon";
 import { useSettings } from "./SettingsProvider";
 
-type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
-
 interface Props {
   content: Content;
   onToggle: (contentId: string) => void;
-  onUpdateCategory: (contentId: string, categoryOverride: CategoryOverrideArg) => void;
-}
-
-const CATEGORY_OPTIONS: { value: string; label: string }[] = [
-  { value: "auto", label: "자동 분류" },
-  { value: "story", label: "스토리" },
-  { value: "music", label: "음악" },
-  { value: "fesxlive", label: "FesxLIVE" },
-  { value: "fesxrec", label: "FesxReC" },
-  { value: "withxmeets", label: "With×MEETS" },
-  { value: "none", label: "태그 없음" },
-];
-
-function toRo(text: string): string {
-  const last = text[text.length - 1];
-  const code = last.charCodeAt(0);
-  if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 === 0 ? "로" : "으로";
-  return /[aeiouAEIOU]/.test(last) ? "로" : "으로";
 }
 
 function getDisplayTitle(content: Content, language: "ko" | "jp"): string {
@@ -56,22 +28,15 @@ function getDisplayTitle(content: Content, language: "ko" | "jp"): string {
   return content.title_ko ?? content.title_jp ?? "";
 }
 
-export default function ContentItem({ content, onToggle, onUpdateCategory }: Props) {
+export default function ContentItem({ content, onToggle }: Props) {
   const router = useRouter();
   const { language } = useSettings();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const adapter = useSnackbarAdapter();
 
   const effectiveCategory =
     content.categoryOverride !== undefined ? content.categoryOverride : (content.type as VideoCategory | null);
   const categoryLabel = getVideoCategoryLabel(effectiveCategory as Exclude<VideoCategory, "all"> | null);
-  const currentCategoryValue =
-    content.categoryOverride === undefined
-      ? "auto"
-      : content.categoryOverride === null
-        ? "none"
-        : content.categoryOverride;
 
   const preferredLabel = language === "ko" ? "자막본" : "원본";
   const primarySource =
@@ -83,11 +48,13 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
 
   const hasKo = content.sources.some((s) => s.label === "자막본");
   const hasJp = content.sources.some((s) => s.label === "원본");
+  // 선택한 콘텐츠 언어의 영상이 없을 때만 '없는 것'을 알려준다 — 열기 전에
+  // 어떤 언어로 보게 될지 예상하게 하는 안내.
   const sourceMismatchBadge: string | null =
     language === "ko" && !hasKo && hasJp
-      ? "원본만"
+      ? "자막 없음"
       : language === "jp" && !hasJp && hasKo
-        ? "자막본만"
+        ? "원본 없음"
         : null;
 
   const displayTitle = getDisplayTitle(content, language);
@@ -132,39 +99,6 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
     router.push(`/edit-request/${content.id}`);
   };
 
-  const handleCategoryConfirm = (value: string) => {
-    if (value === currentCategoryValue) return;
-
-    const previousValue = currentCategoryValue;
-    const newLabel = CATEGORY_OPTIONS.find((o) => o.value === value)?.label ?? value;
-
-    if (value === "auto") {
-      onUpdateCategory(content.id, "auto");
-    } else if (value === "none") {
-      onUpdateCategory(content.id, null);
-    } else {
-      onUpdateCategory(content.id, value as Exclude<VideoCategory, "all">);
-    }
-
-    adapter.create({
-      render: () => (
-        <Snackbar
-          message={`${newLabel}${toRo(newLabel)} 변경했어요`}
-          actionLabel="되돌리기"
-          onAction={() => {
-            if (previousValue === "auto") {
-              onUpdateCategory(content.id, "auto");
-            } else if (previousValue === "none") {
-              onUpdateCategory(content.id, null);
-            } else {
-              onUpdateCategory(content.id, previousValue as Exclude<VideoCategory, "all">);
-            }
-          }}
-        />
-      ),
-    });
-  };
-
   const menuTitle = displayTitle || `${categoryLabel} — ${content.sources.map((s) => s.label).join(" / ")}`;
 
   return (
@@ -182,40 +116,11 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
       </Checkbox.Root>
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
-        {/* 분류 상세 설정 */}
-        <BottomSheetRoot
-          closeOnEscape
-          closeOnInteractOutside
-          open={categorySheetOpen}
-          onOpenChange={setCategorySheetOpen}
-        >
-          <BottomSheetTrigger asChild>
-            <Chip.Button variant="outlineWeak" size="small" style={{ flexShrink: 0 }}>
-              <Chip.Label>{categoryLabel}</Chip.Label>
-            </Chip.Button>
-          </BottomSheetTrigger>
-          <Portal>
-            <CategorySheet
-              currentValue={currentCategoryValue}
-              onClose={() => setCategorySheetOpen(false)}
-              onConfirm={(value) => {
-                handleCategoryConfirm(value);
-                setCategorySheetOpen(false);
-              }}
-            />
-          </Portal>
-        </BottomSheetRoot>
-
-        {/* 언어 불일치 배지 */}
+        {/* 언어 불일치 배지 — 선택한 콘텐츠 언어의 영상이 없는 행에만 표시 */}
         {sourceMismatchBadge && (
-          <Chip.Button
-            variant="outlineWeak"
-            size="small"
-            style={{ flexShrink: 0, pointerEvents: "none" }}
-            aria-label={`${sourceMismatchBadge} 소스만 있음`}
-          >
-            <Chip.Label>{sourceMismatchBadge}</Chip.Label>
-          </Chip.Button>
+          <Badge tone="neutral" variant="weak" size="medium" style={{ flexShrink: 0 }}>
+            {sourceMismatchBadge}
+          </Badge>
         )}
 
         {/* 제목 + 소스 레이블 / 메뉴 트리거 */}
@@ -291,46 +196,3 @@ export default function ContentItem({ content, onToggle, onUpdateCategory }: Pro
   );
 }
 
-function CategorySheet({
-  currentValue,
-  onConfirm,
-}: {
-  currentValue: string;
-  onClose: () => void;
-  onConfirm: (value: string) => void;
-}) {
-  const [selected, setSelected] = useState(currentValue);
-
-  return (
-    <BottomSheetContent
-      title="분류 상세 설정"
-      aria-describedby={undefined}
-      style={{ paddingBottom: "var(--seed-safe-area-bottom)" }}
-    >
-      <BottomSheetBody>
-        <HStack gap="x2" wrap>
-          {CATEGORY_OPTIONS.map((opt) => (
-            <Chip.Toggle
-              key={opt.value}
-              variant="outlineStrong"
-              size="medium"
-              checked={selected === opt.value}
-              onCheckedChange={(checked) => {
-                if (checked) setSelected(opt.value);
-              }}
-            >
-              <Chip.Label>{opt.label}</Chip.Label>
-            </Chip.Toggle>
-          ))}
-        </HStack>
-      </BottomSheetBody>
-      <BottomSheetFooter>
-        <HStack pt="x3">
-          <ActionButton flexGrow size="large" variant="neutralSolid" onClick={() => onConfirm(selected)}>
-            완료
-          </ActionButton>
-        </HStack>
-      </BottomSheetFooter>
-    </BottomSheetContent>
-  );
-}

@@ -8,7 +8,6 @@ import { useSettings } from "./SettingsProvider";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/ui/accordion";
 
 type FilterType = "all" | "watched" | "unwatched";
-type CategoryOverrideArg = "story" | "music" | "fesxlive" | "fesxrec" | "withxmeets" | null | "auto";
 
 interface Props {
   season: Season;
@@ -18,7 +17,6 @@ interface Props {
   sortOrder: "newest" | "oldest";
   hidePrivateVideos: boolean;
   onToggle: (contentId: string) => void;
-  onUpdateCategory: (contentId: string, categoryOverride: CategoryOverrideArg) => void;
   headingLevel?: 4 | 5;
 }
 
@@ -58,7 +56,6 @@ function EpisodeGroup({
   hidePrivateVideos,
   headingLevel = 4,
   onToggle,
-  onUpdateCategory,
 }: {
   episode: Episode;
   filter: FilterType;
@@ -68,7 +65,6 @@ function EpisodeGroup({
   hidePrivateVideos: boolean;
   headingLevel?: 4 | 5;
   onToggle: (contentId: string) => void;
-  onUpdateCategory: (contentId: string, categoryOverride: CategoryOverrideArg) => void;
 }) {
   const { language } = useSettings();
   // null = 사용자가 아직 직접 토글하지 않음 → 파생 기본값(시청 중 여부)을 따른다.
@@ -117,7 +113,6 @@ function EpisodeGroup({
               key={content.id}
               content={content}
               onToggle={onToggle}
-              onUpdateCategory={onUpdateCategory}
             />
           ))}
         </AccordionContent>
@@ -134,7 +129,6 @@ export default function SeasonGroup({
   sortOrder,
   hidePrivateVideos,
   onToggle,
-  onUpdateCategory,
   headingLevel = 4,
 }: Props) {
   const hasVisibleContents = useMemo(
@@ -164,7 +158,6 @@ export default function SeasonGroup({
           hidePrivateVideos={hidePrivateVideos}
           headingLevel={headingLevel}
           onToggle={onToggle}
-          onUpdateCategory={onUpdateCategory}
         />
       ))}
     </>
