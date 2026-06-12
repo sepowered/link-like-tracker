@@ -391,6 +391,20 @@
                   "label": "원본"
                 }
               ]
+            },
+            {
+              "id": "rvdurmx9Y88",
+              "type": "story",
+              "title_ko": "막간: 하로메구 채널!",
+              "title_jp": "幕間『ハロめぐチャンネル！』",
+              "part_label": "막간",
+              "legacy_video_id": "rvdurmx9Y88",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=rvdurmx9Y88",
+                  "label": "원본"
+                }
+              ]
             }
           ]
         },
@@ -812,6 +826,20 @@
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=c3KMfr84IRE",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "fJ0wuKzXkxw",
+              "type": "story",
+              "title_ko": "막간: 즐거워 보이는데?",
+              "title_jp": "幕間『楽しそうだぞぅ？』",
+              "part_label": "막간",
+              "legacy_video_id": "fJ0wuKzXkxw",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=fJ0wuKzXkxw",
                   "label": "원본"
                 }
               ]
@@ -1416,6 +1444,20 @@
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=Gu3rXrLNDNE",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "Jc7ZEeopqCE",
+              "type": "story",
+              "title_ko": "막간: 하스노 대삼각☆",
+              "title_jp": "幕間『蓮ノ大三角☆』",
+              "part_label": "막간",
+              "legacy_video_id": "Jc7ZEeopqCE",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=Jc7ZEeopqCE",
                   "label": "원본"
                 }
               ]
@@ -2420,6 +2462,20 @@
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=oVl5JfaR8E0",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "es7S7djG2T0",
+              "type": "story",
+              "title_ko": "막간: Bloom the stars",
+              "title_jp": "幕間『Bloom the stars』",
+              "part_label": "막간",
+              "legacy_video_id": "es7S7djG2T0",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=es7S7djG2T0",
                   "label": "원본"
                 }
               ]
@@ -6234,6 +6290,64 @@
               "sources": [
                 {
                   "url": "https://www.youtube.com/watch?v=EUkilJORlYA",
+                  "label": "원본"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "105-main-interlude-001",
+          "episode_number": 0,
+          "title_ko": "간장 Dream Interlude: Chapter.PERENNIAL",
+          "title_jp": "間章 Dream Interlude『Water the flowers』Chapter.PERENNIAL",
+          "contents": [
+            {
+              "id": "4yeXqBisXxg",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": "【活動記録】間章 Dream Interlude「Water the flowers」Chapter.PERENNIAL（蓮ノ空女学院スクールアイドルクラブ）",
+              "part_label": "간주곡",
+              "legacy_video_id": "4yeXqBisXxg",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=4yeXqBisXxg",
+                  "label": "원본"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "105-main-interlude-002",
+          "episode_number": 0,
+          "title_ko": "간장 Dream Interlude: Chapter.BRIGHT SEEDS",
+          "title_jp": "間章 Dream Interlude『Be Cera-fish』Chapter.BRIGHT SEEDS",
+          "contents": [
+            {
+              "id": "r74eouvh6Sk",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": "間章・Dream Interlude『Be Cera-fish』PART1&2（リンクラ）",
+              "part_label": "간주곡 Part 1&2",
+              "legacy_video_id": "r74eouvh6Sk",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=r74eouvh6Sk",
+                  "label": "원본"
+                }
+              ]
+            },
+            {
+              "id": "Z6EBZFVwDko",
+              "type": "story",
+              "title_ko": null,
+              "title_jp": "間章・Dream Interlude『Be Cera-fish』PART3（リンクラ）",
+              "part_label": "간주곡 Part 3",
+              "legacy_video_id": "Z6EBZFVwDko",
+              "sources": [
+                {
+                  "url": "https://www.youtube.com/watch?v=Z6EBZFVwDko",
                   "label": "원본"
                 }
               ]
