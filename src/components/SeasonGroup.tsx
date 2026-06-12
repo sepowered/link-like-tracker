@@ -94,12 +94,14 @@ function EpisodeGroup({
 
   // 기본은 모두 접힘 — 시청 중(일부만 시청)인 에피소드만 열어둔다.
   const inProgress = watchedCount > 0 && watchedCount < totalCount;
-  // 검색·필터 중에는 결과가 접힌 그룹에 가려지지 않게 강제로 펼친다.
-  const filteringActive =
-    query.trim().length > 0 || filter !== "all" || !categories.includes("all");
-  const values = filteringActive
+  // 시청상태·카테고리 필터는 localStorage에 영구 저장되므로 강제 펼침에 쓰면
+  // 접기 버튼이 영영 안 먹는다 — 기본값만 펼침으로 하고 접기는 허용한다.
+  // 검색어는 일시적이니 입력 중에만 강제로 펼쳐 결과가 가려지지 않게 한다.
+  const searching = query.trim().length > 0;
+  const filteringActive = filter !== "all" || !categories.includes("all");
+  const values = searching
     ? ["episode"]
-    : userValues ?? (inProgress ? ["episode"] : []);
+    : userValues ?? (inProgress || filteringActive ? ["episode"] : []);
 
   return (
     <Accordion values={values} onValuesChange={setUserValues}>
