@@ -16,9 +16,9 @@ import type { CategoryOverrideValue } from "@/lib/storage";
 import { ActionButton, Icon, PullToRefresh, TextFieldInput, TextFieldPrefixIcon, TextFieldRoot } from "@seed-design/react";
 import { ProgressCircle } from "@/ui/progress-circle";
 import { MenuRoot, MenuTrigger, MenuContent, MenuItem } from "@/ui/menu";
-import { Callout } from "@/ui/callout";
+import { Callout, DismissibleCallout } from "@/ui/callout";
 import Link from "next/link";
-import { IconCheckmarkLine, IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
+import { IconCheckmarkLine, IconChevronDownLine, IconExclamationmarkCircleFill, IconMagnifyingglassLine, IconSparkle2Fill, IconXmarkLine } from "@karrotmarket/react-monochrome-icon";
 import { Snackbar, useSnackbarAdapter } from "@/ui/snackbar";
 
 type FilterType = "all" | "watched" | "unwatched";
@@ -27,6 +27,9 @@ type ScrollDirection = "up" | "down" | null;
 const STORAGE_KEY_WATCHED = "llt-watched";
 const STORAGE_KEY_OVERRIDES = "llt-overrides";
 const STORAGE_KEY_FILTERS = "llt-filters";
+// 업데이트 안내 배너: 글이 바뀌면 id를 올려 다시 노출한다.
+const STORAGE_KEY_UPDATE_SEEN = "llt-update-seen";
+const UPDATE_POST_ID = "2026-06";
 const STICKY_SCROLL_THRESHOLD = 60;
 const SCROLL_DIRECTION_DELTA = 6;
 
@@ -82,6 +85,8 @@ export default function PlaylistView({ initialData }: Props) {
   const compactSearchRef = useRef<HTMLInputElement>(null);
 
   const [isInitialized, setIsInitialized] = useState(false);
+  // SSR과 첫 클라이언트 렌더를 일치시키기 위해 숨김으로 시작, 마운트 후 판정
+  const [updateBannerVisible, setUpdateBannerVisible] = useState(false);
   const { progressCategories, hidePrivateVideos, autoSync } = useSettings();
 
   // Load from localStorage on mount
@@ -121,6 +126,10 @@ export default function PlaylistView({ initialData }: Props) {
         if (saved.filter) setFilter(saved.filter);
         if (saved.categories) setCategories(saved.categories);
         if (saved.sortOrder) setSortOrder(saved.sortOrder);
+      }
+
+      if (localStorage.getItem(STORAGE_KEY_UPDATE_SEEN) !== UPDATE_POST_ID) {
+        setUpdateBannerVisible(true);
       }
     } catch (e) {
       console.error("Failed to load local storage", e);
@@ -308,6 +317,17 @@ export default function PlaylistView({ initialData }: Props) {
       // 실패해도 기록은 이미 localStorage에 있다(legacy 폴백).
       requestAnonymousSync();
     }
+  }
+
+  function markUpdateSeen() {
+    try {
+      localStorage.setItem(STORAGE_KEY_UPDATE_SEEN, UPDATE_POST_ID);
+    } catch {}
+  }
+
+  function dismissUpdateBanner() {
+    setUpdateBannerVisible(false);
+    markUpdateSeen();
   }
 
   async function handlePtrRefresh() {
@@ -507,6 +527,27 @@ export default function PlaylistView({ initialData }: Props) {
         <div className="filter-result-bar" role="status" aria-live="polite">
           <span className="filter-result-count">{filteredCount}편</span>
           <span className="filter-result-label"> 표시 중</span>
+        </div>
+      )}
+
+      {/* 업데이트 안내 배너 */}
+      {updateBannerVisible && (
+        <div style={{ padding: "0 var(--seed-dimension-spacing-x-global-gutter)", marginBottom: "8px" }}>
+          <DismissibleCallout
+            tone="magic"
+            prefixIcon={<IconSparkle2Fill />}
+            title="6월 업데이트"
+            description="스토리 파트 구분, 자막 없는 영상, 새로 추가된 이야기까지 — 달라진 점을 확인해 보세요."
+            linkProps={{
+              asChild: true,
+              children: (
+                <Link href="/updates" onClick={markUpdateSeen}>
+                  자세히 보기
+                </Link>
+              ),
+            }}
+            onDismiss={dismissUpdateBanner}
+          />
         </div>
       )}
 
